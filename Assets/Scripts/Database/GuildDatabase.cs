@@ -1,0 +1,28 @@
+﻿using UnityEngine;
+using System.Collections;
+using System.Collections.Generic;
+
+public class GuildDatabase : MonoBehaviour {
+
+	[SerializeField]
+	private List<Guild> guildList= new List<Guild>();
+	// Use this for initialization
+	void Start () {
+		guildList.Add(new Guild(0,"test",1,0,0,10000, GetComponent<ItemDatabase>()));
+	}
+	
+	// Update is called once per frame
+	void Update () {
+	
+	}
+
+	public Guild FindGuild(int id)
+	{
+		foreach(Guild guild in guildList)
+		{
+			if (guild.guildId==id)
+				return guild;
+		}
+		return null;
+	}
+}
