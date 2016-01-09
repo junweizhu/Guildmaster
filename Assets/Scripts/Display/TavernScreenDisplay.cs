@@ -10,15 +10,9 @@ public class TavernScreenDisplay : MonoBehaviour {
 
 	public void UpdateText(List<Member> recruits)
 	{
-		joinText.text=recruits.Count.ToString();
-		if(recruits.Count==1)
+		if (recruits.Count>0)
 		{
-			joinText.text+=" person is ";
+			joinText.text="Some people seem interested in your guild";
 		}
-		else
-		{
-			joinText.text+=" people are ";
-		}
-		joinText.text+="interested in joining your guild";
 	}
 }

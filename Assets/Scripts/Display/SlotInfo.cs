@@ -9,58 +9,100 @@ public class SlotInfo : MonoBehaviour {
 	public Text slotQuality;
 	public Text slotQuantity;
 	public Text slotCost;
+	public Text slotDuration;
 	public Text slotSkillLevel;
 	public Image slotIcon;
 	public Text slotLevel;
 	public Slider slotExp;
+	public Button slotAdd;
+	public Button slotRed;
 	public int id;
 	public int cost;
+	public bool selected=false;
 
+	void Update()
+	{
+		if(GetComponent<Image>()!=null){
+			GetComponent<Image>().enabled=selected;
+		}
+	}
+	public void FillSlotWithQuest(int slotnr, Quest quest,string status, float days)
+	{
+		slotName.text=quest.name;
+		slotNumber.text=slotnr.ToString();
+		id=quest.id;
+		slotStatus.text=status;
+		if (days>0)
+		{
+			slotDuration.text=quest.duration.ToString("f1")+ " Days";
+		}
+		else
+		{
+			slotDuration.text="";
+		}
+	}
+	public void FillSlotWithArea(Area area)
+	{
+		slotName.text=area.name;
+		id=area.id;
+	}
 	public void FillSlotWithMember(Member member)
 	{
-		slotNumber.text=member.guildnr.ToString();
-		slotName.text=member.memberName;
-		slotStatus.text=member.memberStatus;
-		id=member.memberId;
+		if (slotNumber!=null)
+		{
+			slotNumber.text=member.guildnr.ToString();
+		}
+		slotName.text=member.name;
+		if(slotStatus!=null)
+		{
+			slotStatus.text=member.status;
+		}
+		id=member.guildnr;
 	}
 	public void FillSlotWithMember(Member member, int slotnr)
 	{
 		slotNumber.text=slotnr.ToString();
-		slotName.text=member.memberName;
-		id=member.memberId;
+		slotName.text=member.name;
+		id=member.guildnr;
 	}
 	public void FillSlotWithMember(Member member, Skill skill)
 	{
-		slotName.text=member.memberName;
+		slotNumber.text=member.guildnr.ToString();
+		slotName.text=member.name;
 		id=member.guildnr;
-		slotSkillLevel.text=member.memberSkillLevel[skill].ToString();
+		slotSkillLevel.text=member.skillLevel[skill].ToString();
 
 	}
 	public void FillSlotWithItem(int slotnr, Item item, int quality,int quantity)
 	{
 		slotNumber.text=slotnr.ToString();
-		slotName.text=item.itemName;
+		slotName.text=item.name;
 		slotQuality.text=quality.ToString();
 		slotQuantity.text=quantity.ToString();
-		id=item.itemId;
+		id=item.id;
 	}
 	public void FillSlotWithItem(int slotnr, Item item, int quality)
 	{
-		id= item.itemId;
-		slotName.text=item.itemName;
+		id= item.id;
+		slotName.text=item.name;
 		slotQuality.text=quality.ToString();
 		slotQuantity.text=0.ToString();
 		slotCost.text=0.ToString();
-		cost=item.itemMoney;
+		cost=item.sellValue;
 	}
-	public void FillSlotWithItem(Item item, int quality)
+	public void FillSlotWithItem(InventorySlot slot)
 	{
-		slotName.text=item.itemName;
-		slotQuality.text=quality.ToString();
+		slotName.text=slot.item.name;
+		slotQuality.text=slot.quality.ToString();
+	}
+	public void FillSlotWithReward(Item item,int quantity)
+	{
+		slotName.text=item.name;
+		slotQuantity.text=quantity.ToString();
 	}
 	public void FillSlotWithSkill(Skill skill, int level, int exp)
 	{
-		slotName.text=skill.skillName;
+		slotName.text=skill.name;
 		slotLevel.text="Lvl. "+level.ToString();
 		slotExp.value=exp;
 	}
@@ -68,20 +110,20 @@ public class SlotInfo : MonoBehaviour {
 	{
 		if (type=="member")
 		{
-
-			GameObject.Find("MainGame").GetComponent<GameManager>().DisplayMemberStats(this);
+			GameObject.FindObjectOfType<GameManager>().DisplayMemberStats(this);
 		}
 		if (type=="item")
 		{
-			
-			GameObject.Find("MainGame").GetComponent<GameManager>().DisplayItemStats(this);
+			GameObject.FindObjectOfType<WarehouseScreenDisplay>().DisplayItemStats(this);
 		}
-	}
-
-	public void ResetTransform()
-	{
-		transform.localPosition=new Vector3(0,0,0);
-		transform.localScale=new Vector3(1,1,1);
+		if (type=="quest")
+		{
+			GameObject.FindObjectOfType<GameManager>().DisplayQuestStats(this);
+		}
+		if (type=="area")
+		{
+			GameObject.FindObjectOfType<OutsideScreenDisplay>().DisplayAreaStats(this);
+		}
 	}
 	public void Recruit()
 	{
@@ -94,6 +136,11 @@ public class SlotInfo : MonoBehaviour {
 		else if (choice=="-"&& int.Parse(slotQuantity.text)>0)
 			slotQuantity.text=(int.Parse(slotQuantity.text)-1).ToString();
 		slotCost.text=(int.Parse(slotQuantity.text)*cost).ToString();
+		if (!selected)
+		{
+			Select ();
+			GameObject.FindObjectOfType<ShopScreenDisplay>().UpdateItemInfo(this);
+		}
 	}
 	public int GetItemId()
 	{
@@ -106,14 +153,22 @@ public class SlotInfo : MonoBehaviour {
 	}
 	public void Select()
 	{
-		if (GetComponent<Image>().isActiveAndEnabled)
-			GetComponent<Image>().enabled=false;
-		else
-			GetComponent<Image>().enabled=true;
+		selected=!selected;
 	}
 
-	public void SelectBuyer()
+	public void SelectSlot()
 	{
-		GameObject.FindObjectOfType<BuyerScreenDisplay>().SelectMember(this);
+		if (GameObject.FindObjectOfType<MemberSelectScreenDisplay>().show)
+		{
+			GameObject.FindObjectOfType<MemberSelectScreenDisplay>().SelectMember(this);
+		}
+		else if (GameObject.FindObjectOfType<SearchScreenDisplay>().show)
+		{
+			GameObject.FindObjectOfType<SearchScreenDisplay>().SelectMember(this);
+		}
+	}
+	public void ResetSelection()
+	{
+		selected=false;
 	}
 }

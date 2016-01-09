@@ -5,15 +5,15 @@ using System.Collections.Generic;
 [System.Serializable]
 public class Skill {
 
-	public int skillId;
-	public string skillName;
-	public Dictionary<string,int> skillStatgrowth;
+	public int id;
+	public string name;
+	public Dictionary<string,int> statgrowth;
 
 	public Skill(int id, string name, Dictionary<string,int> statgrowth)
 	{
-		skillId=id;
-		skillName=name;
-		skillStatgrowth=statgrowth;
+		this.id=id;
+		this.name=name;
+		this.statgrowth=statgrowth;
 	}
 
 

@@ -18,12 +18,13 @@ public class StatScreenDisplay : MonoBehaviour {
 	public Text memberAgility;
 	public Text memberFame;
 	public Text memberMoney;
-	public GameObject inventoryList;
+	public List<Text> memberStats;
+	public Transform inventoryList;
 	public List<GameObject> itemSlotList=new List<GameObject>();
 	public GameObject inventorySlot;
 	public GameObject skillSlot;
 	public List<GameObject> skillSlotList=new List<GameObject>();
-	public GameObject skillList;
+	public Transform skillList;
 	public bool show;
 	public string showSub;
 	public string playerType;
@@ -67,41 +68,37 @@ public class StatScreenDisplay : MonoBehaviour {
 	public void FillSlot(int number,Member member)
 	{
 		memberNumber.text=number.ToString();
-		memberName.text=member.memberName;
-		memberStatus.text=member.memberStatus;
-		memberGender.text=member.memberGender.ToString();
-		memberLevel.text=member.memberLevel.ToString();
-		memberExp.text=member.memberExp.ToString();
-		memberHealth.text=member.memberHealth.ToString();
-		memberMana.text=member.memberMana.ToString();
-		memberStrength.text=member.memberStrength.ToString();
-		memberIntelligence.text=member.memberIntelligence.ToString();
-		memberDexterity.text=member.memberDexterity.ToString();
-		memberAgility.text=member.memberAgility.ToString();
-		memberFame.text=member.memberFame.ToString();
-		memberMoney.text=member.memberMoney.ToString()+" Gold";
-		FillInventory(member.memberInventory, member.memberItemQuality);
-		FillSkill(member.skillList,member.memberSkillLevel,member.memberSkillExp);
+		memberName.text=member.name;
+		memberStatus.text=member.status;
+		memberGender.text=member.gender.ToString();
+		memberLevel.text=member.level.ToString();
+		memberExp.text=member.exp.ToString();
+		foreach (Text slot in memberStats)
+		{
+			if (slot.name=="Health" ||slot.name=="Mana")
+			{
+				slot.text=member.stats["Current"+slot.name].ToString()+"/"+member.stats["Max"+slot.name].ToString();
+			}
+			else
+			{
+				slot.text=member.stats[slot.name].ToString();
+			}
+
+		}
+		memberMoney.text=member.money.ToString()+" Gold";
+		FillInventory(member.GetInventory());
+		FillSkill(member.skillList,member.skillLevel,member.skillExp);
 	}
 	public void CloseScreen()
 	{
 		show=false;
 	}
-	public void FillInventory(List<Item> inventory, List<int> itemQuality)
+	public void FillInventory(List<InventorySlot> inventory)
 	{
 		for (int i=0;i<inventory.Count;i++)
 		{
-			if (i+1>itemSlotList.Count)
-			{
-				itemSlotList.Add (GameObject.Instantiate(inventorySlot) as GameObject);
-				itemSlotList[i].transform.SetParent(inventoryList.transform);
-				itemSlotList[i].GetComponent<SlotInfo>().ResetTransform();
-			}
-			else if (itemSlotList[i].activeSelf==false)
-			{
-				itemSlotList[i].SetActive(true);
-			}
-			itemSlotList[i].GetComponent<SlotInfo>().FillSlotWithItem(inventory[i],itemQuality[i]);
+			itemSlotList.GeneratePrefab(i,inventorySlot,"Item",inventoryList);
+			itemSlotList[i].GetComponent<SlotInfo>().FillSlotWithItem(inventory[i]);
 		}
 		if(inventory.Count<itemSlotList.Count)
 		{
@@ -110,31 +107,17 @@ public class StatScreenDisplay : MonoBehaviour {
 				itemSlotList[i].SetActive(false);
 			}
 		}
-		inventoryList.GetComponent<RectTransform>().sizeDelta=new Vector2(0, inventory.Count*60);
-		if (inventory.Count>4)
-			inventoryList.GetComponent<ScrollRect>().vertical=true;
-		else
-			inventoryList.GetComponent<ScrollRect>().vertical=false;
+		inventoryList.SetSize(inventory.Count,60);
 	}
 
 	public void FillSkill(List<Skill> list,Dictionary<Skill,int> levels,Dictionary<Skill,int> exp)
 	{
 		for (int i=0; i<list.Count;i++)
 		{
-			
-			if (i+1>skillSlotList.Count)
-			{
-				skillSlotList.Add (GameObject.Instantiate(skillSlot) as GameObject);
-				skillSlotList[i].transform.SetParent(skillList.transform);
-				skillSlotList[i].GetComponent<SlotInfo>().ResetTransform();
-			}
+			skillSlotList.GeneratePrefab(i,skillSlot,"Skill",skillList);
 			skillSlotList[i].GetComponent<SlotInfo>().FillSlotWithSkill(list[i],levels[list[i]],exp[list[i]]);
 		}
-		skillList.GetComponent<RectTransform>().sizeDelta=new Vector2(0, list.Count*60);
-		if (list.Count>4)
-			skillList.GetComponent<ScrollRect>().vertical=true;
-		else
-			skillList.GetComponent<ScrollRect>().vertical=false;
+		skillList.SetSize(list.Count,60);
 	}
 	public void SetShow(string display)
 	{

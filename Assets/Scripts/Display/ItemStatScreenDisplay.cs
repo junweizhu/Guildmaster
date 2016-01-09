@@ -3,60 +3,63 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine.UI;
 
-public class ItemStatScreenDisplay : MonoBehaviour {
+public class ItemStatScreenDisplay : MonoBehaviour
+{
 	public Text itemName;
-	public Text itemType;
 	public Text itemQuality;
 	public Text itemQuantity;
 	public Text itemValue;
 	public Text itemDescription;
-	public bool show;
-	public List<Text> statlist=new List<Text>();
-	public Dictionary<string,Text>stats=new Dictionary<string,Text >(); 
+	public List<Text> statlist = new List<Text> ();
+	public Dictionary<string,Text>stats = new Dictionary<string,Text > (); 
 
 	// Use this for initialization
-	void Start () {
-		foreach (Text stat in statlist)
-		{
-			stats[stat.name]=stat;
+	void Start ()
+	{
+		foreach (Text stat in statlist) {
+			stats [stat.name] = stat;
 		}
 	}
 	
 	// Update is called once per frame
-	void Update () {
-		if(show)
-		{
-			GetComponent<CanvasGroup>().alpha=1;
-			GetComponent<CanvasGroup>().blocksRaycasts=true;
-		}
-		else 
-		{
-			GetComponent<CanvasGroup>().alpha=0;
-			GetComponent<CanvasGroup>().blocksRaycasts=false;
-		}
-	}
-	public void FillSlot(Item item, int quality, int quantity)
+	void Update ()
 	{
-		foreach(KeyValuePair<string,Text> stat in stats)
-		{
-			stat.Value.text="";
-		}
-		itemName.text=item.itemName;
-		itemType.text=item.itemType;
-		itemQuality.text=quality.ToString()+"%";
-		itemQuantity.text=quantity.ToString();
-		itemValue.text=item.itemMoney.ToString()+" Gold";
-		itemDescription.text=item.itemDescription;
-		if (item.itemModifier1!=null)
-		{
-			if (item.itemValue1>0)
-				stats[item.itemModifier1].text="+";
-			if (item.itemValue1!=0)
-				stats[item.itemModifier1].text+=item.itemValue1.ToString();
-		}
 	}
-	public void CloseScreen()
+
+	public void FillSlot (Item item)
 	{
-		show=false;
+		foreach (KeyValuePair<string,Text> stat in stats) {
+			stat.Value.text = "  ";
+		}
+		if (item != null) {
+			itemName.text = item.name;
+			itemValue.text = item.sellValue.ToString () + " G";
+			itemDescription.text = item.description;
+			if (item.stats!=null) {
+				foreach (KeyValuePair<string,int> stat in item.stats) {
+					if (stats.ContainsKey (stat.Key)) {
+						if (stat.Value > 0) {
+							stats [stat.Key].text = "+";
+						}
+						if (stat.Value != 0) {
+							stats [stat.Key].text += stat.Value.ToString ();
+						}
+					}
+				}
+			}
+			/*
+			if (item.modifier1 != null) {
+				if (stats.ContainsKey (item.modifier1)) {
+					if (item.value1 > 0)
+						stats [item.modifier1].text = "+";
+					if (item.value1 != 0)
+						stats [item.modifier1].text += item.value1.ToString ();
+				}
+			}*/
+		} else {
+			itemName.text = "";
+			itemValue.text = "";
+			itemDescription.text = "";
+		}
 	}
 }

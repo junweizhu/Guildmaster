@@ -1,13 +1,12 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 public class Inventory
 {
-
-	public List<Item> inventory = new List<Item> ();
-	public List<int> itemQuality = new List<int> ();
-	public List<int> itemQuantity = new List<int> ();
+	public List<InventorySlot> inventory=new List<InventorySlot>();
+	private Guild guild;
 	private ItemDatabase database;
 
 	public void RemoveItem (int id, int quality=100, int amount=1)
@@ -18,16 +17,12 @@ public class Inventory
 			return;
 		}
 		for (int i=0; i<inventory.Count; i++) {
-			if (inventory [id].itemId == item.itemId && itemQuality [i] == quality) {
-				if (amount < itemQuantity [id]) {
-					itemQuantity [id] -= amount;
-				} else {
-					inventory.RemoveAt (id);
-					inventory.Add (new Item ());
-					itemQuality.RemoveAt (id);
-					itemQuality.Add (0);
-					itemQuantity.RemoveAt (id);
-					itemQuantity.Add (0);
+			if (inventory [id].item.id == item.id && inventory [i].quality == quality) {
+				if (amount < inventory [i].quantity) {
+					inventory[i].AddQuantity(-amount);
+				}else{
+					inventory[id]=new InventorySlot();
+					inventory.SortInventory();
 				}
 			}
 		}
@@ -38,14 +33,14 @@ public class Inventory
 		Item item = database.FindItem (id);
 		if (item != null) {
 			for (int i=0; i< inventory.Count; i++) {
-				if (inventory [i].itemName == item.itemName && itemQuality [i] == quality) {
-					itemQuantity [i] += amount;
+				if (inventory [i].item.name == item.name && inventory [i].quality == quality) {
+					inventory [i].AddQuantity(amount);
 					break;
 				}
-				if (inventory [i].itemName == null) {
-					inventory [i] = item;
-					itemQuality [i] = quality;
-					itemQuantity [i] = amount;
+				if (inventory [i].item.name == null) {
+					inventory [i].FillItem(item,quality);
+					inventory [i].AddQuantity(amount);
+					inventory.SortInventory();
 					break;
 				}
 			}
@@ -53,20 +48,19 @@ public class Inventory
 
 	}
 
-	public Inventory (ItemDatabase db)
+
+	public Inventory (ItemDatabase db,Guild guild)
 	{
 		for (int i=0; i<100; i++) {
-			inventory.Add (new Item ());
-			itemQuality.Add (0);
-			itemQuantity.Add (0);
+			inventory.Add (new InventorySlot());
 		}
 		database = db;
 	}
 
-	bool Contains (int id, int quality=100, int amount=1)
+	public bool Contains (int id, int amount=1, int quality=100)
 	{
 		for (int i=0; i< inventory.Count; i++) {
-			if (inventory [i].itemId == id && itemQuality [i] == quality && itemQuantity [i] >= amount)
+			if (inventory [i].item.id == id && inventory [i].quality == quality && inventory [i].quantity >= amount)
 				return true;
 		}
 		return false;
