@@ -1,22 +1,19 @@
 ﻿<Properties>
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" PreferredExecutionTarget="MonoDevelop.Default" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\Scripts\Display\NextDayScreenDisplay.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\Scripts\Objects\Guild.cs">
     <Files>
-      <File FileName="Assets\Scripts\Objects\Guild.cs" Line="120" Column="40" />
-      <File FileName="Assets\Scripts\ExtensionMethods.cs" Line="83" Column="80" />
-      <File FileName="Assets\Scripts\GameManager.cs" Line="76" Column="54" />
-      <File FileName="Assets\Scripts\Objects\Member.cs" Line="116" Column="38" />
-      <File FileName="Assets\Scripts\Objects\InventorySlot.cs" Line="26" Column="18" />
-      <File FileName="Assets\Scripts\Display\WarehouseScreenDisplay.cs" Line="24" Column="51" />
-      <File FileName="Assets\Scripts\Objects\Inventory.cs" Line="25" Column="16" />
-      <File FileName="Assets\Scripts\Display\StatScreenDisplay.cs" Line="109" Column="4" />
-      <File FileName="Assets\Scripts\Display\SlotInfo.cs" Line="96" Column="14" />
-      <File FileName="Assets\Scripts\Objects\Task.cs" Line="328" Column="20" />
-      <File FileName="Assets\Scripts\Database\ItemDatabase.cs" Line="22" Column="111" />
-      <File FileName="Assets\Scripts\Database\MonsterDatabase.cs" Line="12" Column="100" />
-      <File FileName="Assets\Scripts\Objects\Monster.cs" Line="56" Column="90" />
-      <File FileName="Assets\Scripts\Display\ItemStatScreenDisplay.cs" Line="35" Column="15" />
-      <File FileName="Assets\Scripts\Display\NextDayScreenDisplay.cs" Line="63" Column="42" />
+      <File FileName="Assets\Scripts\Display\ItemStatScreenDisplay.cs" Line="39" Column="31" />
+      <File FileName="Assets\Scripts\Objects\Dialogue.cs" Line="61" Column="5" />
+      <File FileName="Assets\Scripts\GameManager.cs" Line="262" Column="46" />
+      <File FileName="Assets\Scripts\Display\SearchScreenDisplay.cs" Line="63" Column="4" />
+      <File FileName="Assets\Scripts\Display\ShopScreenDisplay.cs" Line="49" Column="4" />
+      <File FileName="Assets\Scripts\Objects\Inventory.cs" Line="8" Column="2" />
+      <File FileName="Assets\Scripts\Display\SlotInfo.cs" Line="140" Column="37" />
+      <File FileName="Assets\Scripts\Database\ItemDatabase.cs" Line="74" Column="3" />
+      <File FileName="Assets\Scripts\Objects\Character.cs" Line="435" Column="5" />
+      <File FileName="Assets\Scripts\Objects\Task.cs" Line="208" Column="88" />
+      <File FileName="Assets\Scripts\ExtensionMethods.cs" Line="240" Column="9" />
+      <File FileName="Assets\Scripts\Objects\Guild.cs" Line="180" Column="46" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>

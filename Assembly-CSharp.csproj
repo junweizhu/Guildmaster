@@ -19,7 +19,7 @@
 	<DebugType>full</DebugType>
 	<Optimize>false</Optimize>
 	<OutputPath>Temp\bin\Debug\</OutputPath>
-	<DefineConstants>DEBUG;TRACE;UNITY_5_2_2;UNITY_5_2;UNITY_5;ENABLE_NEW_BUGREPORTER;ENABLE_2D_PHYSICS;ENABLE_4_6_FEATURES;ENABLE_AUDIO;ENABLE_CACHING;ENABLE_CLOTH;ENABLE_FRAME_DEBUGGER;ENABLE_GENERICS;ENABLE_HOME_SCREEN;ENABLE_IMAGEEFFECTS;ENABLE_LIGHT_PROBES_LEGACY;ENABLE_MICROPHONE;ENABLE_MULTIPLE_DISPLAYS;ENABLE_PHYSICS;ENABLE_PLUGIN_INSPECTOR;ENABLE_SHADOWS;ENABLE_SINGLE_INSTANCE_BUILD_SETTING;ENABLE_SPRITES;ENABLE_TERRAIN;ENABLE_RAKNET;ENABLE_UNET;ENABLE_UNITYEVENTS;ENABLE_VR;ENABLE_WEBCAM;ENABLE_WWW;ENABLE_CLOUD_SERVICES;ENABLE_CLOUD_SERVICES_ADS;ENABLE_CLOUD_HUB;ENABLE_CLOUD_PROJECT_ID;ENABLE_CLOUD_SERVICES_ANALYTICS;ENABLE_CLOUD_SERVICES_UNET;ENABLE_CLOUD_SERVICES_BUILD;ENABLE_CLOUD_LICENSE;ENABLE_EDITOR_METRICS;ENABLE_REFLECTION_BUFFERS;INCLUDE_DYNAMIC_GI;INCLUDE_GI;INCLUDE_IL2CPP;INCLUDE_DIRECTX12;PLATFORM_SUPPORTS_MONO;RENDER_SOFTWARE_CURSOR;ENABLE_LOCALIZATION;ENABLE_ANDROID_ATLAS_ETC1_COMPRESSION;UNITY_ANDROID;UNITY_ANDROID_API;ENABLE_SUBSTANCE;ENABLE_TEXTUREID_MAP;ENABLE_EGL;ENABLE_NETWORK;ENABLE_RUNTIME_GI;ENABLE_CRUNCH_TEXTURE_COMPRESSION;ENABLE_UNITYADS_RUNTIME;UNITY_UNITYADS_API;ENABLE_MONO;DEVELOPMENT_BUILD;ENABLE_PROFILER;UNITY_ASSERTIONS;UNITY_EDITOR;UNITY_EDITOR_64;UNITY_EDITOR_WIN;CROSS_PLATFORM_INPUT;MOBILE_INPUT</DefineConstants>
+	<DefineConstants>DEBUG;TRACE;UNITY_5_2_2;UNITY_5_2;UNITY_5;ENABLE_NEW_BUGREPORTER;ENABLE_2D_PHYSICS;ENABLE_4_6_FEATURES;ENABLE_AUDIO;ENABLE_CACHING;ENABLE_CLOTH;ENABLE_FRAME_DEBUGGER;ENABLE_GENERICS;ENABLE_HOME_SCREEN;ENABLE_IMAGEEFFECTS;ENABLE_LIGHT_PROBES_LEGACY;ENABLE_MICROPHONE;ENABLE_MULTIPLE_DISPLAYS;ENABLE_PHYSICS;ENABLE_PLUGIN_INSPECTOR;ENABLE_SHADOWS;ENABLE_SINGLE_INSTANCE_BUILD_SETTING;ENABLE_SPRITES;ENABLE_TERRAIN;ENABLE_RAKNET;ENABLE_UNET;ENABLE_UNITYEVENTS;ENABLE_VR;ENABLE_WEBCAM;ENABLE_WWW;ENABLE_CLOUD_SERVICES;ENABLE_CLOUD_SERVICES_ADS;ENABLE_CLOUD_HUB;ENABLE_CLOUD_PROJECT_ID;ENABLE_CLOUD_SERVICES_ANALYTICS;ENABLE_CLOUD_SERVICES_UNET;ENABLE_CLOUD_SERVICES_BUILD;ENABLE_CLOUD_LICENSE;ENABLE_EDITOR_METRICS;ENABLE_REFLECTION_BUFFERS;INCLUDE_DYNAMIC_GI;INCLUDE_GI;INCLUDE_IL2CPP;INCLUDE_DIRECTX12;PLATFORM_SUPPORTS_MONO;RENDER_SOFTWARE_CURSOR;ENABLE_LOCALIZATION;ENABLE_ANDROID_ATLAS_ETC1_COMPRESSION;UNITY_ANDROID;UNITY_ANDROID_API;ENABLE_SUBSTANCE;ENABLE_TEXTUREID_MAP;ENABLE_EGL;ENABLE_NETWORK;ENABLE_RUNTIME_GI;ENABLE_CRUNCH_TEXTURE_COMPRESSION;ENABLE_UNITYADS_RUNTIME;UNITY_UNITYADS_API;ENABLE_MONO;ENABLE_PROFILER;UNITY_ASSERTIONS;UNITY_EDITOR;UNITY_EDITOR_64;UNITY_EDITOR_WIN</DefineConstants>
 	<ErrorReport>prompt</ErrorReport>
 	<WarningLevel>4</WarningLevel>
 	<NoWarn>0169</NoWarn>
@@ -45,8 +45,13 @@
 	</Reference>
   </ItemGroup>
   <ItemGroup>
+     <Compile Include="Assets\AdMobPlugin\Scripts\AdMobPlugin.cs" />
+     <Compile Include="Assets\AdMobPlugin\Scripts\AdMobPluginDebug.cs" />
+     <Compile Include="Assets\AdMobPlugin\Scripts\AdMobPluginMockup.cs" />
      <Compile Include="Assets\Scripts\Database\AreaDatabase.cs" />
      <Compile Include="Assets\Scripts\Database\CharDatabase.cs" />
+     <Compile Include="Assets\Scripts\Database\Database.cs" />
+     <Compile Include="Assets\Scripts\Database\EventDatabase.cs" />
      <Compile Include="Assets\Scripts\Database\GuildDatabase.cs" />
      <Compile Include="Assets\Scripts\Database\ItemDatabase.cs" />
      <Compile Include="Assets\Scripts\Database\MonsterDatabase.cs" />
@@ -54,21 +59,25 @@
      <Compile Include="Assets\Scripts\Database\SkillDatabase.cs" />
      <Compile Include="Assets\Scripts\Database\StringDatabase.cs" />
      <Compile Include="Assets\Scripts\Database\UpgradeDatabase.cs" />
+     <Compile Include="Assets\Scripts\Display\CharacterScreenDisplay.cs" />
+     <Compile Include="Assets\Scripts\Display\CharacterSelectScreenDisplay.cs" />
+     <Compile Include="Assets\Scripts\Display\CharacterStatScreenDisplay.cs" />
+     <Compile Include="Assets\Scripts\Display\DialogueScreenDisplay.cs" />
      <Compile Include="Assets\Scripts\Display\EventLogScreenDisplay.cs" />
      <Compile Include="Assets\Scripts\Display\FinancialScreenDisplay.cs" />
      <Compile Include="Assets\Scripts\Display\GuildScreenDisplay.cs" />
+     <Compile Include="Assets\Scripts\Display\ImageResize.cs" />
+     <Compile Include="Assets\Scripts\Display\ItemSelectScreenDisplay.cs" />
      <Compile Include="Assets\Scripts\Display\ItemStatScreenDisplay.cs" />
      <Compile Include="Assets\Scripts\Display\MarketScreenDisplay.cs" />
-     <Compile Include="Assets\Scripts\Display\MemberScreenDisplay.cs" />
-     <Compile Include="Assets\Scripts\Display\MemberSelectScreenDisplay.cs" />
      <Compile Include="Assets\Scripts\Display\NextDayScreenDisplay.cs" />
      <Compile Include="Assets\Scripts\Display\OutsideScreenDisplay.cs" />
+     <Compile Include="Assets\Scripts\Display\PromptScreenDisplay.cs" />
      <Compile Include="Assets\Scripts\Display\QuestScreenDisplay.cs" />
      <Compile Include="Assets\Scripts\Display\QuestStatScreenDisplay.cs" />
      <Compile Include="Assets\Scripts\Display\SearchScreenDisplay.cs" />
      <Compile Include="Assets\Scripts\Display\ShopScreenDisplay.cs" />
      <Compile Include="Assets\Scripts\Display\SlotInfo.cs" />
-     <Compile Include="Assets\Scripts\Display\StatScreenDisplay.cs" />
      <Compile Include="Assets\Scripts\Display\TavernScreenDisplay.cs" />
      <Compile Include="Assets\Scripts\Display\UpgradeScreenDisplay.cs" />
      <Compile Include="Assets\Scripts\Display\WarehouseScreenDisplay.cs" />
@@ -77,14 +86,18 @@
      <Compile Include="Assets\Scripts\GameManager.cs" />
      <Compile Include="Assets\Scripts\GameMenu.cs" />
      <Compile Include="Assets\Scripts\Memberlist.cs" />
+     <Compile Include="Assets\Scripts\Objects\Ability.cs" />
      <Compile Include="Assets\Scripts\Objects\Adventure.cs" />
      <Compile Include="Assets\Scripts\Objects\Area.cs" />
+     <Compile Include="Assets\Scripts\Objects\Character.cs" />
+     <Compile Include="Assets\Scripts\Objects\Dialogue.cs" />
+     <Compile Include="Assets\Scripts\Objects\EventTrigger.cs" />
+     <Compile Include="Assets\Scripts\Objects\GameEvent.cs" />
      <Compile Include="Assets\Scripts\Objects\GatheringPoint.cs" />
      <Compile Include="Assets\Scripts\Objects\Guild.cs" />
      <Compile Include="Assets\Scripts\Objects\Inventory.cs" />
      <Compile Include="Assets\Scripts\Objects\InventorySlot.cs" />
      <Compile Include="Assets\Scripts\Objects\Item.cs" />
-     <Compile Include="Assets\Scripts\Objects\Member.cs" />
      <Compile Include="Assets\Scripts\Objects\Monster.cs" />
      <Compile Include="Assets\Scripts\Objects\Quest.cs" />
      <Compile Include="Assets\Scripts\Objects\QuestBoard.cs" />
@@ -93,17 +106,14 @@
      <Compile Include="Assets\Scripts\Objects\Task.cs" />
      <Compile Include="Assets\Scripts\Objects\Upgrade.cs" />
      <Compile Include="Assets\Scripts\Questlist.cs" />
- <Reference Include="UnityEngine.Advertisements">
- <HintPath>C:/Program Files/Unity/Editor/Data/UnityExtensions/Unity/Advertisements/UnityEngine.Advertisements.dll</HintPath>
- </Reference>
+     <Compile Include="Assets\Scripts\SaveData.cs" />
+     <None Include="Assets\AdMobPlugin\LICENSE.txt" />
+     <None Include="Assets\Plugins\Android\AndroidManifest.xml" />
  <Reference Include="UnityEngine.UI">
  <HintPath>C:/Program Files/Unity/Editor/Data/UnityExtensions/Unity/GUISystem/UnityEngine.UI.dll</HintPath>
  </Reference>
  <Reference Include="UnityEngine.Networking">
  <HintPath>C:/Program Files/Unity/Editor/Data/UnityExtensions/Unity/Networking/UnityEngine.Networking.dll</HintPath>
- </Reference>
- <Reference Include="UnityEngine.Analytics">
- <HintPath>C:/Program Files/Unity/Editor/Data/UnityExtensions/Unity/UnityAnalytics/UnityEngine.Analytics.dll</HintPath>
  </Reference>
  <Reference Include="Mono.Cecil">
  <HintPath>C:/Program Files/Unity/Editor/Data/Managed/Mono.Cecil.dll</HintPath>

@@ -16,7 +16,6 @@ public class OutsideScreenDisplay : MonoBehaviour {
 	public Button travelButton;
 	private SlotInfo lastSelected;
 	private Guild guild;
-	private AreaDatabase adb;
 	// Use this for initialization
 	void Start () {
 	
@@ -31,17 +30,16 @@ public class OutsideScreenDisplay : MonoBehaviour {
 		for (int i=0;i<guild.knownAreas.Count;i++)
 		{
 			prefabList.GeneratePrefab(i,areaPrefab,"Area",areaList);
-			prefabList [i].GetComponent<SlotInfo> ().FillSlotWithArea(guild.knownAreas[i]);
+			prefabList [i].GetComponent<SlotInfo> ().FillSlotWithArea(Database.areas.FindArea(guild.knownAreas[i]));
 			prefabList [i].GetComponent<SlotInfo> ().ResetSelection();
 		}
-		areaList.SetSize(guild.knownAreas.Count,48);
+		areaList.SetSize(guild.knownAreas.Count,64);
 		FillStats (null);
 		if (lastSelected != null) {
 			lastSelected = null;
 		}
 		travelButton.interactable=false;
 		this.guild=guild;
-		adb=GameObject.FindObjectOfType<AreaDatabase>();
 	}
 
 	public void FillStats(Area area,int visit=0,int gatheringpoints=0, int huntinggrounds=0)
@@ -66,8 +64,8 @@ public class OutsideScreenDisplay : MonoBehaviour {
 	{
 		if(lastSelected!=areaslot) {
 			areaslot.Select ();
-			Area selectedarea=adb.FindArea(areaslot.id);
-			FillStats (selectedarea,guild.successfulVisits[selectedarea],guild.foundGatheringPoints[selectedarea],guild.foundHuntingGrounds[selectedarea]);
+			int selectedarea=areaslot.id;
+			FillStats (Database.areas.FindArea(selectedarea),guild.successfulVisits[selectedarea],guild.foundGatheringPoints[selectedarea],guild.foundHuntingGrounds[selectedarea]);
 			if (lastSelected != null) {
 				lastSelected.Select ();
 			}
@@ -76,6 +74,6 @@ public class OutsideScreenDisplay : MonoBehaviour {
 		}
 	}
 	public Area GetSelectedArea(){
-		return adb.FindArea(lastSelected.id);
+		return Database.areas.FindArea(lastSelected.id);
 	}
 }

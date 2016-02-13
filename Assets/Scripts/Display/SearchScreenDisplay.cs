@@ -15,7 +15,7 @@ public class SearchScreenDisplay : MonoBehaviour {
 	public SlotInfo searchType;
 	public Text dialogue;
 	public Button searchButton;
-	public List<SlotInfo> selectedMembers=new List<SlotInfo>();
+	public List<SlotInfo> selectedCharacters=new List<SlotInfo>();
 	public int maxSelection;
 	public bool show = false;
 	public GameObject searchRecruitList;
@@ -25,38 +25,32 @@ public class SearchScreenDisplay : MonoBehaviour {
 
 	void Update()
 	{
-		if (selectedMembers.Count>0)
+		if (selectedCharacters.Count>0)
 		{
 			searchButton.interactable=true;
 		}
 		else{
 			searchButton.interactable=false;
 		}
-		if (show) {
-			GetComponent<CanvasGroup> ().alpha = 1;
-			GetComponent<CanvasGroup> ().blocksRaycasts = true;
-		} else {
-			GetComponent<CanvasGroup> ().alpha = 0;
-			GetComponent<CanvasGroup> ().blocksRaycasts = false;
-		}
+		GetComponent<CanvasGroup>().SetShow(show);
 	}
 	
-	public void UpdateText(List<Member> availablemembers,string title, string description,int maxselection,string search)
+	public void UpdateText(List<Character> availablecharacters,string title, string description,int maxselection,string search)
 	{
 		this.title.text=title;
 		dialogue.text=description;
-		selectedMembers.Clear();
-		for (int i=0; i<availablemembers.Count; i++) {
-			prefabList.GeneratePrefab(i,selectPrefab,"Member",selectList);
-			prefabList [i].GetComponent<SlotInfo> ().FillSlotWithMember (availablemembers [i]);
+		selectedCharacters.Clear();
+		for (int i=0; i<availablecharacters.Count; i++) {
+			prefabList.GeneratePrefab(i,selectPrefab,"Character",selectList);
+			prefabList [i].GetComponent<SlotInfo> ().FillSlotWithCharacter (availablecharacters [i]);
 			prefabList [i].GetComponent<SlotInfo> ().ResetSelection();
 		}
-		if (availablemembers.Count < prefabList.Count) {
-			for (int i=availablemembers.Count; i<prefabList.Count; i++) {
+		if (availablecharacters.Count < prefabList.Count) {
+			for (int i=availablecharacters.Count; i<prefabList.Count; i++) {
 				prefabList [i].SetActive (false);
 			}
 		}
-		selectList.SetSize(scrollRect,availablemembers.Count, 48);
+		selectList.SetSize(scrollRect,availablecharacters.Count, 64);
 		maxSelection=maxselection;
 		EnableSearchList(searchRecruitList,recruitChoices[0],search=="SearchRecruit");
 		EnableSearchList(searchQuestList,questChoices[0],search=="SearchQuest");
@@ -73,17 +67,17 @@ public class SearchScreenDisplay : MonoBehaviour {
 		}
 
 	}
-	public void SelectMember (SlotInfo slot)
+	public void SelectCharacter (SlotInfo slot)
 	{
-		if(selectedMembers.Contains(slot))
+		if(selectedCharacters.Contains(slot))
 		{
 			slot.Select ();
-			selectedMembers.Remove (slot);
+			selectedCharacters.Remove (slot);
 		}
-		else if(selectedMembers.Count<maxSelection)
+		else if(selectedCharacters.Count<maxSelection)
 		{
 			slot.Select ();
-			selectedMembers.Add(slot);
+			selectedCharacters.Add(slot);
 		}
 	}
 	public void EnableSearchList(GameObject searchlist,SlotInfo firstChoice,bool statement)

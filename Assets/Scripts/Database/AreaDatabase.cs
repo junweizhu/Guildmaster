@@ -2,30 +2,36 @@
 using System.Collections;
 using System.Collections.Generic;
 
-public class AreaDatabase : MonoBehaviour {
-	public List<Area> areaList=new List<Area>();
-	public List<GatheringPoint> gatheringList=new List<GatheringPoint>();
-	public Dictionary<string,List<string>> areaGatheringType=new Dictionary<string,List<string>>();
+public class AreaDatabase {
+	private List<Area> areaList=new List<Area>();
+	private List<GatheringPoint> gatheringList=new List<GatheringPoint>();
+	private Dictionary<string,List<string>> areaGatheringType=new Dictionary<string,List<string>>();
 	// Use this for initialization
-	void Start () {
+
+	public AreaDatabase () {
 		areaGatheringType["Forest"]=new List<string>(){"Flower","Herb","Fruit","Wood"};
+		areaGatheringType["Plains"]=new List<string>(){"Flower","Herb","Fruit"};
 		GenerateGatheringPoints();
 		GenerateAreas();
 	}
 	
+	public List<Area> GetArea(){
+		return areaList;
+	}
+
 	void GenerateGatheringPoints()
 	{
-		gatheringList.Add(new GatheringPoint(0,"Flower",GetComponent<ItemDatabase>().FindItems("Flower"),5));
-
+		gatheringList.Add(new GatheringPoint(0,"Flower",Database.items.FindGatheringItems("Flower"),5));
+		gatheringList.Add(new GatheringPoint(1,"Wood",Database.items.FindGatheringItems("Wood"),5));
 	}
 
 	void GenerateAreas()
 	{
-		areaList.Add(new Area(0,"Green Forest","Forest",1,1,0,GetTypeGatheringPoint("Forest"),15));
-
+		areaList.Add(new Area(0,"Green Forest","Forest",1,1,0,15));
+		areaList.Add(new Area(1,"Green Plains","Plains",1,1,0,15));
 	}
 
-	List<GatheringPoint> GetTypeGatheringPoint(string areatype)
+	public List<GatheringPoint> GetTypeGatheringPoint(string areatype)
 	{
 
 
@@ -48,5 +54,18 @@ public class AreaDatabase : MonoBehaviour {
 			}
 		}
 		return null;
+	}
+	public int RandomArea(int level){
+		List<int> arealist=new List<int>();
+		foreach (Area area in areaList){
+			if (area.level<level+5 &&area.level>level-5){
+				arealist.Add (area.id);
+			}
+		}
+		if (arealist.Count>0){
+		return arealist[Random.Range(0,arealist.Count)];
+		} else{
+			return 0;
+		}
 	}
 }

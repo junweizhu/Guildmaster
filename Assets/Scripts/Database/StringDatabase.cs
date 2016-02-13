@@ -1,87 +1,125 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
-public class StringDatabase : MonoBehaviour {
+public class StringDatabase{
 
-	Dictionary<string,string> dialogueList=new Dictionary<string, string>();
+	Dictionary<string,string>textList=new Dictionary<string, string>();
+	List<Dialogue> dialogueList=new List<Dialogue>();
+	public Dictionary<int,string> monthNames=new Dictionary<int, string>(){
+		{1,"January"},
+		{2,"February"},
+		{3,"March"},
+		{4,"April"},
+		{5,"May"},
+		{6,"June"},
+		{7,"July"},
+		{8,"August"},
+		{9,"September"},
+		{10,"Oktober"},
+		{11,"November"},
+		{12,"December"}};
 	// Use this for initialization
-	void Start () {
-		dialogueList.Add ("ShopSelect","Select who should go to the shop");
-		dialogueList.Add ("SearchRecruit","Choose your options for looking for recruits");
-		dialogueList.Add ("SearchQuest","Select who should look for new quests");
-		dialogueList.Add ("AdventureTitle","Adventure");
-		dialogueList.Add ("SearchRecruitTitle","Recruit");
-		dialogueList.Add ("SearchQuestTitle","Quest Search");
-		dialogueList.Add ("Adventure","Select who should travel to this place");
-		dialogueList.Add ("QuestSelect","Select who should participate in this quest");
-		dialogueList.Add ("Idle","Idle");
-		dialogueList.Add ("Shopping","Shopping");
-		dialogueList.Add ("SearchRecruiting","Looking for recruits");
-		dialogueList.Add ("SearchQuesting","Looking for new quests");
-		dialogueList.Add ("Questing", "Doing the quest");
-		dialogueList.Add ("Ongoing","Ongoing");
-		dialogueList.Add ("Exploring", "Exploring the");
-		dialogueList.Add ("Gathering", "Gathering at the");
-		dialogueList.Add ("Hunting", "Hunting at the");
-		dialogueList.Add ("Training", "Training at the");
-		dialogueList.Add ("Open","Open");
-		dialogueList.Add ("Resting","Resting");
-		dialogueList.Add ("ShopLog1","");
-		dialogueList.Add ("ShopLog2","bought");
-		dialogueList.Add ("ShopLog3","today.");
-		dialogueList.Add ("QuestLog1","");
-		dialogueList.Add ("QuestLog2","finished");
-		dialogueList.Add ("QuestLog3","today.");
-		dialogueList.Add ("SearchQuestLog1","");
-		dialogueList.Add ("SearchQuestLog2","searched and");
-		dialogueList.Add ("SearchQuestFail","failed to find");
-		dialogueList.Add ("SearchQuestSuccess","found");
-		dialogueList.Add ("SearchQuestLog3","a quest today.");
-		dialogueList.Add ("SearchRecruitLog1","");
-		dialogueList.Add ("SearchRecruitLog2","searched and ");
-		dialogueList.Add ("SearchRecruitFail","failed to find anyone");
-		dialogueList.Add ("SearchRecruitSuccess","found someone");
-		dialogueList.Add ("SearchRecruitLog3","willing to join our guild.");
-		dialogueList.Add ("AdventureLog1","");
-		dialogueList.Add ("AdventureLog2","traveled to");
-		dialogueList.Add ("AdventureLog3","today.");
-		dialogueList.Add ("ExploringLog","and explored the area");
-		dialogueList.Add ("ExploringLogSuccess","They found");
-		dialogueList.Add ("ExploringLogFail","found nothing of interest");
-		dialogueList.Add ("GatheringLog","and looked for materials");
-		dialogueList.Add ("GatheringLogSuccess","gathered");
-		dialogueList.Add ("GatheringLogFail","were unable to find anything");
-		dialogueList.Add ("HuntingLog","and went hunting for animals");
-		dialogueList.Add ("HuntingLogSuccess","gathered");
-		dialogueList.Add ("HuntingLogFail","were unable to hunt anything");
-		dialogueList.Add ("TrainingLog","and started training against monsters");
-		dialogueList.Add ("TrainingLogSuccess","fought");
-		dialogueList.Add ("TrainingLogFail","were unable to find anything worth fighting");
-		dialogueList.Add ("Join","joined the guild.");
-		dialogueList.Add ("And","and");
-		dialogueList.Add ("NoTask","The day has passed without any important events");
-		dialogueList.Add ("LevelUp","leveled up and gained");
-		dialogueList.Add ("SkillUp","improved");
-		dialogueList.Add ("MalePoss","his");
-		dialogueList.Add ("FemalePoss","her");
-		dialogueList.Add ("Strength","str");
-		dialogueList.Add ("Intelligence","int");
-		dialogueList.Add ("Dexterity","dex");
-		dialogueList.Add ("MaxHealth","hp");
-		dialogueList.Add ("MaxMana","mp");
-		dialogueList.Add ("Agility","agi");
-		dialogueList.Add ("pluralletter","s");
-		dialogueList.Add ("Male3rd","He");
-		dialogueList.Add ("Female3rd","She");
-		dialogueList.Add ("Plural3rd","They");
-		dialogueList.Add ("Injured","is injured and is currently resting for a day.");
-		dialogueList.Add ("Recovered1","recovered from");
-		dialogueList.Add ("Recovered2","injuries.");
+	public StringDatabase() {
+		GenerateText();
+		GenerateDialogue();
 	}
+
 
 	public string GetString(string id)
 	{
-		return dialogueList[id];
+		return textList[id];
+	}
+
+	public List<Dialogue> GetDialogue(string dialoguename){
+		List<Dialogue> dialogues=new List<Dialogue>();
+		int count=0;
+
+		for(int i=0;i<dialogueList.Count;i++){
+
+			if (dialogueList[i].name==dialoguename){
+				dialogues.Add(dialogueList[i]);
+			} else if (count>0){
+				break;
+			}
+		}
+		if (dialogues.Count>1)
+			dialogues=dialogues.OrderBy(dialogue=>dialogue.order).ToList();
+		return dialogues;
+	}
+	void GenerateText(){
+		textList.Add ("ShopSelect","Select who should go to the shop");
+		textList.Add ("SearchRecruit","Choose your options for looking for recruits");
+		textList.Add ("SearchQuest","Select who should look for new quests");
+		textList.Add ("SocializeSelect","Who should go to the tavern?");
+		textList.Add ("AdventureTitle","Adventure");
+		textList.Add ("SocializeTitle","Quest Search");
+		textList.Add ("Adventure","Select who should travel to this place");
+		textList.Add ("QuestSelect","Select who should participate in this quest");
+		textList.Add ("SelectItems","Select items to give to this member");
+		textList.Add ("Idle","Idle");
+		textList.Add ("Shopping","Shopping");
+		textList.Add ("SearchRecruiting","Looking for new recruits");
+		textList.Add ("SearchQuesting","Looking for new quests");
+		textList.Add ("Questing", "Doing the quest {0}");
+		textList.Add ("Socializeing","Going to the tavern");
+		textList.Add ("Ongoing","Ongoing");
+		textList.Add ("Exploring", "Exploring the {0}");
+		textList.Add ("Gathering", "Gathering at the {0}");
+		textList.Add ("Hunting", "Hunting at the {0}");
+		textList.Add ("Training", "Training at the {0}");
+		textList.Add ("Open","Open");
+		textList.Add ("Resting","Resting");
+		textList.Add ("Date","Day {0} of {1}, year {2}");
+		textList.Add ("Male","Male");
+		textList.Add ("Female","Female");
+		textList.Add ("MalePoss","his");
+		textList.Add ("FemalePoss","her");
+		textList.Add ("Strength","strength");
+		textList.Add ("Intelligence","intelligence");
+		textList.Add ("Dexterity","dexterity");
+		textList.Add ("Health","health");
+		textList.Add ("Mana","mana");
+		textList.Add ("Agility","agility");
+		textList.Add ("pluralletter","s");
+		textList.Add ("Male3rd","He");
+		textList.Add ("Female3rd","She");
+		textList.Add ("Plural3rd","They");
+		textList.Add ("And","and");
+		textList.Add ("Duration","{0} days");
+		textList.Add ("Currency","{0} Gold");
+		textList.Add ("NoTask","The day has passed without any important events.");
+		textList.Add ("ShopLog","{0} went to shop.");
+		textList.Add ("QuestLog","{0} finished a quest.");
+		textList.Add ("SocializeLog","{0} visited the tavern.");
+		textList.Add ("SocializeSuccess","{0} talked to various people in the tavern.");
+		textList.Add ("AdventureLog","{0} returned from an adventure");
+		textList.Add ("MemberUp","{0} improved {1} skills!");
+		textList.Add ("LevelUp","Level Up! {0} gained:\n{1}");
+		textList.Add ("SkillUp","{0}'s {1} skills are improved");
+		textList.Add ("Injured","{0} is injured and resting");
+		textList.Add ("Recovered","{0} recovered from {1} injuries");
+		textList.Add ("Obtained","Obtained: \n{0}");
+		textList.Add ("Bought","Bought: \n{0}");
+		textList.Add ("MoneyBack","Due to negotiations, {0} less gold was paid.");
+		textList.Add ("QuestFound","{0} people requested for your guild's help");
+		textList.Add ("RecruitFound", "{0} wants to join your guild.");
+		textList.Add ("GainedExp","{0} gained {1} {2} experience.");
+		textList.Add ("AdventureSuccess","The adventure ended safely.");
+		textList.Add ("AdventureFailed","{0} returned with injuries and failed to take the items they gathered.");
+		textList.Add ("MonstersFought","{0} monsters fought.");
+		textList.Add ("RequiresSkills","Requires people with the following skills:");
+		textList.Add ("RequiresItems","Required Items:");
+		textList.Add ("NoDescription","No Description available");
+		textList.Add ("Experience","-{0} {1} Experience");
+		textList.Add ("NoRewards","There are no rewards given in this quest.");
+		textList.Add ("Heal","Recovers {0}.");
+		textList.Add ("Prompt","Do you wish to continue?");
+	}
+	void GenerateDialogue(){
+		dialogueList.Add (new Dialogue(0,"Tutorial",0,"This is the very first test of the current dialogue system, {0}. I hope it works to your satisfactory",new List<int>(){0,0},new List<string>(){"","Character"}));
+		dialogueList.Add (new Dialogue(1,"Tutorial",1,"This test 2 of the current dialogue system, {0}. I hope it still works to your satisfactory",new List<int>(){0,0},new List<string>(){"","Character"}));
+		dialogueList.Add (new Dialogue(2,"Tutorial2",0,"I hope this works",new List<int>(){0},new List<string>(){"Character"}));
 	}
 }

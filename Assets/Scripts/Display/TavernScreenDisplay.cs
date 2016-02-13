@@ -8,11 +8,13 @@ public class TavernScreenDisplay : MonoBehaviour {
 	public Text questText;
 	
 
-	public void UpdateText(List<Member> recruits)
+	public void UpdateText(int recruits,int requests)
 	{
-		if (recruits.Count>0)
+		if (recruits>0)
 		{
-			joinText.text="Some people seem interested in your guild";
+			joinText.text="Some people wants to join your guild";
+		} else {
+			joinText.text="Currently nobody is interested in joining your guild";
 		}
 	}
 }

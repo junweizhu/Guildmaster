@@ -10,18 +10,16 @@ public class WarehouseScreenDisplay : MonoBehaviour
 	private List<GameObject> slotPrefabList = new List<GameObject> ();
 	private int itemCount;
 	public ItemStatScreenDisplay itemStatScreen;
-	private ItemDatabase idb;
 	private SlotInfo lastSelected;
 
 	public void Start ()
 	{
-		idb = GameObject.FindObjectOfType<ItemDatabase> ();
 	}
 
 	public void UpdateText (Inventory itemlist)
 	{
 		for (int i=0; i<itemlist.inventory.Count; i++) {
-			if (itemlist.inventory [i].item.name == null) {
+			if (!itemlist.inventory [i].filled) {
 				if (slotPrefabList.Count > (i + 1)) {
 					slotPrefabList [i].SetActive (false);
 				}
@@ -29,10 +27,17 @@ public class WarehouseScreenDisplay : MonoBehaviour
 				break;
 			}
 			slotPrefabList.GeneratePrefab(i,itemslotPrefab,"Item",itemslotList);
-			slotPrefabList [i].GetComponent<SlotInfo> ().FillSlotWithItem (i + 1, itemlist.inventory [i].item, itemlist.inventory [i].quality, itemlist.inventory [i].quantity);
+			slotPrefabList [i].GetComponent<SlotInfo> ().FillSlotWithItem (i + 1, itemlist.inventory [i]);
 			slotPrefabList [i].GetComponent<SlotInfo> ().ResetSelection();
 		}
-		itemslotList.SetSize(itemCount,48);
+		if(itemCount<slotPrefabList.Count)
+		{
+			for (int i=itemCount;i<slotPrefabList.Count;i++)
+			{
+				slotPrefabList[i].SetActive(false);
+			}
+		}
+		itemslotList.SetSize(itemCount,64);
 		itemStatScreen.FillSlot (null);
 		if (lastSelected != null) {
 			lastSelected = null;
@@ -43,7 +48,8 @@ public class WarehouseScreenDisplay : MonoBehaviour
 	{
 		if(lastSelected!=itemslot) {
 			itemslot.Select ();
-			itemStatScreen.FillSlot (idb.FindItem (itemslot.id));
+			InventorySlot slot=GameObject.FindObjectOfType<GameManager>().myGuild.inventory.GetInventorySlot(itemslot.id);
+			itemStatScreen.FillSlot (Database.items.FindItem (slot.itemId));
 			if (lastSelected != null) {
 				lastSelected.Select ();
 			}

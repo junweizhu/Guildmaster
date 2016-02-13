@@ -9,8 +9,9 @@ public class GuildScreenDisplay : MonoBehaviour {
 	public Text guildFame;
 	public Text guildSize;
 	public Text guildMoney;
+	public Text guildDay;
 
-	public void UpdateText(string name,int level, int exp, int fame, int size, int money)
+	public void UpdateText(string name,int level, int exp, int fame, int size, int money, int day, int month, int year)
 	{
 		guildName.text=name;
 		guildLevel.text=level.ToString();
@@ -18,5 +19,6 @@ public class GuildScreenDisplay : MonoBehaviour {
 		guildFame.text=fame.ToString();
 		guildSize.text=size.ToString();
 		guildMoney.text=money.ToString();
+		guildDay.text=string.Format(Database.strings.GetString("Date"),day.ToString(),Database.strings.monthNames[month],year.ToString());
 	}
 }

@@ -12,7 +12,7 @@ public class MarketScreenDisplay : MonoBehaviour {
 	void Update () {
 	
 	}
-	void UpdateText(ItemDatabase idb)
+	void UpdateText()
 	{
 
 

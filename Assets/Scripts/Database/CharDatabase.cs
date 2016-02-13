@@ -2,22 +2,32 @@
 using System.Collections;
 using System.Collections.Generic;
 
-public class CharDatabase : MonoBehaviour {
+public class CharDatabase {
 	[SerializeField]
-	private List<Member> memberList= new List<Member>();
+	private List<Character> memberList= new List<Character>();
 	private List<string> maleNames=new List<string>(){"Test3","test4"};
 	private List<string> femaleNames=new List<string>(){"Test5","test6"};
-	private SkillDatabase skillDatabase;
+	private List<Skill> skills;
+
 	// Use this for initialization
-	void Start () {
-		skillDatabase=GetComponent<SkillDatabase>();
-		memberList.Add (new Member(0, "Test",true,1,100,skillDatabase.SkillList()));
-		memberList.Add (new Member(1, "Test2",true,1,100,skillDatabase.SkillList()));
+	public CharDatabase () {
 	}
 
-	public Member GetMember(int id)
+	public void Generate(){
+		skills=Database.skills.SkillList();
+		memberList.Add (new Character(0, "Test",true,1,100));
+		memberList.Add (new Character(1, "Test2",true,1,100));
+	}
+	public List<Character> GetCharacter(){
+		return memberList;
+	}
+
+	public void LoadCharacter(List<Character> members){
+		memberList=members;
+	}
+	public Character GetCharacter(int id)
 	{
-		foreach(Member member in memberList)
+		foreach(Character member in memberList)
 		{
 			if (member.id==id)
 			{
@@ -26,8 +36,14 @@ public class CharDatabase : MonoBehaviour {
 		}
 		return null;
 	}
-
-	public Member GenerateNewCharacter(int level,string mainSkill)
+	public List<string> GetCharacterNames(List<int> id){
+		List<string> name=new List<string>();
+		for(int i=0;i<id.Count;i++){
+			name.Add(GetCharacter(id[i]).name);
+		}
+		return name;
+	}
+	public Character GenerateNewCharacter(int level,string mainSkill)
 	{
 		string charName;
 		bool male=(Random.Range(0,2)==0);
@@ -39,8 +55,8 @@ public class CharDatabase : MonoBehaviour {
 			charName=femaleNames[Random.Range(0,femaleNames.Count)];
 			femaleNames.Remove(charName);
 		}
-		memberList.Add (new Member(memberList.Count,charName,male,level,100,skillDatabase.SkillList()));
-		foreach (Skill skill in skillDatabase.SkillList())
+		memberList.Add (new Character(memberList.Count,charName,male,level,100));
+		foreach (Skill skill in skills)
 		{
 			float modifier=1.0f;
 			int minimum=0;
@@ -50,19 +66,28 @@ public class CharDatabase : MonoBehaviour {
 			}
 
 			int exp=Mathf.RoundToInt(Random.Range(50*modifier,((level)*modifier)*100))+minimum;
-			memberList[memberList.Count-1].GiveExp(skill,exp);
+			memberList[memberList.Count-1].GiveExp(skill.id,exp);
 		}
 		return memberList[memberList.Count-1];
-
 	}
-	public List<Member> GetRecruitables()
+
+	public List<Character> GetRecruitables()
 	{
-		List<Member> unrecruitedList= new List<Member>();
-		foreach (Member member in memberList)
+		List<Character> unrecruitedList= new List<Character>();
+		foreach (Character member in memberList)
 		{
 			if (member.recruited==false)
 				unrecruitedList.Add (member);
 		}
 		return unrecruitedList;
+	}
+	public int RecruitableId(Character member){
+		List<Character> unrecruitedList= GetRecruitables();
+		for(int i=0;i<unrecruitedList.Count;i++){
+			if (unrecruitedList[i].id==member.id){
+				return i;
+			}
+		}
+		return 999;
 	}
 }

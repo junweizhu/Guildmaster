@@ -3,7 +3,8 @@ using System.Collections;
 using System.Collections.Generic;
 
 [System.Serializable]
-public class Area {
+public class Area
+{
 	
 	public string name;
 	public int id;
@@ -11,24 +12,23 @@ public class Area {
 	public int level;
 	public int difficulty;
 	public int travelTime;
-	public Dictionary<Area,int> linkedAreas=new Dictionary<Area,int>();
-	public List<GatheringPoint> gatheringPoints=new List<GatheringPoint>();
+	public Dictionary<int,int> linkedAreas;
 	public int maxGatheringPoints;
 	//public Dictionary<int,Dictionary<int,int>>map=new Dictionary<int,Dictionary<int,int>>();
 	//public Dictionary<int,Dictionary<int,string>>eventMap=new Dictionary<int,Dictionary<int,string>>();
 	//public Vector2 startingPoint;
 
 
-	public Area(int id,string name,string type, int level,int difficulty,int traveltime, List<GatheringPoint>gatheringpoints=default(List<GatheringPoint>),int maxpoints=0,Dictionary<Area,int> links=default(Dictionary<Area,int>)){
-		this.id=id;
-		this.type=type;
-		this.name=name;
-		travelTime=traveltime;
-		this.level=level;
-		this.difficulty=difficulty;
-		linkedAreas=links;
-		gatheringPoints=gatheringpoints;
-		maxGatheringPoints=maxpoints;
+	public Area (int id, string name, string type, int level, int difficulty, int traveltime, int maxpoints=0, Dictionary<int,int> links=default(Dictionary<int,int>))
+	{
+		this.id = id;
+		this.type = type;
+		this.name = name;
+		travelTime = traveltime;
+		this.level = level;
+		this.difficulty = difficulty;
+		linkedAreas = links;
+		maxGatheringPoints = maxpoints;
 	}
 /*
 	public void GenerateMap(){
@@ -48,15 +48,18 @@ public class Area {
 		startingPoint=new Vector2(startX,startY);
 	}*/
 
-	public GatheringPoint FindRandomGatheringPoint(){
-		GatheringPoint selected=null;
-		int lastRNG=0;
-		int currentRNG=0;
-		foreach (GatheringPoint point in gatheringPoints){
-			currentRNG=Random.Range(1,1000);
-			if (currentRNG>lastRNG){
-				selected=point;
-				lastRNG=currentRNG;
+	public GatheringPoint FindRandomGatheringPoint ()
+	{
+		GatheringPoint selected = null;
+		int lastRNG = 0;
+		int currentRNG = 0;
+		foreach (GatheringPoint point in Database.areas.GetTypeGatheringPoint(type)) {
+			if (point.gatherableItems.Count > 0) {
+				currentRNG = Random.Range (1, 1000);
+				if (currentRNG > lastRNG) {
+					selected = point;
+					lastRNG = currentRNG;
+				}
 			}
 		}
 		return selected;

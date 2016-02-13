@@ -2,13 +2,14 @@
 using System.Collections;
 using UnityEngine.UI;
 using System.Collections.Generic;
+using System.Linq;
 
 public class ShopScreenDisplay : MonoBehaviour
 {
 
 	public Text shopName;
-	public Text buyerName;
-	public List<Member> buyers = new List<Member> ();
+	public List<Text> buyerNames=new List<Text>();
+	public List<Character> buyers = new List<Character> ();
 	public GameObject shopItemPrefab;
 	public Transform shopItemList;
 	public List<GameObject> prefabList = new List<GameObject> ();
@@ -18,17 +19,15 @@ public class ShopScreenDisplay : MonoBehaviour
 	public Text itemDescription;
 	public List<Text> statlist = new List<Text> ();
 	public Dictionary<string,Text> stats = new Dictionary<string, Text> ();
-	public int firstId;
 	public bool show = false;
 	public int maxBuy;
 	public Button buyButton;
-	private ItemDatabase idb;
 	private SlotInfo lastSelected;
-	private int guildMoney;
+	public int guildMoney;
+	public Text guildFunds;
 
 	void Start ()
 	{
-		idb = GameObject.FindObjectOfType<ItemDatabase> ();
 		foreach (Text stat in statlist) {
 			stats [stat.name] = stat;
 		}
@@ -43,7 +42,7 @@ public class ShopScreenDisplay : MonoBehaviour
 			GetComponent<CanvasGroup> ().alpha = 0;
 			GetComponent<CanvasGroup> ().blocksRaycasts = false;
 		}
-		if (buyers.Count > 0 && GetItemToBuy ().Count > 0) {
+		if (buyers.Count > 0 && GetItemToBuy ().Count > 0 &&TotalCost()<guildMoney) {
 			buyButton.interactable = true;
 		} else {
 			buyButton.interactable = false;
@@ -56,28 +55,28 @@ public class ShopScreenDisplay : MonoBehaviour
 
 	public void UpdateText (string name, List<Item> shoplist)
 	{
-		buyers = new List<Member> ();
+		buyers = new List<Character> ();
 		shopName.text = name;
-		buyerName.text = "Select";
 		FillShop (shoplist);
-		maxBuy = buyers.Count * 5;
-		UpdateItemInfo(null);
+		maxBuy = 0;
+		UpdateItemInfo (null);
+		FillBuyers();
 	}
 
 	public void FillShop (List<Item> shoplist)
 	{
-		firstId = 0;
 		for (int i=0; i<shoplist.Count; i++) {
-			prefabList.GeneratePrefab(i,shopItemPrefab,"Item",shopItemList);
-			prefabList [i].GetComponent<SlotInfo> ().FillSlotWithItem (i, shoplist [i], 100);
-			prefabList [i].GetComponent<SlotInfo> ().ResetSelection();
+			prefabList.GeneratePrefab (i, shopItemPrefab, "Buy", shopItemList);
+			prefabList [i].GetComponent<SlotInfo> ().FillSlotWithItem (i, shoplist [i]);
+			prefabList [i].GetComponent<SlotInfo> ().ResetSelection ();
 		}
 		if (shoplist.Count < prefabList.Count) {
 			for (int i=shoplist.Count; i<prefabList.Count; i++) {
 				prefabList [i].SetActive (false);
 			}
 		}
-		shopItemList.SetSize (shoplist.Count, 60);
+		shopItemList.SetSize (shoplist.Count, 64);
+		guildFunds.text=guildMoney.ToString()+" G";
 	}
 
 	public void LeaveShop ()
@@ -85,24 +84,30 @@ public class ShopScreenDisplay : MonoBehaviour
 		show = false;
 	}
 
-	public void UpdateBuyer (List<Member> members, int buyerid, string buyername)
+	public void UpdateBuyer (List<Character> characters)
 	{
-		foreach (Member member in buyers) {
-			if (!members.Contains (member)) {
-				buyers.Remove (member);
+		buyers=characters.OrderBy(character=>character.guildnr).ToList();
+		FillBuyers();
+		maxBuy=0;
+		if (buyers.Count>1){
+			for (int i=0;i<buyers.Count;i++){
+				maxBuy+=buyers[i].totalStats["CarrySize"];
 			}
+		} else if (buyers.Count==1){
+			maxBuy=buyers[0].totalStats["CarrySize"];
 		}
-		foreach (Member member in members) {
-			if (!buyers.Contains (member)) {
-				buyers.Add (member);
-			}
-
-		}
-		firstId = buyerid;
-		buyerName.text = buyername;
-		maxBuy = buyers.Count * 5;
 	}
 
+	public void FillBuyers(){
+		for(int i=0;i<buyerNames.Count;i++){
+			if (i<buyers.Count){
+				buyerNames[i].text=buyers[i].name;
+			} else{
+				buyerNames[i].text="";
+			}
+		}
+
+	}
 	public Dictionary<int,int> GetItemToBuy ()
 	{
 		Dictionary<int,int> shoppingList = new Dictionary<int, int> ();
@@ -133,7 +138,7 @@ public class ShopScreenDisplay : MonoBehaviour
 		int cost = 0;
 		foreach (KeyValuePair<int,int> item in GetItemToBuy()) {
 			if (item.Value > 0) {
-				cost += idb.FindItem (item.Key).sellValue * item.Value;
+				cost += Database.items.FindItem (item.Key).sellValue * item.Value;
 			}
 		}
 		return cost;
@@ -151,61 +156,60 @@ public class ShopScreenDisplay : MonoBehaviour
 	{
 
 		foreach (GameObject slot in prefabList) {
-			if (TotalQuantity () >= maxBuy) {
-				slot.GetComponent<SlotInfo> ().slotAdd.interactable = false;
-			} else {
-				slot.GetComponent<SlotInfo> ().slotAdd.interactable = true;
-			}
-			if (slot.GetComponent<SlotInfo> ().GetItemQuantity () == 0) {
-				slot.GetComponent<SlotInfo> ().slotRed.interactable = false;
-			} else {
-				slot.GetComponent<SlotInfo> ().slotRed.interactable = true;
+			if (slot.activeSelf == true) {
+				if (TotalQuantity () >= maxBuy) {
+					slot.GetComponent<SlotInfo> ().slotAdd.interactable = false;
+				} else {
+					slot.GetComponent<SlotInfo> ().slotAdd.interactable = true;
+				}
+				if (slot.GetComponent<SlotInfo> ().GetItemQuantity () == 0) {
+					slot.GetComponent<SlotInfo> ().slotRed.interactable = false;
+				} else {
+					slot.GetComponent<SlotInfo> ().slotRed.interactable = true;
+				}
 			}
 		}
 	}
 
 	public void UpdateItemInfo (SlotInfo slot)
 	{
-		if (lastSelected != slot ||slot==null) {
+		if (lastSelected != slot || slot == null) {
 			foreach (KeyValuePair<string,Text> stat in stats) {
 				stat.Value.text = "  ";
 			}
-			itemDescription.text="";
+			itemDescription.text = "";
 			if (slot != null) {
-			Item item = idb.FindItem (slot.id);
+				Item item = Database.items.FindItem (slot.id);
 				itemDescription.text = item.description;
+				if (itemDescription.text!="")
+					itemDescription.text+=" ";
+				if (item.subType=="Heal"){
+					itemDescription.text+=string.Format(Database.strings.GetString("Heal"),item.GetStatString());
+				}
 				for (int i=0; i<prefabList.Count; i++) {
-					if (prefabList [i].GetComponent<SlotInfo>() == slot) {
-						foreach (KeyValuePair<string,int> stat in item.stats){
-							if (stats.ContainsKey(stat.Key)){
-								if (stat.Value>0){
-									stats[stat.Key].text="+";
-								} else if (stat.Value<0){
-									stats[stat.Key].text="-";
+					if (prefabList [i].GetComponent<SlotInfo> () == slot) {
+						foreach (KeyValuePair<string,int> stat in item.stats) {
+							if (stats.ContainsKey (stat.Key)) {
+								if (stat.Value < 0) {
+									stats [stat.Key].text = "-";
 								}
-								if (stat.Value!=0){
-									stats[stat.Key].text+=stat.Value.ToString();
+								if (stat.Value != 0) {
+									stats [stat.Key].text += stat.Value.ToString ();
 								}
 							}
 						}
-						/*
-						if (item.modifier1 != null) {
-							if (stats.ContainsKey (item.modifier1)) {
-								if (item.value1 > 0){
-									stats [item.modifier1].text = "+";
-
-								}
-								if (item.value1 != 0)
-									stats [item.modifier1].text += item.value1.ToString ();
-							}
-						}*/
 					}
 				}
 			}
-			if (lastSelected!=null){
-				lastSelected.Select();
+			if (lastSelected != null) {
+				if (lastSelected.selected){
+					lastSelected.Select ();
+				}
 			}
-			lastSelected=slot;
+			if (slot!=null){
+				slot.Select();
+			}
+			lastSelected = slot;
 		}
 	}
 }

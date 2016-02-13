@@ -9,11 +9,12 @@ public class QuestScreenDisplay : MonoBehaviour {
 	public List<GameObject> slotPrefabList=new List<GameObject>();
 	public int questCount;
 
-	public void UpdateText(QuestBoard questlist)
+	public void UpdateText(List<Quest> questlist)
 	{
-		for(int i=0; i<questlist.questList.Count;i++)
+		questCount=questlist.Count;
+		for(int i=0; i<questlist.Count;i++)
 		{
-			if(questlist.questList[i].name==null)
+			if(questlist[i].name==null)
 			{
 				if (slotPrefabList.Count>(i+1))
 				{
@@ -22,8 +23,8 @@ public class QuestScreenDisplay : MonoBehaviour {
 				questCount=i;
 				break;
 			}
-			slotPrefabList.GeneratePrefab(i,questslotPrefab,"Quest",questslotList);
-			slotPrefabList[i].GetComponent<SlotInfo>().FillSlotWithQuest(i+1,questlist.questList[i],questlist.questStatus[i],questlist.questDays[i]);
+			slotPrefabList.GeneratePrefab(i,questslotPrefab,questslotPrefab.name,questslotList);
+			slotPrefabList[i].GetComponent<SlotInfo>().FillSlotWithQuest(i+1,questlist[i]);
 		}
 		if(questCount<slotPrefabList.Count)
 		{
@@ -32,6 +33,6 @@ public class QuestScreenDisplay : MonoBehaviour {
 				slotPrefabList[i].SetActive(false);
 			}
 		}
-		questslotList.transform.SetSize(questCount,48);
+		questslotList.transform.SetSize(questCount,64);
 	}
 }

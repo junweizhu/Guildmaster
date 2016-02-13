@@ -2,18 +2,15 @@
 using System.Collections;
 using System.Collections.Generic;
 
-public class GuildDatabase : MonoBehaviour {
+public class GuildDatabase{
 
 	[SerializeField]
 	private List<Guild> guildList= new List<Guild>();
 	// Use this for initialization
-	void Start () {
-		guildList.Add(new Guild(0,"test",1,0,10000, GetComponent<ItemDatabase>(),GetComponent<QuestDatabase>()));
-	}
+	public GuildDatabase() {}
 	
-	// Update is called once per frame
-	void Update () {
-	
+	public void Generate(){
+		guildList.Add(new Guild(0,"test",1,0,500));
 	}
 
 	public Guild FindGuild(int id)

@@ -1,30 +1,62 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class InventorySlot {
-	public Item item;
-	public int quantity=0;
-	public int quality=0;
+[System.Serializable]
+public class InventorySlot
+{
 
-	public InventorySlot(){
-		item=new Item();
+	public int id;
+	public int itemId=9999;
+	public bool filled = false;
+	public int durability = 0;
+	public int quantity = 0;
+
+	public InventorySlot (int id)
+	{
+		this.id = id;
 	}
 
-	public void FillItem(Item item, int quality=100){
-		this.item=item;
-		this.quality=quality;
-		this.quantity=0;
+	public InventorySlot ()
+	{
 	}
 
-	public void AddQuantity(int quantity){
-		this.quantity+=quantity;
-		if (quantity<=0){
-			EmptyItem();
+	public void FillItem (int id, int durability)
+	{
+		itemId = id;
+		filled = true;
+		this.durability = durability;
+		this.quantity = 0;
+	}
+
+	public void AddQuantity (int quantity)
+	{
+		this.quantity += quantity;
+		if (this.quantity <= 0) {
+			EmptyItem ();
 		}
 	}
-	public void EmptyItem(){
-		item=new Item();
-		quality=0;
-		quantity=0;
+
+	public void Use ()
+	{
+		if (filled) {
+			durability -= 1;
+			if (durability == 0 || durability < -1) {
+				Debug.Log (Database.items.FindItem (itemId).name + " breaks");
+				EmptyItem ();
+			}
+		}
+	}
+	public string ItemType(){
+		if(filled){
+			return Database.items.FindItem(itemId).type;
+		}
+		return "";
+	}
+	public void EmptyItem ()
+	{
+		filled = false;
+		durability = 0;
+		quantity = 0;
+		itemId=9999;
 	}
 }
