@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine.UI;
 
 public class SlotInfo : MonoBehaviour
@@ -9,7 +10,9 @@ public class SlotInfo : MonoBehaviour
 	public Text slotStatus;
 	public Text slotDurability;
 	public Text slotQuantity;
+	public Text maxQuantity;
 	public Text slotCost;
+	public Text slotRange;
 	public Text slotDuration;
 	public Text slotSkillLevel;
 	public Image slotIcon;
@@ -21,13 +24,16 @@ public class SlotInfo : MonoBehaviour
 	public int id;
 	public int cost;
 	public bool selected = false;
-	public Text maxQuantity;
+	public bool isAbility = false;
 	public Task task;
 	public Character character;
 	public string longDescription;
+	public CanvasGroup itemText;
 	private Color unselectedColor;
 	private Color selectedColor;
 	private ColorBlock colorBlock;
+	public Button recruitRequestButton;
+
 
 	void Start ()
 	{
@@ -42,13 +48,22 @@ public class SlotInfo : MonoBehaviour
 	{
 
 		if (GetComponent<Button> () != null) {
-			if (selected && colorBlock.normalColor == unselectedColor) {
+			if (selected && (colorBlock.normalColor == unselectedColor || colorBlock.highlightedColor == unselectedColor)) {
 				colorBlock.normalColor = selectedColor;
-			} else if (!selected && colorBlock.normalColor == selectedColor) {
+				colorBlock.highlightedColor = selectedColor;
+			} else if (!selected && (colorBlock.normalColor == selectedColor || colorBlock.highlightedColor == selectedColor)) {
 				colorBlock.normalColor = unselectedColor;
+				colorBlock.highlightedColor = unselectedColor;
 			}
 			GetComponent<Button> ().colors = colorBlock;
 		}
+	}
+
+	public void FillSlotWithUpgrade(Upgrade upgrade, int level){
+		id=upgrade.id;
+		slotName.text=upgrade.name;
+		slotLevel.text=level.ToString();
+		slotDescription.text=upgrade.description;
 	}
 
 	public void FillSlotWithQuest (int slotnr, Quest quest)
@@ -63,6 +78,39 @@ public class SlotInfo : MonoBehaviour
 			slotDuration.text = string.Format (Database.strings.GetString ("Duration"), quest.duration.ToString ("f1"));
 		} else {
 			slotDuration.text = "";
+		}
+	}
+
+	public void FillSlotWithSkill (Skill skill, int costModifier)
+	{
+		itemText.SetShow (false);
+		id = skill.id;
+		slotName.text = skill.name;
+		slotCost.text = string.Format (Database.strings.GetString ("Currency"), 0.ToString ());
+		cost = costModifier;
+		isAbility = false;
+		slotDurability.text = 0.ToString ();
+		slotQuantity.text = 0.ToString ();
+	}
+
+	public void FillSlotWithAbility (Ability ability)
+	{
+		id = ability.id;
+		slotName.text = ability.name;
+		if (itemText!=null){
+			itemText.SetShow (false);
+			cost = ability.teachingCost;
+			slotCost.text = string.Format (Database.strings.GetString ("Currency"), cost.ToString ());
+			isAbility = true;
+			slotDurability.text = 0.ToString ();
+			slotQuantity.text = 0.ToString ();
+		} else{
+			slotCost.text =ability.manaCost.ToString()+" "+Database.strings.GetString("Mana");
+			if (ability.range==1){
+				slotRange.text=Database.strings.GetString ("CloseRange");
+			} else{
+				slotRange.text=Database.strings.GetString ("LongRange");
+			}
 		}
 	}
 
@@ -127,18 +175,46 @@ public class SlotInfo : MonoBehaviour
 
 	public void FillSlotWithItem (int slotnr, InventorySlot slot)
 	{
-		slotNumber.text = slotnr.ToString ();
-		FillSlotWithItem (slot);
+		if (slotNumber != null) {
+			slotNumber.text = slotnr.ToString ();
+		}
+		if (itemText!=null){
+			itemText.SetShow (true);
+		}
+		if (name.Contains ("Shop")) {
+			Item item = Database.items.FindItem (slot.itemId);
+			int cost = ExtensionMethods.Calculate (item.sellValue, (float)slot.durability / item.durability);
+			FillSlotWithItem (slotnr, item, slot.quantity, cost, true);
+		} else {
+			FillSlotWithItem (slot);
+		}
+
 	}
 
-	public void FillSlotWithItem (int slotnr, Item item)
+	public void FillSlotWithItem (int slotnr, Item item, int quantity=0, int calculatedCost=-1, bool useSlotnumberasId=false)
 	{
-		id = item.id;
-		cost = item.sellValue;
+		if (useSlotnumberasId) {
+			id = slotnr;
+		} else {
+			id = item.id;
+		}
+		if (calculatedCost == -1) {
+			cost = item.sellValue;
+		} else {
+			cost = calculatedCost;
+		}
 		slotName.text = item.name;
 		slotDurability.text = item.durability.ToString ();
 		slotQuantity.text = 0.ToString ();
-		slotCost.text = cost.ToString ()+" G";;
+		if (quantity != 0) {
+			maxQuantity.text = "/" + quantity.ToString ();
+		} else {
+			maxQuantity.text = "";
+		}
+		slotCost.text = string.Format (Database.strings.GetString ("Currency"), cost.ToString ());
+		if (itemText!=null){
+			itemText.SetShow (true);
+		}
 	}
 
 	public void FillSlotWithItem (InventorySlot slot)
@@ -146,7 +222,11 @@ public class SlotInfo : MonoBehaviour
 		if (slot.filled) {
 			Item item = Database.items.FindItem (slot.itemId);
 			slotName.text = item.name;
-			slotDurability.text = slot.durability.ToString () + "/" + item.durability.ToString ();
+			if (slot.durability > 0) {
+				slotDurability.text = slot.durability.ToString ();
+			} else {
+				slotDurability.text = "";
+			}
 			if (slotQuantity != null) {
 				if (maxQuantity != null) {
 					slotQuantity.text = 0.ToString ();
@@ -162,6 +242,9 @@ public class SlotInfo : MonoBehaviour
 			slotName.text = "<Unequipped>";
 			if (slot.id == 999) {
 				slotName.text = "Unequip";
+			}
+			if (slot.id==998){
+				slotName.text = "Cannot unequip";
 			}
 			slotDurability.text = "";
 			if (slotQuantity != null) {
@@ -207,6 +290,11 @@ public class SlotInfo : MonoBehaviour
 		}
 		if (type == "task") {
 			GameObject.FindObjectOfType<NextDayScreenDisplay> ().SelectSlot (this);
+			return;
+		}
+		if (type== "upgrade"){
+			GameObject.FindObjectOfType<UpgradeScreenDisplay>().DisplayUpgradeStats(this);
+			return;
 		}
 	}
 
@@ -226,15 +314,28 @@ public class SlotInfo : MonoBehaviour
 			slotQuantity.text = (int.Parse (slotQuantity.text) + 1).ToString ();
 		else if (choice == "-" && int.Parse (slotQuantity.text) > 0)
 			slotQuantity.text = (int.Parse (slotQuantity.text) - 1).ToString ();
-		if (slotQuantity.text=="0"){
-			slotCost.text = cost.ToString ()+" G";
-		} else{
-			slotCost.text = (int.Parse (slotQuantity.text) * cost).ToString ()+" G";
+		if (slotQuantity.text == "0") {
+			slotCost.text = string.Format (Database.strings.GetString ("Currency"), cost.ToString ());
+		} else {
+			slotCost.text = string.Format (Database.strings.GetString ("Currency"), (int.Parse (slotQuantity.text) * cost).ToString ());
 		}
-		if (!selected && name.Contains ("Buy")) {
-			Select();
-			SelectSlot();
+		if (name.Contains ("Shop")) {
+			SelectSlot ();
 		}
+	}
+
+	public int SetCost (List<Character> characters)
+	{
+		int totalcost = 0;
+		if (isAbility) {
+			totalcost = cost * characters.Count;
+		} else {
+			foreach (Character character in characters) {
+				totalcost += cost * character.level;
+			}
+		}
+		slotCost.text = string.Format (Database.strings.GetString ("Currency"), totalcost.ToString ());
+		return totalcost;
 	}
 
 	public int GetItemId ()
@@ -244,7 +345,11 @@ public class SlotInfo : MonoBehaviour
 
 	public int GetItemQuantity ()
 	{
-		return int.Parse (slotQuantity.text);
+		if (slotQuantity.text!=""){
+			return int.Parse (slotQuantity.text);
+		} else{
+			return 0;
+		}
 	}
 
 	public void Select ()
@@ -260,10 +365,9 @@ public class SlotInfo : MonoBehaviour
 			GameObject.FindObjectOfType<SearchScreenDisplay> ().SelectCharacter (this);
 		} else if (GameObject.FindObjectOfType<ItemSelectScreenDisplay> ().show) {
 			GameObject.FindObjectOfType<ItemSelectScreenDisplay> ().SelectItem (this);
-		} else if (GameObject.FindObjectOfType<ShopScreenDisplay>().show){
+		} else if (GameObject.FindObjectOfType<ShopScreenDisplay> ().show) {
 			GameObject.FindObjectOfType<ShopScreenDisplay> ().UpdateItemInfo (this);
 		}
-
 	}
 
 	public void ResetSelection ()

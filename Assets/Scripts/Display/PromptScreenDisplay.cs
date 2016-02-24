@@ -29,7 +29,7 @@ public class PromptScreenDisplay : MonoBehaviour
 		} else if (action == "Adventure") {
 			GameObject.FindObjectOfType<GameManager> ().GoOnAdventure ();
 		} else if (action == "Shop") {
-			GameObject.FindObjectOfType<GameManager> ().BuyStuff ();
+			GameObject.FindObjectOfType<GameManager> ().BuyOrSell ();
 		} else if (action == "Socialize") {
 			GameObject.FindObjectOfType<GameManager> ().GoToTavern ();
 		}

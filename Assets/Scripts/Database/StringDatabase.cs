@@ -60,8 +60,8 @@ public class StringDatabase{
 		textList.Add ("SelectItems","Select items to give to this member");
 		textList.Add ("Idle","Idle");
 		textList.Add ("Shopping","Shopping");
-		textList.Add ("SearchRecruiting","Looking for new recruits");
-		textList.Add ("SearchQuesting","Looking for new quests");
+		//textList.Add ("SearchRecruiting","Looking for new recruits");
+		//textList.Add ("SearchQuesting","Looking for new quests");
 		textList.Add ("Questing", "Doing the quest {0}");
 		textList.Add ("Socializeing","Going to the tavern");
 		textList.Add ("Ongoing","Ongoing");
@@ -69,9 +69,11 @@ public class StringDatabase{
 		textList.Add ("Gathering", "Gathering at the {0}");
 		textList.Add ("Hunting", "Hunting at the {0}");
 		textList.Add ("Training", "Training at the {0}");
+		textList.Add ("Studying", "Studying");
 		textList.Add ("Open","Open");
 		textList.Add ("Resting","Resting");
-		textList.Add ("Date","Day {0} of {1}, year {2}");
+		textList.Add ("Selling","Selling");
+		textList.Add ("Date","Day {0} of {1} of Year {2}");
 		textList.Add ("Male","Male");
 		textList.Add ("Female","Female");
 		textList.Add ("MalePoss","his");
@@ -89,9 +91,12 @@ public class StringDatabase{
 		textList.Add ("And","and");
 		textList.Add ("Duration","{0} days");
 		textList.Add ("Currency","{0} Gold");
+		textList.Add ("CurrencyCounter","Gold");
 		textList.Add ("NoTask","The day has passed without any important events.");
 		textList.Add ("ShopLog","{0} went to shop.");
+		textList.Add ("SellLog","{0} set up a stall");
 		textList.Add ("QuestLog","{0} finished a quest.");
+		textList.Add ("SchoolLog","{0} went to the training hall");
 		textList.Add ("SocializeLog","{0} visited the tavern.");
 		textList.Add ("SocializeSuccess","{0} talked to various people in the tavern.");
 		textList.Add ("AdventureLog","{0} returned from an adventure");
@@ -100,8 +105,15 @@ public class StringDatabase{
 		textList.Add ("SkillUp","{0}'s {1} skills are improved");
 		textList.Add ("Injured","{0} is injured and resting");
 		textList.Add ("Recovered","{0} recovered from {1} injuries");
+		textList.Add ("SchoolSkill","{0} studied hard.");
+		textList.Add ("SchoolAbility","{0} studied a new ability");
+		textList.Add ("LearnAbility","Learned the ability {0}");
 		textList.Add ("Obtained","Obtained: \n{0}");
 		textList.Add ("Bought","Bought: \n{0}");
+		textList.Add ("SellSuccess","{0} successfully sold items.");
+		textList.Add ("SellFail","{0} failed to sell any items.");
+		textList.Add ("Sold","Sold: \n{0}");
+		textList.Add ("Profit","Made "+textList["Currency"]);
 		textList.Add ("MoneyBack","Due to negotiations, {0} less gold was paid.");
 		textList.Add ("QuestFound","{0} people requested for your guild's help");
 		textList.Add ("RecruitFound", "{0} wants to join your guild.");
@@ -115,7 +127,12 @@ public class StringDatabase{
 		textList.Add ("Experience","-{0} {1} Experience");
 		textList.Add ("NoRewards","There are no rewards given in this quest.");
 		textList.Add ("Heal","Recovers {0}.");
+		textList.Add ("Ability","Teaches the ability {0}");
 		textList.Add ("Prompt","Do you wish to continue?");
+		textList.Add ("CloseRange","Close Range");
+		textList.Add ("LongRange","Long Range");
+		textList.Add ("NoMats","No materials required");
+
 	}
 	void GenerateDialogue(){
 		dialogueList.Add (new Dialogue(0,"Tutorial",0,"This is the very first test of the current dialogue system, {0}. I hope it works to your satisfactory",new List<int>(){0,0},new List<string>(){"","Character"}));

@@ -7,8 +7,7 @@ public class ItemDatabase
 {
 	[SerializeField]
 	private List<Item>itemList = new List<Item> ();
-	private Dictionary<string,Shop> shopList = new Dictionary<string,Shop> ();
-	private Dictionary<int,string> shopName= new Dictionary<int,string>();
+	private List<Shop> shopList = new List<Shop> ();
 	// Use this for initialization
 	public ItemDatabase ()
 	{
@@ -16,7 +15,7 @@ public class ItemDatabase
 		AddShop ("Weaponsmith", "Sells all kinds of weapons");//1
 		AddShop ("Armorsmith", "sells all kinds of armor");//2
 		AddShop ("Arcanesmith", "sells staves and other magical items");//3
-		AddShop ("Library", "sells educational books for learning and improvement");//4
+		AddShop ("Training Hall", "Offers teachings in skills and abilities");//4
 
 		Consumables();
 		Weapons ();
@@ -49,12 +48,12 @@ public class ItemDatabase
 
 	public void Armor(){
 
-		AddEquipment("Reinforced Clothes","Armor","",170,"Clothing layered for extra protection",60,1,0,0,2,2,0,0,0,0,"",true,2);
-		AddEquipment("Leather Armour","Armor","",180,"Armour made of thick leather",55,2,0,0,3,1,0,-3,0,0,"",true,2);
-		AddEquipment("Iron Chainmail","Armor","",200,"Armour made of linked iron rings to form a lightweight but strong protection",50,3,0,0,4,0,-3,-3,0,0,"",true,2);
-		AddEquipment("Iron Breastplate","Armor","",220,"Protects the upper body and shoulders",45,4,0,0,5,0,-3,-5,0,0,"",true,2);
-		AddEquipment("Iron Cuirass","Armor","",240,"Full body protection",40,5,0,0,7,0,-10,-10,0,0,"",true,2);
-		AddEquipment("Cotton Robe","Armor","",180,"Robe magically woven with cotton",55,0,0,1,1,2,10,10,0,0,"",true,3);
+		AddEquipment("Reinforced Clothes","Armor","Body",170,"Clothing layered for extra protection",60,1,0,0,2,2,0,0,0,0,"",true,2);
+		AddEquipment("Leather Armour","Armor","Body",180,"Armour made of thick leather",55,2,0,0,3,1,0,-3,0,0,"",true,2);
+		AddEquipment("Iron Chainmail","Armor","Body",200,"Armour made of linked iron rings to form a lightweight but strong protection",50,3,0,0,4,0,-3,-3,0,0,"",true,2);
+		AddEquipment("Iron Breastplate","Armor","Body",220,"Protects the upper body and shoulders",45,4,0,0,5,0,-3,-5,0,0,"",true,2);
+		AddEquipment("Iron Cuirass","Armor","Body",240,"Full body protection",40,5,0,0,7,0,-10,-10,0,0,"",true,2);
+		AddEquipment("Cotton Robe","Armor","Body",180,"Robe magically woven with cotton",55,0,0,1,1,2,10,10,0,0,"",true,3);
 	}
 
 	public void Accessory(){
@@ -75,8 +74,14 @@ public class ItemDatabase
 	}
 
 	public void Materials(){
-		AddItem ("Common Branch","Material","Wood",5,"You see these branches everywhere");
-
+		AddItem ("Common Branch","Material","Wood",5,"You see these branches everywhere.");
+		AddItem ("Lily","Material","Flower",4,"Symbolizes humility and devotion.");
+		AddItem ("Lavender","Material","Flower",4,"Gives a strong and pleasant fragrance.");
+		AddItem ("Chamomile","Material","Flower",5,"Flowers frequently used in tea and medicine.");
+		AddItem ("Saffron","Material","Flower",6,"These flowers can also be used as spices.");
+		AddItem ("Orchid","Material","Flower",7,"Very colourful and often fragrant flower.");
+		AddItem ("Helianthus","Material","Flower",8,"These flowers are also known as the sunflower.");
+		AddItem ("Rose","Material","Flower",10,"Look out for the thorns!");
 	}
 
 
@@ -84,7 +89,7 @@ public class ItemDatabase
 
 	void AddItem(string name, string type,string subtype, int money, string description){
 		Dictionary<string,int> stats=null;
-		itemList.Add (new Item (itemList.Count, name, type, money, description,1,subtype,"", stats));
+		itemList.Add (new Item (itemList.Count, name, type, money, description,-1,subtype,"", stats));
 	}
 
 	void AddItem(string name, string type, string subtype, int money, string description, int durability, int health, int mana, int strength, int intelligence, int dexterity, int agility, bool sold=false,int shop=0, int level=0){
@@ -110,7 +115,7 @@ public class ItemDatabase
 
 		itemList.Add (new Item (itemList.Count, name, type, money, description,durability,subtype,"", stats));
 		if (sold)
-			shopList [shopName[shop]].AddItem (level, itemList.Last ());
+			shopList [shop].AddItem (level, itemList.Count-1);
 	}
 
 	void AddEquipment(string name, string type, string subtype, int money, string description, int durability, int weight, int carrySize, bool sold=false, int shop=0, int level=0){
@@ -123,7 +128,7 @@ public class ItemDatabase
 		}
 		itemList.Add (new Item (itemList.Count, name, type, money, description,durability,subtype,"", stats));
 		if (sold)
-			shopList [shopName[shop]].AddItem (level, itemList.Last ());
+			shopList [shop].AddItem (level, itemList.Count-1);
 	}
 
 
@@ -159,19 +164,12 @@ public class ItemDatabase
 		}
 		itemList.Add (new Item (itemList.Count, name, type, money, description,durability,subtype,element, stats));
 		if (sold)
-			shopList [shopName[shop]].AddItem (level, itemList.Last ());
-	}
-
-
-	void AddItemToShop (string shop, int level, Item item)
-	{
-		shopList [shop].AddItem (level, item);
+			shopList [shop].AddItem (level, itemList.Count-1);
 	}
 
 	public void AddShop (string name, string description)
 	{
-		shopName[shopList.Count]=name;
-		shopList [name] = new Shop (shopList.Count, name, description);
+		shopList.Add (new Shop (shopList.Count, name, description));
 
 	}
 
@@ -184,10 +182,10 @@ public class ItemDatabase
 		return null;
 	}
 
-	public List<Item> FindItems(string type, string ignoreSubtype1="", string ignoreSubtype2=""){
+	public List<Item> FindItems(string type){
 		List<Item>items=new List<Item>();
 		foreach (Item item in itemList) {
-			if (item.type == type && item.subType!=ignoreSubtype1 && item.subType!=ignoreSubtype2)
+			if (item.type == type)
 				items.Add(item);
 		}
 		return items;
@@ -195,7 +193,7 @@ public class ItemDatabase
 	public List<Item> FindGatheringItems(string subtype){
 		List<Item>items=new List<Item>();
 		foreach (Item item in itemList) {
-			if (item.type == subtype)
+			if (item.subType == subtype)
 				items.Add(item);
 		}
 		return items;
@@ -210,17 +208,26 @@ public class ItemDatabase
 			return null;
 		}*/
 
-	public List<Item> GetShopList (string shop, int level)
+	/*public List<int> GetShopList (string shop, int level)
 	{
-		List<Item> shoppinglist = new List<Item> ();
+		List<int> shoppinglist = new List<int> ();
 
-		foreach (KeyValuePair<int,List<Item>> list in shopList[shop].itemList) {
+		foreach (KeyValuePair<int,List<int>> list in shopList[shop].itemList) {
 			if (level >= list.Key) {
-				foreach (Item item in list.Value) {
+				foreach (int item in list.Value) {
 					shoppinglist.Add (item);
 				}
 			}
 		}
 		return shoppinglist;
+	}*/
+
+	public Shop GetShop(int id){
+		foreach (Shop shop in shopList) {
+			if (shop.id == id)
+				return shop;
+		}
+		return null;
+
 	}
 }

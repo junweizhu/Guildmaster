@@ -71,7 +71,7 @@ public class EventTrigger
 	{
 		if ((activatesOnce && !activated) || !activatesOnce) {
 			activated = true;
-			Debug.Log (name+" triggered");
+			//Debug.Log (name+" triggered");
 			if (gameEvent.Count > 0) {
 				for (int i=0; i<gameEvent.Count; i++) {
 					Database.events.GetEvent (gameEvent [i]).CheckTrigger();

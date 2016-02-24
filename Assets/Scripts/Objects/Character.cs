@@ -23,7 +23,6 @@ public class Character
 	public Dictionary<int,int> skillExp = new Dictionary<int,int > ();
 	public List<InventorySlot> equipment = new List<InventorySlot> ();
 	public List<int> abilities;
-	public int money;
 	public bool recruited = false;
 	public bool levelUp = false;
 	public Dictionary<string,int> levelUpStats = new Dictionary<string, int> ();
@@ -39,7 +38,7 @@ public class Character
 
 	}
 
-	public Character (int id, string name, bool male, int level, int money, string type="")
+	public Character (int id, string name, bool male, int level, string type="")
 	{
 		this.id = id;
 		this.name = name;
@@ -85,7 +84,6 @@ public class Character
 			}
 		}
 		SetUpDefaultStats(level);
-		this.money = money;
 	}
 	public Character(Monster monster,int level=1,bool isEnemy=true){
 		id = monster.id;
@@ -154,6 +152,8 @@ public class Character
 		} else {
 			chosenAbility = abilities [0];
 		}
+		totalStats["CurrentMana"]-=chosenAbility.manaCost;
+		Debug.Log(name+" uses " +chosenAbility.name+" "+System.DateTime.Now.Millisecond.ToString());
 		canAttack = true;
 		return chosenAbility;
 	}
@@ -163,6 +163,7 @@ public class Character
 		List<Ability> abilities = GetUsableAbilities (false, range);
 		Ability chosenAbility=null;
 		if (abilities.Count == 0) {
+			Debug.Log(name+" can't attack from this range! "+System.DateTime.Now.Millisecond.ToString());
 			canAttack = false;
 		} else {
 			if (abilities.Count > 1) {
@@ -170,6 +171,8 @@ public class Character
 			} else if (abilities.Count == 1) {
 				chosenAbility = abilities [0];
 			}
+			Debug.Log(name+" uses " +chosenAbility.name+" as counterattack "+System.DateTime.Now.Millisecond.ToString());
+			totalStats["CurrentMana"]-=chosenAbility.manaCost;
 			canAttack = true;
 		}
 		return chosenAbility;
@@ -181,7 +184,7 @@ public class Character
 		string weapontype = GetWeaponType ();
 		for (int i=0; i<abilities.Count; i++) {
 			Ability ability = Database.skills.GetAbility (abilities [i]);
-			if (ability.weaponType.Contains (weapontype) && ability.manaCost <= totalStats ["CurrentMana"] && ability.element != "Healing") {
+			if ((ability.weaponType==null || (ability.weaponType!=null&& ability.weaponType.Contains (weapontype))) && ability.manaCost <= totalStats ["CurrentMana"] && ability.element != "Healing") {
 				if (attacking || (!attacking && ability.range == range))
 					usableAbilities.Add (ability);
 			}
@@ -454,5 +457,26 @@ public class Character
 			}
 		}
 		return details;
+	}
+	public Ability GetHealingAbility(){
+		for (int i=0;i<abilities.Count;i++){
+			Ability ability=Database.skills.GetAbility(abilities[i]);
+			if (ability.element=="Healing"&& totalStats["CurrentMana"]>ability.manaCost){
+				return ability;
+			}
+		}
+		return null;
+	}
+	public bool HasHealingAbility(){
+		if (GetHealingAbility()!=null){
+			return true;
+		}
+		return false;
+	}
+
+	public void Heal(Character character){
+		character.Heal(Mathf.RoundToInt(totalStats["MAttack"]/2),"Flat","Health");
+		totalStats["CurrentMana"]-=GetHealingAbility().manaCost;
+		Debug.Log(name+ " healed " +character.name+ " for "+Mathf.RoundToInt(totalStats["MAttack"]/2).ToString() +" health "+System.DateTime.Now.Millisecond.ToString());
 	}
 }

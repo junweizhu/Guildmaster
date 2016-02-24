@@ -15,8 +15,8 @@ public class CharDatabase {
 
 	public void Generate(){
 		skills=Database.skills.SkillList();
-		memberList.Add (new Character(0, "Test",true,1,100));
-		memberList.Add (new Character(1, "Test2",true,1,100));
+		memberList.Add (new Character(0, "Test",true,1,"Warrior"));
+		memberList.Add (new Character(1, "Test2",true,1,"Mage"));
 	}
 	public List<Character> GetCharacter(){
 		return memberList;
@@ -55,7 +55,7 @@ public class CharDatabase {
 			charName=femaleNames[Random.Range(0,femaleNames.Count)];
 			femaleNames.Remove(charName);
 		}
-		memberList.Add (new Character(memberList.Count,charName,male,level,100));
+		memberList.Add (new Character(memberList.Count,charName,male,level));
 		foreach (Skill skill in skills)
 		{
 			float modifier=1.0f;

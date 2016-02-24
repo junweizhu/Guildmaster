@@ -24,6 +24,8 @@ public class Guild
 	public Dictionary<int,int> foundHuntingGrounds = new Dictionary<int,int> ();
 	public Dictionary<int,int> successfulVisits = new Dictionary<int,int> ();
 	public List<Task> tasklog=new List<Task>();
+	public Dictionary<int,int> upgradelist=new Dictionary<int,int>();
+
 	public Guild ()
 	{
 
@@ -37,7 +39,13 @@ public class Guild
 		this.fame = fame;
 		this.money = money;
 		this.inventory = new Inventory ();
+
 		this.questBoard = new QuestBoard ();
+		for (int i=0;i<Database.upgrades.GetUpgradeListSize();i++){
+			upgradelist[i]=0;
+		}
+		this.inventory.size=Database.upgrades.GetUpgrade(1).MaxSize(upgradelist[1]);
+		this.questBoard.size=Database.upgrades.GetUpgrade(2).MaxSize(upgradelist[2]);
 	}
 
 	public void RecruitCharacter (Character newcharacter)
@@ -72,7 +80,6 @@ public class Guild
 	public void AddTask (Task task)
 	{
 		taskList.Add (task);
-		task.guild=this;
 		if (task.shoppingMoney > 0) {
 			money -= task.shoppingMoney;
 		}
@@ -286,5 +293,30 @@ public class Guild
 		} else{
 			character.UnEquip(equipslotId);
 		}
+	}
+
+	public bool CanUpgrade(int id){
+		Upgrade upgrade=Database.upgrades.GetUpgrade(id);
+		if (money<upgrade.UpgradeCost(upgradelist[id])){
+			return false;
+		}
+		Dictionary<int,int> materialCost=upgrade.MaterialCost(upgradelist[id]);
+		foreach (KeyValuePair<int,int> material in materialCost){
+			if (!inventory.Contains(material.Key,material.Value)){
+				return false;
+			}
+		}
+		return true;
+	}
+	public void Upgrade(int id){
+		Upgrade upgrade=Database.upgrades.GetUpgrade(id);
+		money-=upgrade.UpgradeCost(upgradelist[id]);
+		Dictionary<int,int> materialCost=upgrade.MaterialCost(upgradelist[id]);
+		foreach (KeyValuePair<int,int> material in materialCost){
+			inventory.RemoveItem(material.Key,material.Value);
+		}
+		upgradelist[id]+=1;
+		inventory.size=Database.upgrades.GetUpgrade(1).MaxSize(upgradelist[1]);
+		questBoard.size=Database.upgrades.GetUpgrade(2).MaxSize(upgradelist[2]);
 	}
 }

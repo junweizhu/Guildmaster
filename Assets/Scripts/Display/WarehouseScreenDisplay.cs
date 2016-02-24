@@ -11,29 +11,28 @@ public class WarehouseScreenDisplay : MonoBehaviour
 	private int itemCount;
 	public ItemStatScreenDisplay itemStatScreen;
 	private SlotInfo lastSelected;
+	public Text storageSize;
 
 	public void Start ()
 	{
 	}
 
-	public void UpdateText (Inventory itemlist)
+	public void UpdateText ()
 	{
-		for (int i=0; i<itemlist.inventory.Count; i++) {
-			if (!itemlist.inventory [i].filled) {
-				if (slotPrefabList.Count > (i + 1)) {
-					slotPrefabList [i].SetActive (false);
-				}
-				itemCount = i;
-				break;
-			}
-			slotPrefabList.GeneratePrefab(i,itemslotPrefab,"Item",itemslotList);
-			slotPrefabList [i].GetComponent<SlotInfo> ().FillSlotWithItem (i + 1, itemlist.inventory [i]);
-			slotPrefabList [i].GetComponent<SlotInfo> ().ResetSelection();
+		Guild guild=Database.myGuild;
+		Inventory itemlist=guild.inventory;
+		List<int> slotId=guild.inventory.GetAllFilledSlotId();
+		itemCount=slotId.Count;
+		int count=itemCount;
+		if (itemCount<slotPrefabList.Count){
+			count=slotPrefabList.Count;
 		}
-		if(itemCount<slotPrefabList.Count)
-		{
-			for (int i=itemCount;i<slotPrefabList.Count;i++)
-			{
+		for (int i=0; i<count;i++){
+			slotPrefabList.GeneratePrefab(i,itemslotPrefab,"Item",itemslotList);
+			if (i<itemCount){
+				slotPrefabList [i].GetComponent<SlotInfo> ().FillSlotWithItem (i + 1, itemlist.GetInventorySlot(slotId [i]));
+				slotPrefabList [i].GetComponent<SlotInfo> ().ResetSelection();
+			} else{
 				slotPrefabList[i].SetActive(false);
 			}
 		}
@@ -42,6 +41,7 @@ public class WarehouseScreenDisplay : MonoBehaviour
 		if (lastSelected != null) {
 			lastSelected = null;
 		}
+		storageSize.text=slotId.Count.ToString()+"/"+Database.upgrades.GetUpgrade(1).MaxSize(guild.upgradelist[1]);
 	}
 
 	public void DisplayItemStats (SlotInfo itemslot)

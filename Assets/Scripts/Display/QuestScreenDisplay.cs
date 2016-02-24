@@ -3,36 +3,45 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine.UI;
 
-public class QuestScreenDisplay : MonoBehaviour {
+public class QuestScreenDisplay : MonoBehaviour
+{
 	public GameObject questslotPrefab;
 	public Transform questslotList;
-	public List<GameObject> slotPrefabList=new List<GameObject>();
+	public List<GameObject> slotPrefabList = new List<GameObject> ();
 	public int questCount;
+	public Text slotSize;
 
-	public void UpdateText(List<Quest> questlist)
+	public void UpdateText ()
 	{
-		questCount=questlist.Count;
-		for(int i=0; i<questlist.Count;i++)
-		{
-			if(questlist[i].name==null)
-			{
-				if (slotPrefabList.Count>(i+1))
-				{
-					slotPrefabList[i].SetActive(false);
+
+		Guild guild = Database.myGuild;
+
+		List<Quest> questlist = guild.questBoard.questList;
+		if (Database.game.screenDisplay == "Request") {
+			questlist = Database.quests.AvailableQuests ();
+		}
+
+		questCount = questlist.Count;
+		for (int i=0; i<questCount; i++) {
+			if (questlist [i].name == null) {
+				if (slotPrefabList.Count > (i + 1)) {
+					slotPrefabList [i].SetActive (false);
 				}
-				questCount=i;
+				questCount = i;
 				break;
 			}
-			slotPrefabList.GeneratePrefab(i,questslotPrefab,questslotPrefab.name,questslotList);
-			slotPrefabList[i].GetComponent<SlotInfo>().FillSlotWithQuest(i+1,questlist[i]);
-		}
-		if(questCount<slotPrefabList.Count)
-		{
-			for (int i=questCount;i<slotPrefabList.Count;i++)
-			{
-				slotPrefabList[i].SetActive(false);
+			slotPrefabList.GeneratePrefab (i, questslotPrefab, questslotPrefab.name, questslotList);
+			slotPrefabList [i].GetComponent<SlotInfo> ().FillSlotWithQuest (i + 1, questlist [i]);
+			if (Database.game.screenDisplay == "Request") {
+				slotPrefabList[i].GetComponent<SlotInfo>().recruitRequestButton.interactable=questlist.Count<Database.upgrades.GetUpgrade(2).MaxSize(Database.myGuild.upgradelist[2]);
 			}
 		}
-		questslotList.transform.SetSize(questCount,64);
+		if (questCount < slotPrefabList.Count) {
+			for (int i=questCount; i<slotPrefabList.Count; i++) {
+				slotPrefabList [i].SetActive (false);
+			}
+		}
+		questslotList.transform.SetSize (questCount, 64);
+		slotSize.text = questCount.ToString () + "/" + Database.upgrades.GetUpgrade (2).MaxSize (guild.upgradelist [2]);
 	}
 }

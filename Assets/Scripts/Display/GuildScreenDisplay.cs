@@ -11,14 +11,15 @@ public class GuildScreenDisplay : MonoBehaviour {
 	public Text guildMoney;
 	public Text guildDay;
 
-	public void UpdateText(string name,int level, int exp, int fame, int size, int money, int day, int month, int year)
+	public void UpdateText(int day, int month, int year)
 	{
-		guildName.text=name;
-		guildLevel.text=level.ToString();
-		guildExp.text=exp.ToString();
-		guildFame.text=fame.ToString();
-		guildSize.text=size.ToString();
-		guildMoney.text=money.ToString();
+		Guild guild=Database.myGuild;
+		guildName.text=guild.name;
+		guildLevel.text=guild.level.ToString();
+		guildExp.text=guild.exp.ToString();
+		guildFame.text=guild.fame.ToString();
+		guildSize.text=guild.size.ToString()+"/"+Database.upgrades.GetUpgrade(0).MaxSize(guild.upgradelist[0]).ToString();
+		guildMoney.text=guild.money.ToString();
 		guildDay.text=string.Format(Database.strings.GetString("Date"),day.ToString(),Database.strings.monthNames[month],year.ToString());
 	}
 }

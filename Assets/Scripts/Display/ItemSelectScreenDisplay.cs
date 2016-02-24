@@ -36,26 +36,47 @@ public class ItemSelectScreenDisplay: MonoBehaviour
 
 	}
 
-	public void UpdateText (Inventory storage, string description, int equipslotid)
+	public void UpdateText (Inventory storage, string description, int equipslotid, Character character)
 	{
-		slotId=equipslotid;
-		if(slotId==0){
-			items = storage.GetAllItems ("Weapon");
-		} else if (slotId==1){
-			items = storage.GetAllItems ("Armor");
-		} else {
-			items = storage.GetAllItems ("Accessory");
-			items.AddRange(storage.GetAllItems ("Consumable"));
+		slotId = equipslotid;
+		Inventory inventory = Database.myGuild.inventory;
+		if (!character.equipment [equipslotid].filled||character.equipment [equipslotid].filled&&(inventory.GetAllFilledSlotId ().Count < inventory.size || inventory.Contains (character.equipment [equipslotid].itemId))) {
+			if (slotId == 0) {
+				items = storage.GetAllItems ("Weapon");
+			} else if (slotId == 1) {
+				items = storage.GetAllItems ("Armor");
+			} else {
+				string subType1 = "";
+				string subType2 = "";
+				for (int i=2; i<character.equipment.Count; i++) {
+					if (equipslotid != i && character.equipment [i].filled) {
+						if (subType1 != "") {
+							subType1 = Database.items.FindItem (character.equipment [i].itemId).subType;
+						} else {
+							subType2 = Database.items.FindItem (character.equipment [i].itemId).subType;
+						}
+					} 
+				}
+				items = storage.GetAllItems ("Accessory", subType1, subType2);
+				items.AddRange (storage.GetAllItems ("Consumable"));
+			}
+		} else{
+			items.Clear();
 		}
-		items.Add (new InventorySlot(999));
+
+		if (character.equipment [equipslotid].filled&&(inventory.GetAllFilledSlotId ().Count < inventory.size || inventory.Contains (character.equipment [equipslotid].itemId))) {
+			items.Add (new InventorySlot (999));
+		} else if (items.Count == 0) {
+			items.Add (new InventorySlot (998));
+		}
 		dialogue.text = description;
-		selectedItem=null;
+		selectedItem = null;
 		for (int i=0; i<items.Count; i++) {
 			prefabList.GeneratePrefab (i, selectPrefab, "Item", selectList);
 			prefabList [i].GetComponent<SlotInfo> ().FillSlotWithItem (items [i]);
 			prefabList [i].GetComponent<SlotInfo> ().ResetSelection ();
 		}
-		if (items.Count< prefabList.Count) {
+		if (items.Count < prefabList.Count) {
 			for (int i=items.Count; i<prefabList.Count; i++) {
 				prefabList [i].SetActive (false);
 			}
@@ -113,9 +134,15 @@ public class ItemSelectScreenDisplay: MonoBehaviour
 
 	public void SelectItem (SlotInfo slot)
 	{
-		selectedItem=slot;
-		GameObject.FindObjectOfType<GameManager>().SelectItem();
+
+		selectedItem = slot;
+		if (slot.id != 998) {
+			GameObject.FindObjectOfType<GameManager> ().SelectItem ();
+		} else {
+			CloseScreen ();
+		}
 	}
+
 	public void CloseScreen ()
 	{
 		show = false;

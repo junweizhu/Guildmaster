@@ -93,7 +93,6 @@ public class QuestStatScreenDisplay : MonoBehaviour
 					characterButton.interactable = true;
 				} else {
 					characterButton.interactable = false;
-
 				}
 			}
 			questDuration.text = string.Format (Database.strings.GetString ("Duration"), quest.duration);
@@ -172,19 +171,19 @@ public class QuestStatScreenDisplay : MonoBehaviour
 
 	public void FillParticipants (List<Character> list)
 	{
-		if (characterprefList.Count > 0) {
-			foreach (GameObject i in characterprefList) {
-				DestroyObject (i);
-			}
-			characterprefList = new List<GameObject> ();
-		}
 		if (quest.maxParticipants > 0) {
 			participants = list;
-			for (int i=0; i<participants.Count; i++) {
-				characterprefList.Add (GameObject.Instantiate (characterPrefab));
-				characterprefList.Last ().transform.SetParent (characterList);
-				characterprefList.Last ().transform.localScale = new Vector3 (1, 1, 1);
-				characterprefList.Last ().GetComponent<SlotInfo> ().FillSlotWithCharacter (participants [i]);
+			int count= participants.Count;
+			if (participants.Count<characterprefList.Count){
+				count=characterprefList.Count;
+			}
+			for (int i=0; i<count; i++) {
+				characterprefList.GeneratePrefab(i,characterPrefab,"Member",characterList);
+				if (i<participants.Count){
+					characterprefList[i].GetComponent<SlotInfo> ().FillSlotWithCharacter (participants [i]);
+				} else{
+					characterprefList[i].SetActive(false);
+				}
 			}
 			if (participants.Count > 0) {
 				characterButton.interactable = true;

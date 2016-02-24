@@ -10,7 +10,7 @@ public class GuildDatabase{
 	public GuildDatabase() {}
 	
 	public void Generate(){
-		guildList.Add(new Guild(0,"test",1,0,500));
+		guildList.Add(new Guild(0,"test",0,0,500));
 	}
 
 	public Guild FindGuild(int id)

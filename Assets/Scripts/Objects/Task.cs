@@ -13,10 +13,9 @@ public class Task
 	public List<Character>
 		characters;
 	public Dictionary<int,int>itemList;
+	public Inventory itemsSold;
+	public Inventory stock;
 	public string typeSearch;
-	[System.NonSerialized]
-	public Guild
-		guild;
 	public int shoppingMoney;
 	private int returnMoney;
 	public bool success;
@@ -30,6 +29,8 @@ public class Task
 	private int questCount = 0;
 	private Quest quest;
 	private List<string> casualties=new List<string>();
+	private Skill skill;
+	private Ability ability;
 
 	public Task ()
 	{
@@ -44,13 +45,32 @@ public class Task
 		this.questnumber = questnumber;
 	}
 
-	public Task (string type, float duration, List<Character> characters, Dictionary<int,int>items, int money)//buying items
+	public Task (string type, float duration, List<Character> characters, Dictionary<int,int>items, int money)//buying or selling items
 	{
 
 		SetMainData (type, characters);
 		this.duration = duration;
-		itemList = items;
+		if (type=="Shop"){
+			itemList = items;
+		} else{
+			Inventory inventory = Database.myGuild.inventory;
+			stock=new Inventory(items.Count);
+			foreach (KeyValuePair<int,int> itemslot in items){
+				InventorySlot slot=inventory.GetInventorySlot(itemslot.Key);
+				stock.AddItem(slot.itemId,itemslot.Value,slot.durability);
+				slot.AddQuantity(0-itemslot.Value);
+			}
+			itemsSold=new Inventory(items.Count);
+		}
 		shoppingMoney = money;
+	}
+
+	public Task(string type, float duration, List<Character> characters, Skill skill,Ability ability, int money){ //training
+		SetMainData(type, characters);
+		this.duration=duration;
+		this.skill=skill;
+		this.ability=ability;
+		shoppingMoney=money;
 	}
 
 	public Task (string type, float duration, List<Character> characters, string typesearch)//searching at tavern
@@ -91,8 +111,11 @@ public class Task
 			quest.duration -= 1;
 		}
 		if (duration <= 0) {
+			if (type == "Quest") {
+				Database.myGuild.FinishQuest (questnumber, characters);
+			}
 			if (type == "Shop") {
-				float payment = 1.25f;
+				float payment = 1.00f;
 				for (int i=0; i< characters.Count; i++) {
 					GiveExp (characters [i], "Social Skill", 10);
 					if (Random.Range (0, 100) > (100 - (characters [i].skillLevel [Database.skills.GetSkill ("Social Skill")] / (i + 1)))) {
@@ -100,11 +123,30 @@ public class Task
 					}
 				}
 				returnMoney = Mathf.CeilToInt (shoppingMoney * (1 - payment));
-				guild.FinishShopping (itemList, returnMoney);
+				Database.myGuild.FinishShopping (itemList, returnMoney);
 				return;
 			}
-			if (type == "Quest") {
-				guild.FinishQuest (questnumber, characters);
+			if (type == "Sell") {
+				SellTime();
+				if (stock.Count()>0){
+					Inventory inventory=Database.myGuild.inventory;
+					foreach (int slot in stock.GetAllFilledSlotId()){
+						InventorySlot itemslot=stock.GetInventorySlot(slot);
+						inventory.AddItem(itemslot.itemId,itemslot.quantity,itemslot.durability);
+						itemslot.EmptyItem();
+					}
+				}
+				Database.myGuild.money+=TotalProfit();
+			}
+			if (type=="School"){
+				foreach(Character character in characters){
+					if (ability!=null){
+						character.abilities.Add(ability.id);
+					}
+					if (skill!=null){
+						GiveExp(character,skill.name,100);
+					}
+				}
 			}
 			if (type == "Socialize") {
 				Dictionary<string,string> typeSkill = new Dictionary<string, string> (){{"Fighter","Weapon Skill"},{"Mage","Magic Skill"},{"Adventurer","Field Skill"},{"Social","Social Skill"}};
@@ -115,7 +157,7 @@ public class Task
 					typeSearch = skills [Random.Range (0, skills.Count)];
 					float chance = characters [i].skillLevel [Database.skills.GetSkill ("Social Skill")] + characters [i].skillLevel [Database.skills.GetSkill (typeSkill [typeSearch])] / 2;
 					if (Random.Range (0, 100) > 90 - chance) {
-						newRecruits.Add (guild.FindNewRecruit (Random.Range (0, characters [i].level + Random.Range (0, 10) - 5), typeSkill [typeSearch]).name);
+						newRecruits.Add (Database.myGuild.FindNewRecruit (Random.Range (0, characters [i].level + Random.Range (0, 10) - 5), typeSkill [typeSearch]).name);
 						GiveExp (characters [i], "Social Skill", 10);
 						fame = 2;
 					} else if (Random.Range (0, 100) > 90 - chance) {
@@ -131,22 +173,22 @@ public class Task
 					} else if (Random.Range (0, 100) > 90 - chance){
 						Debug.Log ("They talked about a new area");
 						int rng=Database.areas.RandomArea(characters[i].level);
-						if (guild.knownAreas.Contains(rng)){
+						if (Database.myGuild.knownAreas.Contains(rng)){
 							Debug.Log ("We already know this area");
 						} else{
 							Debug.Log ("We never knew this area");
-							guild.FindNewArea(rng);
+							Database.myGuild.FindNewArea(rng);
 						}
 					}
 					GiveExp (characters [i], "Social Skill", Random.Range (0, 25));
 					characters [i].baseStats ["Fame"] += fame;
-					guild.fame += fame;
+					Database.myGuild.fame += fame;
 				}
 			}
 			if (type == "Adventure") {
 				AdventureTime (false);
 				if (success && itemList.Count > 0) {
-					guild.GetItems (itemList);
+					Database.myGuild.GetItems (itemList);
 				} 
 				if (characters.IsInjured()){
 					foreach (Character character in characters){
@@ -181,7 +223,6 @@ public class Task
 
 	public string Details ()
 	{
-
 		string detail = "";
 		if (type == "Shop") {
 			detail = string.Format (Database.strings.GetString ("Bought"), Itemlist ());
@@ -210,6 +251,22 @@ public class Task
 				detail+="\n";
 			}
 		}
+		if (type=="School"){
+			string stringtype=type;
+			if (ability!=null){
+				stringtype+="Ability";
+			} else{
+				stringtype+="Skill";
+			}
+			if (characters.Count > 1) {
+				detail = string.Format (Database.strings.GetString (stringtype), Database.strings.GetString ("Plural3rd")) + "\n\n";
+			}else {
+				detail = string.Format (Database.strings.GetString (stringtype), Database.strings.GetString (characters [0].gender + "3rd")) + "\n\n";
+			}
+			if (ability!=null){
+				detail += string.Format (Database.strings.GetString ("LearnAbility"),ability.name)+"\n\n";
+			}
+}
 		if (type == "Socialize") {
 			if (characters.Count > 1) {
 				detail = string.Format (Database.strings.GetString (type + "Success"), Database.strings.GetString ("Plural3rd")) + "\n\n";
@@ -234,9 +291,25 @@ public class Task
 				detail += string.Format (Database.strings.GetString ("QuestFound"), questCount) + "\n\n";
 			}
 		}
+		if (type=="Sell"){
+			string textSuccess="Fail";
+			if (success){
+				textSuccess="Success";
+			}
+			if (characters.Count > 1) {
+				detail = string.Format (Database.strings.GetString (type + textSuccess), Database.strings.GetString ("Plural3rd")) + "\n\n";
+			} else {
+				detail = string.Format (Database.strings.GetString (type + textSuccess), Database.strings.GetString (characters [0].gender + "3rd")) + "\n\n";
+			}
+			if (itemsSold.Count()>0){
+				detail += string.Format (Database.strings.GetString ("Sold"), ItemsSold ())+"\n\n";
+				detail += string.Format (Database.strings.GetString ("Profit"), returnMoney.ToString())+"\n\n";
+			}
+		}
 		detail += CharacterExp ();
 		return detail;
 	}
+
 	public void GiveExp (Character character, string skillname, int exp)
 	{
 		character.GiveExp (Database.skills.GetSkill (skillname), exp);
@@ -275,28 +348,60 @@ public class Task
 	private string Itemlist ()
 	{
 		string list = "";
-		foreach (KeyValuePair<int,int> item in itemList) {
+		Dictionary<int,int> usedItemList;
+			usedItemList=itemList;
+		foreach (KeyValuePair<int,int> item in usedItemList) {
 			list += item.Value.ToString () + " " + Database.items.FindItem (item.Key).name+"\n";
 		}
 		return list;
 	}
 
-	/*private void DistributeItems(Dictionary<InventorySlot,int> items, List<Character> characters){
-		int itemGiven=0;
-		int totalAmount=0;
-		foreach(KeyValuePair<InventorySlot,int> item in items){
-			if (item.Value>0){
-				itemGiven=Mathf.FloorToInt(item.Value/characters.Count);
-				for (int i=0;i<characters.Count;i++){
-					if (item.Value<itemGiven*(i+1)){
-						itemGiven=item.Value-(itemGiven*i);
-					}
-					characters[i].AddItem(item.Key.item,item.Key.quality,itemGiven);
-				}
+	private string ItemsSold(){
+		string list="";
+		foreach(InventorySlot slot in itemsSold.GetAllItems()){
+			Item item=Database.items.FindItem(slot.itemId);
+			list+=slot.quantity.ToString()+" "+item.name;
+			if (slot.durability>0){
+				list+="("+slot.durability.ToString()+")";
 			}
-
+			list+="\n\n";
 		}
-	}*/
+		return list;
+	}
+
+	private int TotalProfit(){
+		returnMoney=0;
+		foreach (InventorySlot slot in itemsSold.GetAllItems()){
+			Item item=Database.items.FindItem(slot.itemId);
+			int value=item.sellValue*slot.durability/item.durability;
+			returnMoney+=value*slot.quantity;
+		}
+		return returnMoney;
+	}
+
+	private void SellTime(){
+		
+		int charactercount=characters.Count;
+		int socialskillId=Database.skills.GetSkill ("Social Skill");
+		for (int time=0; time<=12; time++) {
+			int RNG = Random.Range(0,100);
+			for (int i=0; i<charactercount;i++){
+				if (RNG<35+ExtensionMethods.Calculate(characters[i].skillLevel [socialskillId],0.5f)){
+					success=true;
+					GiveExp(characters[i],"Social",5);
+					List<int> list=stock.GetAllFilledSlotId();
+					InventorySlot itemToSell=stock.GetInventorySlot(list[Random.Range(0,list.Count)]);
+					itemsSold.AddItem(itemToSell.itemId,1,itemToSell.durability);
+					itemToSell.AddQuantity(-1);
+					if (stock.Count()==0){
+						return;
+					}
+				}
+				GiveExp(characters[i],"Social",1);
+			}
+		}
+
+	}
 
 	private void AdventureTime (bool travelling)
 	{//Start your adventure!
@@ -339,7 +444,7 @@ public class Task
 						characters.Rest ();
 						Debug.Log ("Taking a rest " + time);
 						//Move
-					} else if (Random.Range (0, 101) < 6 + Mathf.RoundToInt (fieldSkillLevel / 2) + guild.foundGatheringPoints [area.id]) { //Found a gathering point!
+					} else if (Random.Range (0, 101) < 6 + Mathf.RoundToInt (fieldSkillLevel / 2) + Database.myGuild.foundGatheringPoints [area.id]) { //Found a gathering point!
 						Debug.Log ("Gathering Point Found " + time.ToString ());
 						if (typeSearch == "Gathering" || Random.Range (0, 100) < 15) {
 							gatheringPoint = area.FindRandomGatheringPoint ();
@@ -348,7 +453,7 @@ public class Task
 								action = "Gathering";
 							}
 						}
-						if (Random.Range (0, 100) < 100 - ((guild.foundGatheringPoints [area.id] + gatheringPointsFound) / area.maxGatheringPoints * 100)) {
+						if (Random.Range (0, 100) < 100 - ((Database.myGuild.foundGatheringPoints [area.id] + gatheringPointsFound) / area.maxGatheringPoints * 100)) {
 							gatheringPointsFound += 1;
 							Debug.Log ("It's a new gathering point " + time);
 						} else if (Random.Range (0, 100) < (gatheringPointsFound / area.maxGatheringPoints * 100)) {

@@ -16,30 +16,28 @@ public class OutsideScreenDisplay : MonoBehaviour {
 	public Button travelButton;
 	private SlotInfo lastSelected;
 	private Guild guild;
-	// Use this for initialization
-	void Start () {
-	
-	}
 	
 	// Update is called once per frame
 	void Update () {
 	
 	}
-	public void UpdateText(Guild guild){
+	public void UpdateText(){
+		this.guild=Database.myGuild;
+		List<int> arealist=guild.knownAreas;
 
-		for (int i=0;i<guild.knownAreas.Count;i++)
+		for (int i=0;i<arealist.Count;i++)
 		{
 			prefabList.GeneratePrefab(i,areaPrefab,"Area",areaList);
-			prefabList [i].GetComponent<SlotInfo> ().FillSlotWithArea(Database.areas.FindArea(guild.knownAreas[i]));
+			prefabList [i].GetComponent<SlotInfo> ().FillSlotWithArea(Database.areas.FindArea(arealist[i]));
 			prefabList [i].GetComponent<SlotInfo> ().ResetSelection();
 		}
-		areaList.SetSize(guild.knownAreas.Count,64);
+		areaList.SetSize(arealist.Count,64);
 		FillStats (null);
 		if (lastSelected != null) {
 			lastSelected = null;
 		}
 		travelButton.interactable=false;
-		this.guild=guild;
+
 	}
 
 	public void FillStats(Area area,int visit=0,int gatheringpoints=0, int huntinggrounds=0)

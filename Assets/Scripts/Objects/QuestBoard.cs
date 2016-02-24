@@ -7,6 +7,7 @@ using System.Linq;
 public class QuestBoard
 {
 	public List<Quest> questList = new List<Quest> ();
+	public int size;
 	//public List<string> questStatus = new List<string> ();
 	//public List<float> questDays = new List<float> ();
 	//public List<List<Member>> questParticipants = new List<List<Member>> ();
@@ -14,13 +15,14 @@ public class QuestBoard
 
 	public QuestBoard ()
 	{
-		for (int i=0; i<10; i++) {
+		for (int i=0; i<21; i++) {
 			questList.Add (new Quest ());
 			//questStatus.Add (" ");
 			//questDays.Add (0);
 			//questParticipants.Add (new List<Member> ());
 			//questLevel.Add(0);
 		}
+		size=21;
 	}
 		
 	public void AddQuest (int id)
@@ -28,7 +30,7 @@ public class QuestBoard
 		Quest quest = Database.quests.FindQuest (id);
 		if (quest != null) {
 			for (int i=0; i< questList.Count; i++) {
-				if (questList [i].name == null) {
+				if (questList [i].name == null&&i<size) {
 					questList [i] = quest;
 					quest.accepted=true;
 					break;

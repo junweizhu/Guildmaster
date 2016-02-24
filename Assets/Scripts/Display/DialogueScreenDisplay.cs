@@ -22,7 +22,7 @@ public class DialogueScreenDisplay : MonoBehaviour
 
 	public void ShowDialogue (GameEvent gameevent, List<int> names)
 	{
-		Debug.Log (gameevent.dialogue);
+		//Debug.Log (gameevent.dialogue);
 		eventId = gameevent.id;
 		dialogueDisplay = Database.strings.GetDialogue (gameevent.dialogue);
 		eventTrigger = gameevent.eventTrigger;
@@ -36,9 +36,8 @@ public class DialogueScreenDisplay : MonoBehaviour
 
 	public void UpdateText ()
 	{
-		Debug.Log ("Updating text");
 		if (dialogueDisplay.Count > 0) {
-			Debug.Log ("it has Text"+dialogueIndex);
+			//Debug.Log ("it has Text"+dialogueIndex);
 			foreach (Dialogue dialogueText in dialogueDisplay) {
 				if (dialogueText.order == dialogueIndex) {
 					characterName.text = dialogueText.GetSpeakerName (names);

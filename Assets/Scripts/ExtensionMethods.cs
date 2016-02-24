@@ -46,7 +46,6 @@ public static class ExtensionMethods
 		if (index + 1 > prefablist.Count) {
 			prefablist.Add (GameObject.Instantiate (prefab) as GameObject);
 			prefablist [index].transform.SetParent (parent);
-
 			prefablist [index].ResetTransform ();
 			prefablist [index].name = nameprefix + " " + index.ToString ();
 		} else if (prefablist [index].activeSelf == false) {
@@ -97,8 +96,9 @@ public static class ExtensionMethods
 				if (attacker.totalStats ["CurrentHealth"] > 0) {
 					if ((float)attacker.totalStats ["CurrentHealth"] / attacker.totalStats ["MaxHealth"] * 100 < 30 && attacker.HasHealingItems ()) {
 						attacker.UseHealingItem ();
-					} else {
-						//System.DateTime.Now.Millisecond
+					} else if(attackers.NeedsHealing(attacker)){
+						attacker.Heal(attackers.GetCharacterToHeal(attacker));
+					}else {
 						Character defender = defenders [Random.Range (0, defenders.Count)];
 						Ability attack=attacker.ChooseAttack();
 						Ability counter=defender.ChooseCounterAttack(attack.range);
@@ -176,12 +176,29 @@ public static class ExtensionMethods
 		return livingcharacters;
 	}
 
+	public static bool NeedsHealing(this List<Character> characters, Character attacker){
+		if (attacker.HasHealingAbility()&&GetCharacterToHeal(characters,attacker)!=null){
+			return true;
+		}
+		return false;
+
+	}
+
+	public static Character GetCharacterToHeal(this List<Character> characters, Character healer){
+		foreach (Character character in characters) {
+			if (character.totalStats ["CurrentHealth"] != 0 && character.totalStats ["MaxHealth"]-character.totalStats ["CurrentHealth"] >= Mathf.RoundToInt(healer.totalStats["MAttack"]/2)) {
+				return character;
+			}
+		}
+		return null;
+	}
 	public static bool IsHurt (this List<Character> characters)
 	{
 		foreach (Character character in characters) {
-			if (character.totalStats ["CurrentHealth"] != 0 && (float)character.totalStats ["CurrentHealth"] / character.totalStats ["CurrentHealth"] * 100 < 75) {
+			if (character.totalStats ["CurrentHealth"] != 0 && (float)character.totalStats ["CurrentHealth"] * 100 / character.totalStats ["MaxHealth"] < 75) {
 				return true;
 			}
+			Debug.Log((float)character.totalStats ["CurrentHealth"]* 100 / character.totalStats ["MaxHealth"] );
 		}
 		return false;
 	}

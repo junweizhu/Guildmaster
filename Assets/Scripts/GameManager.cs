@@ -7,7 +7,8 @@ using System;
 public class GameManager : MonoBehaviour
 {
 	[SerializeField]
-	public Guild myGuild;
+	public Guild
+		myGuild;
 	private Character myUnit;
 	public GuildScreenDisplay guildScreen;
 	public CharacterScreenDisplay characterScreen;
@@ -15,6 +16,7 @@ public class GameManager : MonoBehaviour
 	public QuestScreenDisplay questScreen;
 	public QuestScreenDisplay requestScreen;
 	public WarehouseScreenDisplay warehouseScreen;
+	public UpgradeScreenDisplay upgradeScreen;
 	public TavernScreenDisplay tavernScreen;
 	public SearchScreenDisplay searchScreen;
 	public MarketScreenDisplay marketScreen;
@@ -36,16 +38,16 @@ public class GameManager : MonoBehaviour
 		statDisplayId;
 	private string nextAction;
 	private int day = 1;
-	private int month=1;
-	private int year=1;
+	private int month = 1;
+	private int year = 1;
 	private SaveData data;
 
 	// Use this for initialization
 	void Start ()
 	{
 		Application.targetFrameRate = 15;
-		if(true){
-			Database.Initialize();
+		if (true) {
+			Database.Initialize ();
 			myGuild = Database.guilds.FindGuild (0);
 			myGuild.RecruitCharacter (Database.characters.GetCharacter (0));
 			myGuild.RecruitCharacter (Database.characters.GetCharacter (1));
@@ -53,14 +55,15 @@ public class GameManager : MonoBehaviour
 			myGuild.inventory.AddItem (6);
 			myGuild.inventory.AddItem (14);
 			myGuild.inventory.AddItem (20);
-			Database.quests.GenerateQuest(0,1,"main");
-			Database.quests.GenerateQuest(1,1,"main");
+			Database.quests.GenerateQuest (0, 1, "main");
+			Database.quests.GenerateQuest (1, 1, "main");
 			myGuild.questBoard.AddQuest (1);
 			myGuild.questBoard.AddQuest (0);
 			myGuild.FindNewArea (0);
 		}
 		screenDisplay = "Guild";
-		characterStatScreen.myGuild = myGuild;
+		Database.myGuild = myGuild;
+		Database.game=this;
 		guildScreen.GetComponent<CanvasGroup> ().alpha = 0;
 
 	}
@@ -72,32 +75,38 @@ public class GameManager : MonoBehaviour
 
 			if (screenDisplay == "Guild" && guildScreen.GetComponent<CanvasGroup> ().alpha == 0) {
 				DisplayScreen (guildScreen.GetComponent<CanvasGroup> (), true);
-				guildScreen.UpdateText (myGuild.name, myGuild.level, myGuild.exp, myGuild.fame, myGuild.size, myGuild.money, day,month,year);
+				guildScreen.UpdateText (day, month, year);
 			} else if (screenDisplay != "Guild") {
 				DisplayScreen (guildScreen.GetComponent<CanvasGroup> (), false);
 			}
 			if (screenDisplay == "Characterlist" && characterScreen.GetComponent<CanvasGroup> ().alpha == 0) {
 				DisplayScreen (characterScreen.GetComponent<CanvasGroup> (), true);
-				characterScreen.UpdateText (myGuild.characterlist);
-
+				characterScreen.UpdateText ();
 			} else if (screenDisplay != "Characterlist") {
 				DisplayScreen (characterScreen.GetComponent<CanvasGroup> (), false);
 			}
+
 			if (screenDisplay == "Warehouse" && warehouseScreen.GetComponent<CanvasGroup> ().alpha == 0) {
 				DisplayScreen (warehouseScreen.GetComponent<CanvasGroup> (), true);
-				warehouseScreen.UpdateText (myGuild.inventory);
+				warehouseScreen.UpdateText ();
 			} else if (screenDisplay != "Warehouse") {
 				DisplayScreen (warehouseScreen.GetComponent<CanvasGroup> (), false);
 			}
 			if (screenDisplay == "Questlist" && questScreen.GetComponent<CanvasGroup> ().alpha == 0) {
 				DisplayScreen (questScreen.GetComponent<CanvasGroup> (), true);
-				questScreen.UpdateText (myGuild.questBoard.questList);
+				questScreen.UpdateText ();
 			} else if (screenDisplay != "Questlist") {
 				DisplayScreen (questScreen.GetComponent<CanvasGroup> (), false);
 			}
+			if (screenDisplay == "Upgrade" && upgradeScreen.GetComponent<CanvasGroup> ().alpha == 0) {
+				DisplayScreen (upgradeScreen.GetComponent<CanvasGroup> (), true);
+				upgradeScreen.UpdateText ();
+			} else if (screenDisplay != "Upgrade") {
+				DisplayScreen (upgradeScreen.GetComponent<CanvasGroup> (), false);
+			}
 			if (screenDisplay == "Tavern" && tavernScreen.GetComponent<CanvasGroup> ().alpha == 0) {
 				DisplayScreen (tavernScreen.GetComponent<CanvasGroup> (), true);
-				tavernScreen.UpdateText (Database.characters.GetRecruitables ().Count,Database.quests.AvailableQuests().Count);
+				tavernScreen.UpdateText (Database.characters.GetRecruitables ().Count, Database.quests.AvailableQuests ().Count);
 			} else if (screenDisplay != "Tavern") {
 				DisplayScreen (tavernScreen.GetComponent<CanvasGroup> (), false);
 			}
@@ -109,24 +118,24 @@ public class GameManager : MonoBehaviour
 			}
 			if (screenDisplay == "Outside" && outsideScreen.GetComponent<CanvasGroup> ().alpha == 0) {
 				DisplayScreen (outsideScreen.GetComponent<CanvasGroup> (), true);
-				outsideScreen.UpdateText (myGuild);
+				outsideScreen.UpdateText ();
 			} else if (screenDisplay != "Outside") {
 				DisplayScreen (outsideScreen.GetComponent<CanvasGroup> (), false);
 			}
 			if (screenDisplay == "Recruit" && outsideScreen.GetComponent<CanvasGroup> ().alpha == 0) {
 				DisplayScreen (recruitScreen.GetComponent<CanvasGroup> (), true);
-				recruitScreen.UpdateText (Database.characters.GetRecruitables());
+				recruitScreen.UpdateText ();
 			} else if (screenDisplay != "Recruit") {
 				DisplayScreen (recruitScreen.GetComponent<CanvasGroup> (), false);
 			}
 			if (screenDisplay == "Request" && requestScreen.GetComponent<CanvasGroup> ().alpha == 0) {
 				DisplayScreen (requestScreen.GetComponent<CanvasGroup> (), true);
-				requestScreen.UpdateText (Database.quests.AvailableQuests());
+				requestScreen.UpdateText ();
 			} else if (screenDisplay != "Request") {
 				DisplayScreen (requestScreen.GetComponent<CanvasGroup> (), false);
 			}
 		}
-		CheckEvent();
+		CheckEvent ();
 		if (Input.GetKeyDown (KeyCode.Escape)) {
 			CloseGame ();
 		}
@@ -170,7 +179,7 @@ public class GameManager : MonoBehaviour
 
 		if (slot.name.Contains ("Recruit")) {
 			characterStatScreen.playerType = "Recruit";
-		} else{
+		} else {
 			characterStatScreen.playerType = "Character";
 		}
 		nextAction = "Character";
@@ -192,27 +201,34 @@ public class GameManager : MonoBehaviour
 
 	public void RecruitCharacter (int id)
 	{
-		if (id!=999){
-			myGuild.RecruitCharacter (Database.characters.GetRecruitables()[id]);
-		} else{
-			myGuild.RecruitCharacter (Database.characters.GetRecruitables()[statDisplayId]);
+		if (id != 999) {
+			myGuild.RecruitCharacter (Database.characters.GetRecruitables () [id]);
+		} else {
+			myGuild.RecruitCharacter (Database.characters.GetRecruitables () [statDisplayId]);
 		}
-		characterStatScreen.CloseScreen();
+		characterStatScreen.CloseScreen ();
 	}
 
-	public void AcceptQuest(int id){
-		if (id!=999){
-			myGuild.questBoard.AddQuest(id);
-		} else{
-			myGuild.questBoard.AddQuest(statDisplayId);
+	public void AcceptQuest (int id)
+	{
+		if (id != 999) {
+			myGuild.questBoard.AddQuest (id);
+		} else {
+			myGuild.questBoard.AddQuest (statDisplayId);
 		}
-		CloseQuestStatScreen();
+		CloseQuestStatScreen ();
 	}
-	public void OpenShop (string shop)
+
+	public void OpenShop (int id)
 	{
 		if (myGuild.GetAvailableCharacters ().Count > 0) {
-			shopScreen.guildMoney=myGuild.money;
-			shopScreen.UpdateText (shop, Database.items.GetShopList (shop, myGuild.level));
+			shopScreen.guildMoney = myGuild.money;
+			Shop shop = Database.items.GetShop (id);
+			if (shop == null) {
+				shopScreen.UpdateText (shop, false);
+			} else {
+				shopScreen.UpdateText (shop);
+			}
 			shopScreen.show = true;
 		}
 	}
@@ -227,7 +243,7 @@ public class GameManager : MonoBehaviour
 		if (action == "Quest") {
 			maxSelection = int.Parse (questStatScreen.questMaxParticipants.text);
 		}
-		if (action =="Socialize"){
+		if (action == "Socialize") {
 			maxSelection = 5;
 
 		}
@@ -247,7 +263,7 @@ public class GameManager : MonoBehaviour
 	{
 		selectScreen.show = false;
 		searchScreen.show = false;
-		itemSelectScreen.show=false;
+		itemSelectScreen.show = false;
 	}
 
 	public void SelectCharacters ()
@@ -262,41 +278,44 @@ public class GameManager : MonoBehaviour
 			shopScreen.UpdateBuyer (selectedcharacters);
 		} else if (nextAction == "Quest") {
 			questStatScreen.FillParticipants (selectedcharacters);
-		}else if (nextAction == "Adventure"||nextAction =="Socialize") {
-			promptScreen.Prompt(nextAction);
+		} else if (nextAction == "Adventure" || nextAction == "Socialize") {
+			promptScreen.Prompt (nextAction);
 			return;
 		}
 		ReturnToLastScreen ();
 	}
 
-	public void GoOnAdventure(){
+	public void GoOnAdventure ()
+	{
 		List<Character> selectedcharacters = new List<Character> ();
 		if (selectScreen.show) {
 			selectedcharacters = GetSelectedCharacters (selectScreen.selectedCharacters);
 		} else if (searchScreen.show) {
 			selectedcharacters = GetSelectedCharacters (searchScreen.selectedCharacters);
 		}
-		myGuild.AddTask (new Task(nextAction, outsideScreen.GetSelectedArea (), selectedcharacters, searchScreen.searchType.name));
+		myGuild.AddTask (new Task (nextAction, outsideScreen.GetSelectedArea (), selectedcharacters, searchScreen.searchType.name));
 		for (int i=0; i<selectedcharacters.Count; i++) {
 			selectedcharacters [i].status = searchScreen.searchType.name;
-			selectedcharacters [i].statusAdd = outsideScreen.GetSelectedArea().name;
+			selectedcharacters [i].statusAdd = outsideScreen.GetSelectedArea ().name;
 		}
 		ReturnToLastScreen ();
 	}
 
-	public void GoToTavern(){
+	public void GoToTavern ()
+	{
 		List<Character> selectedcharacters = new List<Character> ();
 		if (selectScreen.show) {
 			selectedcharacters = GetSelectedCharacters (selectScreen.selectedCharacters);
 		} else if (searchScreen.show) {
 			selectedcharacters = GetSelectedCharacters (searchScreen.selectedCharacters);
 		}
-		myGuild.AddTask (new Task(nextAction, 0.5f, selectedcharacters));
+		myGuild.AddTask (new Task (nextAction, 0.5f, selectedcharacters));
 		for (int i=0; i<selectedcharacters.Count; i++) {
-			selectedcharacters [i].status =nextAction+"ing";
+			selectedcharacters [i].status = nextAction + "ing";
 		}
-
+		ReturnToLastScreen ();
 	}
+
 	public List<Character> GetSelectedCharacters (List<SlotInfo> characters)
 	{
 		List<Character> selectedcharacters = new List<Character> ();
@@ -305,11 +324,14 @@ public class GameManager : MonoBehaviour
 		}
 		return selectedcharacters;
 	}
-
+	public void Upgrade(){
+		myGuild.Upgrade (upgradeScreen.lastSelected.id);
+		upgradeScreen.UpdateText();
+	}
 	public void SelectItem ()
 	{
 		if (nextAction == "Character") {
-			myGuild.GiveItemToCharacter(itemSelectScreen.selectedItem.id,itemSelectScreen.slotId,statDisplayId);
+			myGuild.GiveItemToCharacter (itemSelectScreen.selectedItem.id, itemSelectScreen.slotId, statDisplayId);
 			characterStatScreen.FillSlot (statDisplayId);
 		} else if (nextAction == "Adventure") {
 			SelectCharacters ();
@@ -321,19 +343,41 @@ public class GameManager : MonoBehaviour
 
 	public void OpenItemSelect (int slotId)
 	{
-		itemSelectScreen.UpdateText (myGuild.inventory, Database.strings.GetString ("SelectItems"),slotId);
+		itemSelectScreen.UpdateText (myGuild.inventory, Database.strings.GetString ("SelectItems"), slotId, myGuild.GetCharacter (statDisplayId));
 		itemSelectScreen.show = true;
 	}
 
-	public void BuyStuff ()
+	public void BuyOrSell ()
 	{
-		if (shopScreen.BuyingSomething ()) {
-			for (int i=0; i<shopScreen.buyers.Count; i++) {
-				shopScreen.buyers [i].status = "Shopping";
+		string status = "";
+		if (shopScreen.BuyingOrSellingSomething ()) {
+			string task = "";
+			int money=0;
+			if (shopScreen.buying) {
+				status = "Shopping";
+				task = "Shop";
+				money=shopScreen.TotalCost();
+			} else {
+				status = "Selling";
+				task = "Sell";
 			}
-			myGuild.AddTask (new Task("Shop", 0.5f, shopScreen.buyers, shopScreen.GetItemToBuy (), shopScreen.TotalCost ()));
-			shopScreen.show = false;
+			myGuild.AddTask (new Task (task, 1.0f, shopScreen.buyers, shopScreen.GetItemToBuyOrSell (),money));
+		} else {
+			SlotInfo slot = shopScreen.GetSelected ();
+			Skill skill = null;
+			Ability ability = null;
+			if (slot.isAbility) {
+				ability = Database.skills.GetAbility (slot.id);
+			} else {
+				skill = Database.skills.GetSkill (slot.id);
+			}
+			status="Studying";
+			myGuild.AddTask (new Task ("School", 1.0f, shopScreen.buyers, skill, ability,slot.SetCost(shopScreen.buyers)));
 		}
+		for (int i=0; i<shopScreen.buyers.Count; i++) {
+			shopScreen.buyers [i].status = status;
+		}
+		shopScreen.show = false;
 	}
 
 	public void StartQuest ()
@@ -343,17 +387,17 @@ public class GameManager : MonoBehaviour
 			questStatScreen.participants [i].status = "Questing";
 			questStatScreen.participants [i].statusAdd = questStatScreen.quest.name;
 		}
-		myGuild.AddTask (new Task("Quest", questStatScreen.quest, questStatScreen.participants, statDisplayId));
+		myGuild.AddTask (new Task ("Quest", questStatScreen.quest, questStatScreen.participants, statDisplayId));
 		questStatScreen.quest.status = "Ongoing";
 		CloseQuestStatScreen ();
 	}
 
 	public void CloseQuestStatScreen ()
 	{
-		if(screenDisplay=="Questlist"){
-			questScreen.UpdateText (myGuild.questBoard.questList);
-		} else if (screenDisplay=="Request"){
-			requestScreen.UpdateText (Database.quests.AvailableQuests());
+		if (screenDisplay == "Questlist") {
+			questScreen.UpdateText ();
+		} else if (screenDisplay == "Request") {
+			requestScreen.UpdateText ();
 		}
 		questStatScreen.show = false;
 	}
@@ -364,7 +408,7 @@ public class GameManager : MonoBehaviour
 		questStatScreen.questBoard = myGuild.questBoard;
 		questStatScreen.myGuild = myGuild;
 		questStatScreen.questNumber.text = slot.slotNumber.text;
-		questStatScreen.quest =Database.quests.FindQuest(statDisplayId);
+		questStatScreen.quest = Database.quests.FindQuest (statDisplayId);
 		questStatScreen.refresh = true;
 		questStatScreen.show = true;
 	}
@@ -373,22 +417,22 @@ public class GameManager : MonoBehaviour
 	{
 		myGuild.UpdateTasks (day);
 		myGuild.UpdateCharacters ();
-		if (myGuild.tasklog.Count>0) {
-			nextDayScreen.UpdateText (day,month,year, myGuild.tasklog, myGuild.GetCharacterActivity ());
+		if (myGuild.tasklog.Count > 0) {
+			nextDayScreen.UpdateText (day, month, year, myGuild.tasklog, myGuild.GetCharacterActivity ());
 		} else
-			nextDayScreen.UpdateText (day,month,year, null, myGuild.GetCharacterActivity ());
+			nextDayScreen.UpdateText (day, month, year, null, myGuild.GetCharacterActivity ());
 		day += 1;
-		if (day>30){
-			month+=1;
-			day-=30;
-			if (month>12){
-				year+=1;
-				month-=12;
+		if (day > 30) {
+			month += 1;
+			day -= 30;
+			if (month > 12) {
+				year += 1;
+				month -= 12;
 			}
 		}
 		nextDayScreen.show = true;
 		myGuild.NextDayReset ();
-		SaveData();
+		SaveData ();
 	}
 
 	public void ReturnToMainScreen ()
@@ -410,33 +454,37 @@ public class GameManager : MonoBehaviour
 		Application.Quit ();
 	}
 
-	public void SaveData(){
-		SaveLoad.data.day=day;
-		SaveLoad.data.month=month;
-		SaveLoad.data.year=year;
-		SaveLoad.data.guild=myGuild;
-		SaveLoad.data.characters=Database.characters.GetCharacter();
-		SaveLoad.data.quests=Database.quests.GetQuest();
-		SaveLoad.Save();
+	public void SaveData ()
+	{
+		SaveLoad.data.day = day;
+		SaveLoad.data.month = month;
+		SaveLoad.data.year = year;
+		SaveLoad.data.guild = myGuild;
+		SaveLoad.data.characters = Database.characters.GetCharacter ();
+		SaveLoad.data.quests = Database.quests.GetQuest ();
+		SaveLoad.Save ();
 	}
-	public bool LoadData(){
-		SaveLoad.Load();
-		if (SaveLoad.data.guild!=null){
-			day=SaveLoad.data.day;
-			month=SaveLoad.data.month;
-			year=SaveLoad.data.year;
-			myGuild=SaveLoad.data.guild;
-			Database.characters.LoadCharacter(SaveLoad.data.characters);
-			Database.quests.LoadQuest(SaveLoad.data.quests);
+
+	public bool LoadData ()
+	{
+		SaveLoad.Load ();
+		if (SaveLoad.data.guild != null) {
+			day = SaveLoad.data.day;
+			month = SaveLoad.data.month;
+			year = SaveLoad.data.year;
+			myGuild = SaveLoad.data.guild;
+			Database.characters.LoadCharacter (SaveLoad.data.characters);
+			Database.quests.LoadQuest (SaveLoad.data.quests);
 			return true;
 		}
 		return false;
 	}
 
-	public void CheckEvent(){
-		gameEvent=Database.events.GetActiveEvent();
-		if (gameEvent!=null){
-			dialogueScreen.ShowDialogue(gameEvent,null);
+	public void CheckEvent ()
+	{
+		gameEvent = Database.events.GetActiveEvent ();
+		if (gameEvent != null) {
+			dialogueScreen.ShowDialogue (gameEvent, null);
 		}
 	}
 }

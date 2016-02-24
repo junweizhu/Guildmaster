@@ -7,6 +7,7 @@ using System.Linq;
 public class Inventory
 {
 	public List<InventorySlot> inventory = new List<InventorySlot> ();
+	public int size;
 
 	public void RemoveItem (int id, int amount=1)
 	{
@@ -63,7 +64,7 @@ public class Inventory
 					inventory [i].AddQuantity (amount);
 					break;
 				}
-				if (!inventory [i].filled) {
+				if (!inventory [i].filled&& i<size) {
 					inventory [i].FillItem (id,durability);
 					inventory [i].AddQuantity (amount);
 					SortInventory ();
@@ -84,12 +85,23 @@ public class Inventory
 		}
 		return list;
 	}
-	public List<InventorySlot> GetAllItems(string type)//Gets all filled inventory slots with a particular type of item
+
+	public List<int> GetAllFilledSlotId(){
+		List<int> list = new List<int> ();
+		for (int i=0; i<inventory.Count; i++) {
+			if (inventory [i].filled) {
+				list.Add (inventory [i].id);
+			}
+		}
+		return list;
+	}
+	public List<InventorySlot> GetAllItems(string type,string ignoreSubtype1="", string ignoreSubtype2="")//Gets all filled inventory slots with a particular type of item
 	{
 		List<InventorySlot> list = new List<InventorySlot> ();
 		for (int i=0; i<inventory.Count; i++) {
 			if (inventory [i].filled) {
-				if(Database.items.FindItem(inventory [i].itemId).type==type){
+				Item item =Database.items.FindItem(inventory [i].itemId);
+				if(item.type==type &&item.subType!=ignoreSubtype1 &&item.subType!=ignoreSubtype2){
 					list.Add (inventory [i]);
 				}
 			}
@@ -97,6 +109,9 @@ public class Inventory
 		return list;
 
 	}
+
+
+
 	public Dictionary<InventorySlot,int> GetAllItems (Dictionary<int,int> items)//Gets all the inventory slots from each item  indicated in the dictionary
 	{
 		Dictionary<InventorySlot,int> itemlist = new Dictionary<InventorySlot, int> ();
@@ -110,11 +125,12 @@ public class Inventory
 		return itemlist;
 	}
 
-	public Inventory ()
+	public Inventory (int size=55)
 	{
-		for (int i=0; i<100; i++) {
+		for (int i=0; i<size; i++) {
 			inventory.Add (new InventorySlot (i));
 		}
+		this.size=size;
 	}
 
 	public bool Contains (int id, int amount=1)
@@ -136,5 +152,47 @@ public class Inventory
 			}
 		}
 		return null;
+	}
+	public int Count(){
+		int size=0;
+		for (int i=0; i<inventory.Count; i++) {
+			if (inventory [i].filled) {
+				size+=inventory[i].quantity;
+			}
+		}
+		return size;
+	}
+
+	public int GetSpace(){
+		int filledSlot=0;
+		for (int i=0; i<inventory.Count; i++) {
+			if (inventory [i].filled) {
+				filledSlot++;
+			}
+		}
+		return size-filledSlot;
+	}
+
+	public bool CanAddThisItem(int itemId, List<int> currentshoppinglist){
+		if (currentshoppinglist.Contains(itemId)){
+			return true;
+		}
+		int listCount=currentshoppinglist.Count;
+		int filledSlot=0;
+		for (int i=0; i<inventory.Count; i++) {
+			if (inventory [i].filled) {
+				if (inventory[i].itemId==itemId){
+					return true;
+				}
+				filledSlot++;
+				if (currentshoppinglist.Contains(inventory[i].itemId)&&inventory[i].durability==Database.items.FindItem(inventory[i].itemId).durability){
+					listCount-=1;
+				}
+			}
+		}
+		if (size-filledSlot-listCount>0){
+			return true;
+		}
+		return false;
 	}
 }

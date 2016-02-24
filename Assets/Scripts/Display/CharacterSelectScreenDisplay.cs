@@ -34,13 +34,16 @@ public class CharacterSelectScreenDisplay : MonoBehaviour
 	{
 		dialogue.text = description;
 		selectedCharacters.Clear ();
-		for (int i=0; i<availablecharacters.Count; i++) {
-			prefabList.GeneratePrefab(i,selectPrefab,"Character",selectList);
-			prefabList [i].GetComponent<SlotInfo> ().FillSlotWithCharacter (availablecharacters [i]);
-			prefabList [i].GetComponent<SlotInfo> ().ResetSelection ();
+		int count=availablecharacters.Count;
+		if (availablecharacters.Count<prefabList.Count){
+			count=prefabList.Count;
 		}
-		if (availablecharacters.Count < prefabList.Count) {
-			for (int i=availablecharacters.Count; i<prefabList.Count; i++) {
+		for (int i=0; i<count; i++) {
+			prefabList.GeneratePrefab(i,selectPrefab,"Character",selectList);
+			if (i<prefabList.Count){
+				prefabList [i].GetComponent<SlotInfo> ().FillSlotWithCharacter (availablecharacters [i]);
+				prefabList [i].GetComponent<SlotInfo> ().ResetSelection ();
+			} else{
 				prefabList [i].SetActive (false);
 			}
 		}
