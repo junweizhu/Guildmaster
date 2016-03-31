@@ -128,7 +128,7 @@ public class QuestStatScreenDisplay : MonoBehaviour
 			rewardprefList = new List<GameObject> ();
 		}
 		int rewardCount = 0;
-		if (quest.expReward.Count > 0) {
+		if (quest.expReward!=null &&quest.expReward.Count > 0) {
 			foreach (KeyValuePair<int,int> exp in quest.expReward) {
 				string skillname = "";
 				if (exp.Key == 99) {
@@ -142,6 +142,13 @@ public class QuestStatScreenDisplay : MonoBehaviour
 				rewardprefList.Last ().transform.localScale = new Vector3 (1, 1, 1);
 				rewardCount++;
 			}
+		}
+		if (quest.guildExpReward>0){
+			rewardprefList.Add (GameObject.Instantiate (textPrefab) as GameObject);
+			rewardprefList.Last ().GetComponent <Text> ().text = string.Format (Database.strings.GetString ("Experience"), quest.guildExpReward, Database.strings.GetString ("Guild"));
+			rewardprefList.Last ().transform.SetParent (rewardList);
+			rewardprefList.Last ().transform.localScale = new Vector3 (1, 1, 1);
+			rewardCount++;
 		}
 		if (quest.moneyReward > 0) {
 			rewardprefList.Add (GameObject.Instantiate (textPrefab) as GameObject);
@@ -208,6 +215,6 @@ public class QuestStatScreenDisplay : MonoBehaviour
 
 	public void FinishQuest ()
 	{
-		GameObject.FindObjectOfType<GameManager> ().FinishQuest (int.Parse (questNumber.text) - 1);
+		Database.game.FinishQuest (int.Parse (questNumber.text) - 1);
 	}
 }

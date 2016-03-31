@@ -33,6 +33,8 @@ public class SlotInfo : MonoBehaviour
 	private Color selectedColor;
 	private ColorBlock colorBlock;
 	public Button recruitRequestButton;
+	public Button cancelButton;
+	public int inventorySlotId;
 
 
 	void Start ()
@@ -64,6 +66,27 @@ public class SlotInfo : MonoBehaviour
 		slotName.text=upgrade.name;
 		slotLevel.text=level.ToString();
 		slotDescription.text=upgrade.description;
+	}
+
+	public void FillSlotWithTask(int slotnr,Task task){
+		slotNumber.text=slotnr.ToString();
+		slotName.text="";
+		id=slotnr-1;
+		for (int i=0; task.characters.Count>i;i++){
+			if (i!=0){
+				slotName.text+="\n";
+			}
+			slotName.text+=task.characters[i].name;
+		}
+		if (slotStatus != null) {
+			if (task.characters[0].statusAdd != "") {
+				slotStatus.text = string.Format (Database.strings.GetString (task.characters[0].status), task.characters[0].statusAdd);
+			} else {
+				slotStatus.text = Database.strings.GetString (task.characters[0].status);
+			}
+		}
+		slotDuration.text=string.Format (Database.strings.GetString ("Duration"),task.duration.ToString ("f1"));
+		cancelButton.interactable=task.canBeCanceled;
 	}
 
 	public void FillSlotWithQuest (int slotnr, Quest quest)
@@ -142,7 +165,18 @@ public class SlotInfo : MonoBehaviour
 		this.character = character;
 		task = null;
 	}
-
+	public void GuildLog(Guild guild){
+		slotDescription.text = Database.strings.GetString("GuildReport");
+		longDescription="";
+		if (guild.levelUp){
+			longDescription += Database.strings.GetString("GuildLevelUp")+"\n\n";
+		}
+		if (guild.paidMaintenance){
+			longDescription += string.Format(Database.strings.GetString("MaintenancePaid"), string.Format(Database.strings.GetString("Currency"),guild.maintenanceCost));
+		}
+		character = null;
+		task = null;
+	}
 	public void FillSlotWithCharacter (Character character)
 	{
 
@@ -175,6 +209,7 @@ public class SlotInfo : MonoBehaviour
 
 	public void FillSlotWithItem (int slotnr, InventorySlot slot)
 	{
+		inventorySlotId=slot.id;
 		if (slotNumber != null) {
 			slotNumber.text = slotnr.ToString ();
 		}
@@ -204,7 +239,11 @@ public class SlotInfo : MonoBehaviour
 			cost = calculatedCost;
 		}
 		slotName.text = item.name;
-		slotDurability.text = item.durability.ToString ();
+		if (item.durability>0){
+			slotDurability.text = item.durability.ToString ();
+		} else{
+			slotDurability.text ="";
+		}
 		slotQuantity.text = 0.ToString ();
 		if (quantity != 0) {
 			maxQuantity.text = "/" + quantity.ToString ();
@@ -273,39 +312,39 @@ public class SlotInfo : MonoBehaviour
 	public void DisplayStat (string type)
 	{
 		if (type == "character") {
-			GameObject.FindObjectOfType<GameManager> ().DisplayCharacterStats (this);
+			Database.game.DisplayCharacterStats (this);
 			return;
 		}
 		if (type == "item") {
-			GameObject.FindObjectOfType<WarehouseScreenDisplay> ().DisplayItemStats (this);
+			Database.game.warehouseScreen.DisplayItemStats (this);
 			return;
 		}
 		if (type == "quest") {
-			GameObject.FindObjectOfType<GameManager> ().DisplayQuestStats (this);
+			Database.game.DisplayQuestStats (this);
 			return;
 		}
 		if (type == "area") {
-			GameObject.FindObjectOfType<OutsideScreenDisplay> ().DisplayAreaStats (this);
+			Database.game.outsideScreen.DisplayAreaStats (this);
 			return;
 		}
 		if (type == "task") {
-			GameObject.FindObjectOfType<NextDayScreenDisplay> ().SelectSlot (this);
+			Database.game.nextDayScreen.SelectSlot (this);
 			return;
 		}
 		if (type== "upgrade"){
-			GameObject.FindObjectOfType<UpgradeScreenDisplay>().DisplayUpgradeStats(this);
+			Database.game.upgradeScreen.DisplayUpgradeStats(this);
 			return;
 		}
 	}
 
 	public void Recruit ()
 	{
-		GameObject.Find ("MainGame").GetComponent<GameManager> ().RecruitCharacter (id);
+		Database.game.PromptRecruit (id);
 	}
 
 	public void Request ()
 	{
-		GameObject.Find ("MainGame").GetComponent<GameManager> ().AcceptQuest (id);
+		Database.game.AcceptQuest (id);
 	}
 
 	public void ChangeQuantity (string choice)
@@ -322,6 +361,11 @@ public class SlotInfo : MonoBehaviour
 		if (name.Contains ("Shop")) {
 			SelectSlot ();
 		}
+	}
+
+	public void CancelTask(){
+		Database.myGuild.CancelTask(id);
+		Database.game.taskScreen.UpdateText();
 	}
 
 	public int SetCost (List<Character> characters)
@@ -359,14 +403,14 @@ public class SlotInfo : MonoBehaviour
 
 	public void SelectSlot ()
 	{
-		if (GameObject.FindObjectOfType<CharacterSelectScreenDisplay> ().show) {
-			GameObject.FindObjectOfType<CharacterSelectScreenDisplay> ().SelectCharacter (this);
+		if (Database.game.selectScreen.show) {
+			Database.game.selectScreen.SelectCharacter (this);
 		} else if (GameObject.FindObjectOfType<SearchScreenDisplay> ().show) {
-			GameObject.FindObjectOfType<SearchScreenDisplay> ().SelectCharacter (this);
-		} else if (GameObject.FindObjectOfType<ItemSelectScreenDisplay> ().show) {
-			GameObject.FindObjectOfType<ItemSelectScreenDisplay> ().SelectItem (this);
-		} else if (GameObject.FindObjectOfType<ShopScreenDisplay> ().show) {
-			GameObject.FindObjectOfType<ShopScreenDisplay> ().UpdateItemInfo (this);
+			Database.game.searchScreen.SelectCharacter (this);
+		} else if (Database.game.itemSelectScreen.show) {
+			Database.game.itemSelectScreen.SelectItem (this);
+		} else if (Database.game.shopScreen.show) {
+			Database.game.shopScreen.UpdateItemInfo (this);
 		}
 	}
 

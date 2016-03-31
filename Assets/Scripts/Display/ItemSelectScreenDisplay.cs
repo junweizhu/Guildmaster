@@ -44,7 +44,7 @@ public class ItemSelectScreenDisplay: MonoBehaviour
 			if (slotId == 0) {
 				items = storage.GetAllItems ("Weapon");
 			} else if (slotId == 1) {
-				items = storage.GetAllItems ("Armor");
+				items = storage.GetAllItems ("Body");
 			} else {
 				string subType1 = "";
 				string subType2 = "";

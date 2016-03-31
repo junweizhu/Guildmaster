@@ -12,13 +12,24 @@ public class WarehouseScreenDisplay : MonoBehaviour
 	public ItemStatScreenDisplay itemStatScreen;
 	private SlotInfo lastSelected;
 	public Text storageSize;
-
-	public void Start ()
-	{
+	public Button deleteButton;
+	private bool refresh;
+	private CanvasGroup canvasGroup;
+	void Start(){
+		canvasGroup=GetComponent<CanvasGroup>();
+	}
+	void Update(){
+		if(canvasGroup.alpha!=1){
+			refresh=true;
+		} else if(refresh){
+			refresh=false;
+			UpdateText();
+		}
 	}
 
 	public void UpdateText ()
 	{
+
 		Guild guild=Database.myGuild;
 		Inventory itemlist=guild.inventory;
 		List<int> slotId=guild.inventory.GetAllFilledSlotId();
@@ -42,18 +53,26 @@ public class WarehouseScreenDisplay : MonoBehaviour
 			lastSelected = null;
 		}
 		storageSize.text=slotId.Count.ToString()+"/"+Database.upgrades.GetUpgrade(1).MaxSize(guild.upgradelist[1]);
+		deleteButton.interactable=(lastSelected!=null);
 	}
 
 	public void DisplayItemStats (SlotInfo itemslot)
 	{
 		if(lastSelected!=itemslot) {
 			itemslot.Select ();
-			InventorySlot slot=GameObject.FindObjectOfType<GameManager>().myGuild.inventory.GetInventorySlot(itemslot.id);
+			InventorySlot slot=Database.myGuild.inventory.GetInventorySlot(itemslot.inventorySlotId);
 			itemStatScreen.FillSlot (Database.items.FindItem (slot.itemId));
 			if (lastSelected != null) {
 				lastSelected.Select ();
 			}
 			lastSelected = itemslot;
+			deleteButton.interactable=(lastSelected!=null);
 		}
+
+	}
+
+	public void DeleteItem(){
+		Database.myGuild.inventory.GetInventorySlot(lastSelected.id).EmptyItem();
+		UpdateText();
 	}
 }

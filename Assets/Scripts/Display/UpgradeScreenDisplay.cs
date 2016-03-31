@@ -16,7 +16,19 @@ public class UpgradeScreenDisplay : MonoBehaviour {
 	public Text currency;
 	public Text upgradecounter1;
 	public Text upgradecounter2;
-
+	private bool refresh;
+	private CanvasGroup canvasGroup;
+	void Start(){
+		canvasGroup=GetComponent<CanvasGroup>();
+	}
+	void Update(){
+		if(canvasGroup.alpha!=1){
+			refresh=true;
+		} else if(refresh){
+			refresh=false;
+			UpdateText();
+		}
+	}
 
 	public void UpdateText()
 	{

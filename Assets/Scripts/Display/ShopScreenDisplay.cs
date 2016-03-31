@@ -43,28 +43,31 @@ public class ShopScreenDisplay : MonoBehaviour
 		if (show) {
 			GetComponent<CanvasGroup> ().alpha = 1;
 			GetComponent<CanvasGroup> ().blocksRaycasts = true;
+			if ((buyers.Count > 0 && GetItemToBuyOrSell ().Count > 0 && TotalCost () < guildMoney) || (shop != null && shop.useSkill && lastSelected != null)) {
+				buyButton.interactable = true;
+			} else {
+				buyButton.interactable = false;
+			}
+			totalQuantity.text = TotalQuantity ().ToString ();
+			maxQuantity.text = "/" + maxBuy.ToString ();
+			totalCost.text = TotalCost ().ToString ();
 		} else {
 			GetComponent<CanvasGroup> ().alpha = 0;
 			GetComponent<CanvasGroup> ().blocksRaycasts = false;
 		}
-		if ((buyers.Count > 0 && GetItemToBuyOrSell ().Count > 0 && TotalCost () < guildMoney) || (shop != null && shop.useSkill && lastSelected != null)) {
-			buyButton.interactable = true;
-		} else {
-			buyButton.interactable = false;
-		}
-		totalQuantity.text = TotalQuantity ().ToString ();
-		maxQuantity.text = "/" + maxBuy.ToString ();
-		totalCost.text = TotalCost ().ToString ();
+
+
 	}
 
 	public void UpdateText (Shop shop, bool buying=true)
 	{
 		this.buying = buying;
+		Debug.Log (buying);
 		buyers = new List<Character> ();
-		if (shop!=null){
+		if (shop != null) {
 			shopName.text = shop.name;
 			itemText.SetShow (!shop.useSkill);
-		} else{
+		} else {
 			shopName.text = "Marketplace";
 			itemText.SetShow (true);
 		}
@@ -135,7 +138,7 @@ public class ShopScreenDisplay : MonoBehaviour
 		} else if (buyers.Count == 1) {
 			maxBuy = buyers [0].totalStats ["CarrySize"];
 		}
-		if (shop.useSkill) {
+		if (buying && shop.useSkill) {
 			for (int i=0; i<shopslotCount; i++) {
 				int cost = prefabList [i].GetComponent<SlotInfo> ().SetCost (characters);
 				if (cost > Database.myGuild.money) {
@@ -172,7 +175,11 @@ public class ShopScreenDisplay : MonoBehaviour
 			foreach (GameObject item in prefabList) {
 				if (item.activeSelf == true) {
 					if (item.GetComponent<SlotInfo> ().GetItemQuantity () > 0) {
-						shoppingList [item.GetComponent<SlotInfo> ().id] = item.GetComponent<SlotInfo> ().GetItemQuantity ();
+						if (buying){
+							shoppingList [item.GetComponent<SlotInfo> ().id] = item.GetComponent<SlotInfo> ().GetItemQuantity ();
+						} else{
+							shoppingList [item.GetComponent<SlotInfo> ().inventorySlotId] = item.GetComponent<SlotInfo> ().GetItemQuantity ();
+						}
 					}
 				}
 			
@@ -197,7 +204,11 @@ public class ShopScreenDisplay : MonoBehaviour
 		int cost = 0;
 		foreach (KeyValuePair<int,int> item in GetItemToBuyOrSell()) {
 			if (item.Value > 0) {
-				cost += Database.items.FindItem (item.Key).sellValue * item.Value;
+				if (buying) {
+					cost += Database.items.FindItem (item.Key).sellValue * item.Value;
+				} else {
+					cost += Database.items.FindItem (Database.myGuild.inventory.GetInventorySlot (item.Key).itemId).sellValue * item.Value;
+				}
 			}
 		}
 		return cost;
@@ -219,9 +230,9 @@ public class ShopScreenDisplay : MonoBehaviour
 				SlotInfo slotinfo = slot.GetComponent<SlotInfo> ();
 				bool cannotAdd;
 				if (buying) {
-					cannotAdd = TotalQuantity () >= maxBuy || TotalCost () + slotinfo.cost > guildMoney||!Database.myGuild.inventory.CanAddThisItem(slot.GetComponent<SlotInfo> ().id,new List<int>(GetItemToBuyOrSell().Keys));
+					cannotAdd = TotalQuantity () >= maxBuy || TotalCost () + slotinfo.cost > guildMoney || !Database.myGuild.inventory.CanAddThisItem (slot.GetComponent<SlotInfo> ().id, new List<int> (GetItemToBuyOrSell ().Keys));
 				} else {
-					cannotAdd = TotalQuantity () >= maxBuy || int.Parse (slotinfo.slotQuantity.text) >= Database.myGuild.inventory.GetInventorySlot (slotinfo.id).quantity;
+					cannotAdd = TotalQuantity () >= maxBuy || int.Parse (slotinfo.slotQuantity.text) >= Database.myGuild.inventory.GetInventorySlot (slotinfo.inventorySlotId).quantity;
 				}
 				if (cannotAdd) {
 					slot.GetComponent<SlotInfo> ().slotAdd.interactable = false;
@@ -241,13 +252,18 @@ public class ShopScreenDisplay : MonoBehaviour
 	{
 		if (lastSelected != slot || slot == null) {
 			{
-				if (shop==null ||!shop.useSkill) {
+				if (shop == null || !shop.useSkill) {
 					foreach (KeyValuePair<string,Text> stat in stats) {
 						stat.Value.text = "  ";
 					}
 					itemDescription.text = "";
 					if (slot != null) {
-						Item item = Database.items.FindItem (slot.id);
+						Item item;
+						if (buying) {
+							item = Database.items.FindItem (slot.id);
+						} else {
+							item = Database.items.FindItem (Database.myGuild.inventory.GetInventorySlot (slot.inventorySlotId).itemId);
+						}
 						itemDescription.text = item.description;
 						if (itemDescription.text != "")
 							itemDescription.text += " ";
@@ -256,20 +272,23 @@ public class ShopScreenDisplay : MonoBehaviour
 						}
 						for (int i=0; i<prefabList.Count; i++) {
 							if (prefabList [i].GetComponent<SlotInfo> () == slot) {
-								foreach (KeyValuePair<string,int> stat in item.stats) {
-									if (stats.ContainsKey (stat.Key)) {
-										if (stat.Value < 0) {
-											stats [stat.Key].text = "-";
-										}
-										if (stat.Value != 0) {
-											stats [stat.Key].text += stat.Value.ToString ();
+								if (item.stats != null) {
+									foreach (KeyValuePair<string,int> stat in item.stats) {
+										if (stats.ContainsKey (stat.Key)) {
+											if (stat.Value < 0) {
+												stats [stat.Key].text = "-";
+											}
+											if (stat.Value != 0) {
+												stats [stat.Key].text += stat.Value.ToString ();
+											}
 										}
 									}
 								}
 							}
 						}
+						stats ["Weight"].text = item.weight.ToString ();
 					}
-				} else if (slot!=null){
+				} else if (slot != null) {
 					if (slot.isAbility) {
 						itemDescription.text = string.Format (Database.strings.GetString ("Ability"), slot.slotName.text);
 					}

@@ -10,6 +10,19 @@ public class QuestScreenDisplay : MonoBehaviour
 	public List<GameObject> slotPrefabList = new List<GameObject> ();
 	public int questCount;
 	public Text slotSize;
+	private bool refresh;
+	private CanvasGroup canvasGroup;
+	void Start(){
+		canvasGroup=GetComponent<CanvasGroup>();
+	}
+	void Update(){
+		if(canvasGroup.alpha!=1){
+			refresh=true;
+		} else if(refresh){
+			refresh=false;
+			UpdateText();
+		}
+	}
 
 	public void UpdateText ()
 	{
@@ -33,7 +46,8 @@ public class QuestScreenDisplay : MonoBehaviour
 			slotPrefabList.GeneratePrefab (i, questslotPrefab, questslotPrefab.name, questslotList);
 			slotPrefabList [i].GetComponent<SlotInfo> ().FillSlotWithQuest (i + 1, questlist [i]);
 			if (Database.game.screenDisplay == "Request") {
-				slotPrefabList[i].GetComponent<SlotInfo>().recruitRequestButton.interactable=questlist.Count<Database.upgrades.GetUpgrade(2).MaxSize(Database.myGuild.upgradelist[2]);
+
+				slotPrefabList[i].GetComponent<SlotInfo>().recruitRequestButton.interactable=guild.questBoard.AcceptedQuestCount()<Database.upgrades.GetUpgrade(2).MaxSize(Database.myGuild.upgradelist[2]);
 			}
 		}
 		if (questCount < slotPrefabList.Count) {

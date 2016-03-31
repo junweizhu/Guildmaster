@@ -13,22 +13,42 @@ public class GameEvent{
 	//Actual event content
 	public string dialogue;
 	public Dictionary<int,int> itemToGive;
-	public Dictionary<int,int> memberToRecruit;
+	public List<int> memberToRecruit;
 	public Dictionary<int,int> questToTake;
-	public Dictionary<int,int> areaToVisit;
+	public List<int> areaToVisit;
+	public bool enterName;
+	public string changeNameType;
+	public int changeNameId;
 	public int eventTrigger;
+	public int moneyToGive;
 
 	public GameEvent(){
 	}
-
-	public GameEvent(int id, string name,int eventTrigger,string dialogue,Dictionary<int,int>items=default(Dictionary<int,int>),Dictionary<int,int>members=default(Dictionary<int,int>),Dictionary<int,int>quests=default(Dictionary<int,int>), Dictionary<int,int>areas=default(Dictionary<int,int>)){
-		this.id=id;
-		this.name=name;
-		this.dialogue=dialogue;
+	
+	public GameEvent(int id, string name,int eventTrigger,string dialogue,string changeNameType,int changeNameId){
+		BasicInfo(id,name,eventTrigger,dialogue);
+		if (changeNameType!=""){
+			enterName=true;
+			this.changeNameType=changeNameType;
+			this.changeNameId=changeNameId;
+		}
+	}
+	public GameEvent(int id, string name,int eventTrigger,string dialogue,int money){
+		BasicInfo(id,name,eventTrigger,dialogue);
+		moneyToGive=money;
+	}
+	public GameEvent(int id, string name,int eventTrigger,string dialogue,Dictionary<int,int>items=default(Dictionary<int,int>),List<int>members=default(List<int>),Dictionary<int,int>quests=default(Dictionary<int,int>), List<int>areas=default(List<int>)){
+		BasicInfo(id,name,eventTrigger,dialogue);
 		itemToGive=items;
 		memberToRecruit=members;
 		questToTake=quests;
 		areaToVisit=areas;
+	}
+
+	public void BasicInfo(int id, string name,int eventTrigger,string dialogue){
+		this.id=id;
+		this.name=name;
+		this.dialogue=dialogue;
 		this.eventTrigger=eventTrigger;
 	}
 /*	public void Trigger(int id){
@@ -58,5 +78,41 @@ public class GameEvent{
 			}
 		}
 		Database.events.AddToQueue(id);
+	}
+	public void FinishEvent ()
+	{
+		finished = true;
+		bool newDialogue=false;
+		if (itemToGive!=null) {
+			foreach (KeyValuePair<int,int> item in itemToGive){
+				Database.myGuild.inventory.AddItem(item.Key,item.Value);
+			}
+			newDialogue=true;
+		}
+		if (moneyToGive>0){
+			Database.myGuild.money+=moneyToGive;
+			newDialogue=true;
+		}
+		if (areaToVisit!=null){
+			for(int i=0;i<areaToVisit.Count;i++){
+				Database.myGuild.FindNewArea(areaToVisit[i]);
+			}
+			newDialogue=true;
+		}
+		if (questToTake!=null){
+			foreach (KeyValuePair<int,int> quest in questToTake){
+				Database.quests.GenerateQuest(quest.Key,quest.Value);
+			}
+			newDialogue=true;
+		}
+		if (memberToRecruit!=null){
+			for(int i=0;i<memberToRecruit.Count;i++){
+				Database.characters.GetCharacter(memberToRecruit[i]).recruitable=true;
+			}
+			newDialogue=true;
+		}
+		if(newDialogue){
+			Database.game.dialogueScreen.ShowDialogue (0,moneyToGive,itemToGive,null,questToTake,areaToVisit,memberToRecruit);
+		}
 	}
 }

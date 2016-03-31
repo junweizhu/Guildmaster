@@ -11,6 +11,7 @@ public class Guild
 	public int icon;
 	public int level = 1;
 	public int exp = 0;
+	public int requiredExp;
 	public int fame = 0;
 	public int size = 0;
 	public int money = 0;
@@ -23,8 +24,20 @@ public class Guild
 	public Dictionary<int,int> foundGatheringPoints = new Dictionary<int,int> ();
 	public Dictionary<int,int> foundHuntingGrounds = new Dictionary<int,int> ();
 	public Dictionary<int,int> successfulVisits = new Dictionary<int,int> ();
-	public List<Task> tasklog=new List<Task>();
-	public Dictionary<int,int> upgradelist=new Dictionary<int,int>();
+	public List<Task> tasklog = new List<Task> ();
+	public Dictionary<int,int> upgradelist = new Dictionary<int,int> ();
+	public int maintenanceCost;
+	public int questFinished = 0;
+	public int itemsGathered = 0;
+	public int itemsSold = 0;
+	public int monstersSlain = 0;
+	public int tasksGiven = 0;
+	public int membersInjured = 0;
+	public int visitedShop = 0;
+	public int visitedSchool = 0;
+	public int visitedTavern = 0;
+	public bool paidMaintenance = false;
+	public bool levelUp=false;
 
 	public Guild ()
 	{
@@ -41,11 +54,12 @@ public class Guild
 		this.inventory = new Inventory ();
 
 		this.questBoard = new QuestBoard ();
-		for (int i=0;i<Database.upgrades.GetUpgradeListSize();i++){
-			upgradelist[i]=0;
+		for (int i=0; i<Database.upgrades.GetUpgradeListSize(); i++) {
+			upgradelist [i] = 0;
 		}
-		this.inventory.size=Database.upgrades.GetUpgrade(1).MaxSize(upgradelist[1]);
-		this.questBoard.size=Database.upgrades.GetUpgrade(2).MaxSize(upgradelist[2]);
+		this.inventory.size = Database.upgrades.GetUpgrade (1).MaxSize (upgradelist [1]);
+		this.questBoard.size = Database.upgrades.GetUpgrade (2).MaxSize (upgradelist [2]);
+		requiredExp = Database.guilds.RequiredExpTNL (level);
 	}
 
 	public void RecruitCharacter (Character newcharacter)
@@ -87,14 +101,11 @@ public class Guild
 
 	public void UpdateTasks (int day)
 	{
-		tasklog.Clear();
+		tasklog.Clear ();
 		if (taskList.Count > 0) {
 			for (int i=0; i<taskList.Count; i++) {
 				taskList [i].UpdateTask ();
 				if (taskList [i].duration <= 0) {
-					//if (!taskLog.ContainsKey (day))
-						//taskLog [day] = new List<Task> ();
-					//taskLog [day].Add (taskList [i]);
 					tasklog.Add (taskList [i]);
 				}
 			}
@@ -102,84 +113,66 @@ public class Guild
 				for (int i=0; i<tasklog.Count; i++) {
 					if (tasklog [i].type == "Quest") {
 						questBoard.RemoveQuest (tasklog [i].questnumber);
+						questFinished++;
+					} else if (tasklog [i].type == "Sell") {
+						itemsSold += tasklog [i].itemsSold.GetAllItems ().Count;
+					} else if (tasklog [i].type == "Adventure") {
+						monstersSlain += tasklog [i].monstercount;
+						membersInjured += tasklog [i].casualties.Count;
+						if (tasklog [i].success) {
+							itemsGathered += tasklog [i].itemList.Count;
+							if (successfulVisits.ContainsKey (tasklog [i].area.id)) {
+								successfulVisits [tasklog [i].area.id]++;
+								foundGatheringPoints [tasklog [i].area.id] += tasklog [i].gatheringPointsFound;
+							} else {
+								successfulVisits [tasklog [i].area.id] = 1;
+								foundGatheringPoints [tasklog [i].area.id] = tasklog [i].gatheringPointsFound;
+							}
+						}
+					} else if (tasklog [i].type == "Socialize") {
+						visitedTavern++;
+					} else if (tasklog [i].type == "Shop") {
+						visitedShop++;
+					} else if (tasklog [i].type == "School") {
+						visitedSchool++;
 					}
 					taskList.Remove (tasklog [i]);
 				}
+				tasksGiven += tasklog.Count;
 			}
 		}
+		maintenanceCost += DailyMaintenance();
+	}
+	
+	public int DailyMaintenance(){
+		int cost=0;
+		foreach (KeyValuePair<int,int> upgradelevel in upgradelist) {
+			cost+= Database.upgrades.GetUpgrade (upgradelevel.Key).DailyCost (upgradelevel.Value);
+		}
+		return cost;
+	}
+	public void PayMaintenance ()
+	{
+		money -= maintenanceCost;
+		paidMaintenance = true;
 	}
 
 	public void UpdateCharacters ()
 	{
 		foreach (Character character in characterlist) {
-			if (character.totalStats ["CurrentHealth"] > 0 || character.status == "Resting") {
-				character.Heal (100, "Percent", "Health");
-				character.Heal (100, "Percent", "Mana");
-				character.status="Idle";
+			if (character.totalStats ["CurrentHealth"] > 0|| character.status == "Resting") {
+				if (character.totalStats ["CurrentHealth"]<character.totalStats ["MaxHealth"]){
+					character.Heal (100, "Percent", "Health");
+					character.Heal (100, "Percent", "Mana");
+				}
+				character.status = "Idle";
 			} else if (character.status == "Idle") {
 				character.totalStats ["CurrentHealth"] = 0;
 				character.status = "Resting";
 			}
 		}
 	}
-	/*public List<string> GetCharacterActivity ()
-	{
-		List<string> guildinfo = new List<string> ();
-		foreach (Character character in characterlist) {
-			if (character.levelUp) {
-				string info = character.name + " " + Database.strings.GetString ("LevelUp");
-				int count = 0;
-				foreach (KeyValuePair<string,int> stat in character.levelUpStats) {
-					if (stat.Value != 0) {
-						count++;
-					}
-				}
-				foreach (KeyValuePair<string,int> stat in character.levelUpStats) {
-					if (stat.Value != 0) {
-						count--;
-						info += " " + stat.Value.ToString () + " " + Database.strings.GetString (stat.Key);
-						if (count == 1) {
-							info += " " + Database.strings.GetString ("And");
-						} else if (count != 0) {
-							info += ",";
-						} else {
-							info += ".";
-						}
-					}
-				}
-				guildinfo.Add (info);
-			}
-			if (character.skillUp) {
-				string info = character.name + " " + Database.strings.GetString ("SkillUp")+" "+ Database.strings.GetString (character.gender+"Poss");
-				for (int i=0; i<character.leveledSkill.Count; i++) {
-					info += " " + character.leveledSkill [i] + "s";
-					if (i == character.leveledSkill.Count - 2) {
-						info += " " + Database.strings.GetString ("And");
-					} else if (i != character.leveledSkill.Count - 1) {
-						info += ",";
-					} else {
-						info += ".";
-					}
-						
-				}
-				guildinfo.Add (info);
-			}
-			if (character.status=="Resting"){
-				if (character.baseStats["CurrentHealth"]==0){
-					guildinfo.Add (character.name +" "+ Database.strings.GetString ("Injured"));
-				} else{
-					guildinfo.Add (character.name +" "+ Database.strings.GetString ("Recovered1")+" "+Database.strings.GetString (character.gender+"Poss")+" "+Database.strings.GetString ("Recovered2"));
-					character.status="Idle";
-				}
-			}
-		}
-		if (newcharacters.Count > 0) {
-			foreach (string name in newcharacters) {
-				guildinfo.Add (name + " " + Database.strings.GetString ("Join"));
-			}
-		}
-		return guildinfo;
-	}*/
+
 	public List<Character> GetCharacterActivity ()
 	{
 		List<Character> characters = new List<Character> ();
@@ -195,7 +188,6 @@ public class Guild
 	{
 		money += returnmoney;
 		GetItems (items);
-
 	}
 
 	public void GetItems (Dictionary<int,int> items)
@@ -205,21 +197,23 @@ public class Guild
 		}
 	}
 
+	public void CancelTask (int index)
+	{
+		taskList [index].Cancel ();
+		taskList.RemoveAt (index);
+	}
+
 	public void FinishQuest (int questid, List<Character> characters)
 	{
 		Quest quest = questBoard.FindQuest (questid);
-		if (quest.requiredItems.Count > 0) {
+		if (quest.requiredItems != null && quest.requiredItems.Count > 0) {
 			inventory.RemoveItem (quest.requiredItems);
 		}
-		if (characters != null) {
+		if (quest.expReward != null && characters != null) {
 			foreach (Character character in characters) {
 				foreach (KeyValuePair<int,int> exp in quest.expReward) {
 					character.GiveExp (exp.Key, exp.Value);
 				}
-			}
-		} else {
-			foreach (KeyValuePair<int,int> exp in quest.expReward) {
-				characterlist [0].GiveExp (exp.Key, exp.Value);
 			}
 		}
 		if (quest.itemRewards != null) {
@@ -227,8 +221,10 @@ public class Guild
 				inventory.AddItem (item.Key, item.Value);
 			}
 		}
+		GiveExp (quest.guildExpReward);
 		money += quest.moneyReward;
-		quest.finished=true;
+		GameObject.FindObjectOfType<DialogueScreenDisplay> ().ShowDialogue (quest.guildExpReward,quest.moneyReward, quest.itemRewards);
+		quest.finished = true;
 	}
 
 	public bool CanFinishQuest (int questid)
@@ -244,12 +240,7 @@ public class Guild
 		return true;
 	}
 
-	/*public void FindNewQuest (int level)
-	{
-		questBoard.AddQuest (level);
-	}*/
-
-	public Character FindNewRecruit (int level, string mainSkill)
+	public Character FindNewRecruit (int level, int mainSkill)
 	{
 		if (level < 1)
 			level = 1;
@@ -271,52 +262,67 @@ public class Guild
 		foreach (Character character in characterlist) {
 			character.NextDayResets ();
 		}
+		if (paidMaintenance){
+			paidMaintenance = false;
+			maintenanceCost=0;
+		}
+		levelUp=false;
 	}
 
-	/*public void GiveItemsToCharacter (Dictionary<int,int> itemlist, int characterid)
+	public void GiveItemToCharacter (int inventoryId, int equipslotId, int characterId)
 	{
-		foreach (KeyValuePair<InventorySlot,int> slot in inventory.GetAllItems(itemlist)) {
-			GetCharacter (characterid).AddItem (slot.Key, slot.Value);
+		Character character = GetCharacter (characterId);
+		if (character.equipment [equipslotId].filled) {
+			inventory.AddItem (character.equipment [equipslotId].itemId, 1, character.equipment [equipslotId].durability);
 		}
-		inventory.RemoveItem (itemlist);
-	}*/
-
-	public void GiveItemToCharacter(int inventoryId, int equipslotId, int characterId){
-		Character character=GetCharacter (characterId);
-		if (character.equipment[equipslotId].filled){
-			inventory.AddItem(character.equipment[equipslotId].itemId,1,character.equipment[equipslotId].durability);
-		}
-		if (inventoryId!=999){
-			InventorySlot slot =inventory.GetInventorySlot(inventoryId);
-			character.Equip(equipslotId,slot.itemId,slot.durability);
-			inventory.RemoveItemFromSlot(inventoryId,1);
-		} else{
-			character.UnEquip(equipslotId);
+		if (inventoryId != 999) {
+			InventorySlot slot = inventory.GetInventorySlot (inventoryId);
+			character.Equip (equipslotId, slot.itemId, slot.durability);
+			inventory.RemoveItemFromSlot (inventoryId, 1);
+		} else {
+			character.UnEquip (equipslotId);
 		}
 	}
 
-	public bool CanUpgrade(int id){
-		Upgrade upgrade=Database.upgrades.GetUpgrade(id);
-		if (money<upgrade.UpgradeCost(upgradelist[id])){
+	public bool CanUpgrade (int id)
+	{
+		if (id!=0&&upgradelist[0]==0){
 			return false;
 		}
-		Dictionary<int,int> materialCost=upgrade.MaterialCost(upgradelist[id]);
-		foreach (KeyValuePair<int,int> material in materialCost){
-			if (!inventory.Contains(material.Key,material.Value)){
+		Upgrade upgrade = Database.upgrades.GetUpgrade (id);
+		if (money < upgrade.UpgradeCost (upgradelist [id]) || Mathf.RoundToInt (upgradelist [id] * 50 / upgrade.maxLevel) >= level) {
+			return false;
+		}
+		Dictionary<int,int> materialCost = upgrade.MaterialCost (upgradelist [id]);
+		foreach (KeyValuePair<int,int> material in materialCost) {
+			if (!inventory.Contains (material.Key, material.Value)) {
 				return false;
 			}
 		}
 		return true;
 	}
-	public void Upgrade(int id){
-		Upgrade upgrade=Database.upgrades.GetUpgrade(id);
-		money-=upgrade.UpgradeCost(upgradelist[id]);
-		Dictionary<int,int> materialCost=upgrade.MaterialCost(upgradelist[id]);
-		foreach (KeyValuePair<int,int> material in materialCost){
-			inventory.RemoveItem(material.Key,material.Value);
+
+	public void Upgrade (int id)
+	{
+		Upgrade upgrade = Database.upgrades.GetUpgrade (id);
+		money -= upgrade.UpgradeCost (upgradelist [id]);
+		Dictionary<int,int> materialCost = upgrade.MaterialCost (upgradelist [id]);
+		foreach (KeyValuePair<int,int> material in materialCost) {
+			inventory.RemoveItem (material.Key, material.Value);
 		}
-		upgradelist[id]+=1;
-		inventory.size=Database.upgrades.GetUpgrade(1).MaxSize(upgradelist[1]);
-		questBoard.size=Database.upgrades.GetUpgrade(2).MaxSize(upgradelist[2]);
+		upgradelist [id] += 1;
+		inventory.size = Database.upgrades.GetUpgrade (1).MaxSize (upgradelist [1]);
+		questBoard.size = Database.upgrades.GetUpgrade (2).MaxSize (upgradelist [2]);
+	}
+
+	public void GiveExp (int exp)
+	{
+		this.exp += exp;
+		if (requiredExp <= this.exp) {
+			this.exp -= requiredExp;
+			level++;
+			requiredExp = Database.guilds.RequiredExpTNL (level);
+			levelUp=true;
+		}
 	}
 }

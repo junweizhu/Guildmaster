@@ -92,29 +92,37 @@ public static class ExtensionMethods
 			} else{
 				Debug.Log ("Player turn" + turn.ToString ());
 			}
-			foreach (Character attacker in attackers) {
-				if (attacker.totalStats ["CurrentHealth"] > 0) {
-					if ((float)attacker.totalStats ["CurrentHealth"] / attacker.totalStats ["MaxHealth"] * 100 < 30 && attacker.HasHealingItems ()) {
-						attacker.UseHealingItem ();
-					} else if(attackers.NeedsHealing(attacker)){
-						attacker.Heal(attackers.GetCharacterToHeal(attacker));
+
+			for (int i=0;i<attackers.Count;i++) {
+				Debug.Log(attackers[i].name);
+				if (attackers[i].totalStats ["CurrentHealth"] > 0) {
+					if ((float)attackers[i].totalStats ["CurrentHealth"] / attackers[i].totalStats ["MaxHealth"] * 100 < 30 && attackers[i].HasHealingItems ()) {
+						attackers[i].UseHealingItem ();
+					} else if(attackers.NeedsHealing(attackers[i])){
+						attackers[i].Heal(attackers.GetCharacterToHeal(attackers[i]));
 					}else {
 						Character defender = defenders [Random.Range (0, defenders.Count)];
-						Ability attack=attacker.ChooseAttack();
+						Ability attack=attackers[i].ChooseAttack();
 						Ability counter=defender.ChooseCounterAttack(attack.range);
-						attacker.Attack (defender,attack);
+						attackers[i].Attack (defender,attack);
+						AttackSkillExpGain(attackers[i],attack.element,3,task);
 						if (defender.canAttack&&defender.totalStats ["CurrentHealth"] > 0) {
-							defender.Attack (attacker,counter);
-							if (attacker.canAttack&&CanAttack (attacker.totalStats ["CurrentHealth"], attacker.totalStats ["Speed"], defender.totalStats ["Speed"])) {
-								attacker.Attack (defender,attack);
-							} else if (defender.canAttack&&attacker.totalStats ["CurrentHealth"] > 0 && CanAttack (defender.totalStats ["CurrentHealth"], defender.totalStats ["Speed"], attacker.totalStats ["Speed"])) {
-								defender.Attack (attacker,counter);
+							defender.Attack (attackers[i],counter);
+							AttackSkillExpGain(defender,counter.element,3,task);
+							if (attackers[i].canAttack&&CanAttack (attackers[i].totalStats ["CurrentHealth"], attackers[i].totalStats ["Speed"], defender.totalStats ["Speed"])) {
+								attackers[i].Attack (defender,attack);
+								AttackSkillExpGain(attackers[i],attack.element,3,task);
+							} else if (defender.canAttack&&attackers[i].totalStats ["CurrentHealth"] > 0 && CanAttack (defender.totalStats ["CurrentHealth"], defender.totalStats ["Speed"], attackers[i].totalStats ["Speed"])) {
+								defender.Attack (attackers[i],counter);
+								AttackSkillExpGain(defender,counter.element,3,task);
 							}
 						}
-						if (attacker.isEnemy){
-							DistributeExp (defender, attacker, task);
+						if (attackers[i].isEnemy){
+							DistributeExp (defender, attackers[i], task);
+							task.GiveExp(defender,task.combatSkillId,3);
 						} else{
-							DistributeExp (attacker, defender, task);
+							DistributeExp (attackers[i], defender, task);
+							task.GiveExp(attackers[i],task.combatSkillId,3);
 						}
 						if (defenders.Alive ().Count == 0 || attackers.Alive ().Count == 0) {
 							return;
@@ -125,6 +133,17 @@ public static class ExtensionMethods
 			}
 		}
 	}
+
+	public static void AttackSkillExpGain(Character character, string element,int amount,Task task){
+		if (!character.isEnemy){
+			if (element=="Physical"){
+				task.GiveExp(character,task.weaponSkillId,amount);
+			} else{
+				task.GiveExp(character,task.magicSkillId,amount);
+			}
+		}
+	}
+
 
 	public static bool CanAttack (int currentHealth, int firstUnitSpeed, int secondUnitSpeed)
 	{
@@ -138,19 +157,23 @@ public static class ExtensionMethods
 
 	public static void DistributeExp (Character character, Character monster, Task task)
 	{
+		int expGain=1;
 		if (monster.totalStats ["CurrentHealth"] <= 0) {
 			Debug.Log (monster.name + " dies."+System.DateTime.Now.Millisecond.ToString());
-			task.GiveExp (character, null, 30 + (monster.level - character.level) * 3);
+			expGain= 10 + (monster.level - character.level) * 3;
+			task.monstercount++;
 		} else if (character.didDamage) {
-			task.GiveExp (character, null, 10 + (monster.level - character.level) * 2);
-		} else {
-			task.GiveExp (character, null, 1);
-		}
+			expGain= 5 + (monster.level - character.level) * 2;
+		} 
 		if (character.totalStats ["CurrentHealth"] <= 0) {
 			Debug.Log (character.name + " is knocked out "+character.totalStats ["CurrentHealth"].ToString()+" "+System.DateTime.Now.Millisecond.ToString());
 		} else {
 			Debug.Log (character.name+ " has " +character.totalStats ["CurrentHealth"]+ " health. "+System.DateTime.Now.Millisecond.ToString());
 		}
+		if (expGain<1){
+			expGain=1;
+		}
+		task.GiveExp (character, 99, expGain);
 		character.didDamage = false;
 	}
 
@@ -167,9 +190,9 @@ public static class ExtensionMethods
 	{
 		List<Character> livingcharacters = new List<Character> ();
 		if (allcharacters.Count > 0) {
-			foreach (Character character in allcharacters) {
-				if (character.totalStats ["CurrentHealth"] > 0) {
-					livingcharacters.Add (character);
+			for (int i=0;i<allcharacters.Count;i++){
+				if (allcharacters[i].totalStats ["CurrentHealth"] > 0) {
+					livingcharacters.Add (allcharacters[i]);
 				}
 			}
 		}
@@ -185,28 +208,29 @@ public static class ExtensionMethods
 	}
 
 	public static Character GetCharacterToHeal(this List<Character> characters, Character healer){
-		foreach (Character character in characters) {
-			if (character.totalStats ["CurrentHealth"] != 0 && character.totalStats ["MaxHealth"]-character.totalStats ["CurrentHealth"] >= Mathf.RoundToInt(healer.totalStats["MAttack"]/2)) {
-				return character;
+		for (int i=0;i<characters.Count;i++){
+			if (characters[i].totalStats ["CurrentHealth"] != 0 && characters[i].totalStats ["MaxHealth"]-characters[i].totalStats ["CurrentHealth"] >= Mathf.RoundToInt(healer.totalStats["MAttack"]/2)) {
+				return characters[i];
 			}
 		}
 		return null;
 	}
+
 	public static bool IsHurt (this List<Character> characters)
 	{
-		foreach (Character character in characters) {
-			if (character.totalStats ["CurrentHealth"] != 0 && (float)character.totalStats ["CurrentHealth"] * 100 / character.totalStats ["MaxHealth"] < 75) {
+		for (int i=0;i<characters.Count;i++){
+			if (characters[i].totalStats ["CurrentHealth"] != 0 && (float)characters[i].totalStats ["CurrentHealth"] * 100 / characters[i].totalStats ["MaxHealth"] < 50) {
+				Debug.Log(characters[i].name + " has "+characters[i].totalStats ["CurrentHealth"]+"/"+characters[i].totalStats ["MaxHealth"]+" "+System.DateTime.Now.Millisecond.ToString());
 				return true;
 			}
-			Debug.Log((float)character.totalStats ["CurrentHealth"]* 100 / character.totalStats ["MaxHealth"] );
 		}
 		return false;
 	}
 
 	public static bool IsInjured (this List<Character> characters)
 	{
-		foreach (Character character in characters) {
-			if (character.totalStats ["CurrentHealth"] <= 0) {
+		for (int i=0;i<characters.Count;i++){
+			if (characters[i].totalStats ["CurrentHealth"] <= 0) {
 				return true;
 			}
 		}
@@ -215,22 +239,25 @@ public static class ExtensionMethods
 
 	public static void Rest (this List<Character> characters)
 	{
-		foreach (Character character in characters) {
-			if (character.totalStats ["CurrentHealth"] != character.totalStats ["MaxHealth"]) {
-				character.Heal (10, "Percent", "Health");
-				character.Heal (5, "Percent", "Mana");
+		for (int i=0;i<characters.Count;i++){
+			if (characters[i].totalStats ["CurrentHealth"] != characters[i].totalStats ["MaxHealth"]) {
+				characters[i].Heal (10, "Percent", "Health");
+				characters[i].Heal (5, "Percent", "Mana");
 			}
 		}
 	}
+
 	public static void UpdateEquipmentStats(this Dictionary<string,int>equipmentStats,List<InventorySlot> equipment, ref int blockItem){
 		List<string> stats=new List<string>(equipmentStats.Keys);
 		foreach (string stat in stats){
 			equipmentStats[stat]=0;
 		}
 		blockItem=0;
-		foreach (InventorySlot equip in equipment) {
-			if (equip.filled) {
-				Item item = Database.items.FindItem (equip.itemId);
+		float weight=0.0f;
+		for (int i=0;i<equipment.Count;i++){
+			if (equipment[i].filled) {
+				Item item = Database.items.FindItem (equipment[i].itemId);
+				weight+=item.weight;
 				if (item.type != "Consumable") {
 					foreach (KeyValuePair<string,int> stat in item.stats) {
 						if (equipmentStats.ContainsKey (stat.Key)) {
@@ -239,18 +266,20 @@ public static class ExtensionMethods
 					}
 				}
 				if (item.subType=="Shield"){
-					blockItem=equip.id;
+					blockItem=equipment[i].id;
 				}
-			} else if (equip.id == 0) {
+			} else if (equipment[i].id == 0) {
 				equipmentStats ["Accuracy"] += 85;
 				equipmentStats ["Evade"] += 15;
 			}
 		}
+		equipmentStats["Weight"]=Calculate(weight,1);
 		if (equipment[blockItem].filled){
 			equipmentStats["Block"]=Database.items.FindItem(equipment[blockItem].itemId).stats["Block"];
 			equipmentStats["BlockChance"]=Database.items.FindItem(equipment[blockItem].itemId).stats["BlockChance"];
 		}
 	}
+
 	public static void UpdateStats (this Dictionary<string,int> totalStats, Dictionary<string,int> baseStats,Dictionary<string,int> bonusStats,Dictionary<string,int>equipmentStats,string status)
 	{
 		foreach (KeyValuePair<string,int> stat in equipmentStats){
@@ -285,6 +314,16 @@ public static class ExtensionMethods
 	}
 
 	public static int Calculate (int totalstat, float multiplier)
+	{
+		float result = totalstat * multiplier;
+		if (result >= Mathf.FloorToInt (result) + 0.5f) {
+			return Mathf.CeilToInt (result);
+		} else {
+			return Mathf.FloorToInt (result);
+		}
+	}
+
+	public static int Calculate (float totalstat, float multiplier)
 	{
 		float result = totalstat * multiplier;
 		if (result >= Mathf.FloorToInt (result) + 0.5f) {

@@ -27,14 +27,13 @@ public class AreaDatabase {
 
 	void GenerateAreas()
 	{
-		areaList.Add(new Area(0,"Green Forest","Forest",1,1,0,15));
-		areaList.Add(new Area(1,"Green Plains","Plains",1,1,0,15));
+		areaList.Add(new Area(0,"Green Plains","Plains",0,1,0,40,15));
+		areaList.Add(new Area(1,"Green Forest","Forest",0,1,0,50,15));
+
 	}
 
 	public List<GatheringPoint> GetTypeGatheringPoint(string areatype)
 	{
-
-
 		List<GatheringPoint>gatheringpoints=new List<GatheringPoint>();
 		foreach (GatheringPoint point in gatheringList) {
 			if (areaGatheringType[areatype].Contains(point.type))

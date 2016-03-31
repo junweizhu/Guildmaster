@@ -5,18 +5,16 @@ using System.Collections.Generic;
 public class CharDatabase {
 	[SerializeField]
 	private List<Character> memberList= new List<Character>();
-	private List<string> maleNames=new List<string>(){"Test3","test4"};
-	private List<string> femaleNames=new List<string>(){"Test5","test6"};
-	private List<Skill> skills;
+	private List<string> maleNames=new List<string>(){"Test3","Test4","Test5","Test6","Test7","Test8"};
+	private List<string> femaleNames=new List<string>(){"test3","test4","test5","test6","test7","test8"};
 
 	// Use this for initialization
 	public CharDatabase () {
 	}
 
 	public void Generate(){
-		skills=Database.skills.SkillList();
 		memberList.Add (new Character(0, "Test",true,1,"Warrior"));
-		memberList.Add (new Character(1, "Test2",true,1,"Mage"));
+		memberList.Add (new Character(1, "Test2",false,1,"Mage"));
 	}
 	public List<Character> GetCharacter(){
 		return memberList;
@@ -43,7 +41,8 @@ public class CharDatabase {
 		}
 		return name;
 	}
-	public Character GenerateNewCharacter(int level,string mainSkill)
+
+	public Character GenerateNewCharacter(int level,int mainSkill)
 	{
 		string charName;
 		bool male=(Random.Range(0,2)==0);
@@ -56,11 +55,11 @@ public class CharDatabase {
 			femaleNames.Remove(charName);
 		}
 		memberList.Add (new Character(memberList.Count,charName,male,level));
-		foreach (Skill skill in skills)
+		foreach (Skill skill in Database.skills.SkillList())
 		{
 			float modifier=1.0f;
 			int minimum=0;
-			if (skill.name==mainSkill){
+			if (skill.id==mainSkill){
 				modifier=1.25f;
 				minimum=50;
 			}
@@ -68,16 +67,17 @@ public class CharDatabase {
 			int exp=Mathf.RoundToInt(Random.Range(50*modifier,((level)*modifier)*100))+minimum;
 			memberList[memberList.Count-1].GiveExp(skill.id,exp);
 		}
+		memberList[memberList.Count-1].NextDayResets();
+		memberList[memberList.Count-1].recruitable=true;
 		return memberList[memberList.Count-1];
 	}
 
 	public List<Character> GetRecruitables()
 	{
 		List<Character> unrecruitedList= new List<Character>();
-		foreach (Character member in memberList)
-		{
-			if (member.recruited==false)
-				unrecruitedList.Add (member);
+		for (int i=0;i<memberList.Count;i++){
+			if (memberList[i].recruited==false&&memberList[i].recruitable)
+				unrecruitedList.Add (memberList[i]);
 		}
 		return unrecruitedList;
 	}

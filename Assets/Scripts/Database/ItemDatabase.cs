@@ -8,6 +8,10 @@ public class ItemDatabase
 	[SerializeField]
 	private List<Item>itemList = new List<Item> ();
 	private List<Shop> shopList = new List<Shop> ();
+	private List<Item> baseMaterial=new List<Item>();
+	private List<Item> baseItem=new List<Item>();
+	private Dictionary<string,int> tier= new Dictionary<string,int> ();
+
 	// Use this for initialization
 	public ItemDatabase ()
 	{
@@ -17,14 +21,39 @@ public class ItemDatabase
 		AddShop ("Arcanesmith", "sells staves and other magical items");//3
 		AddShop ("Training Hall", "Offers teachings in skills and abilities");//4
 
+		tier.Add ("Leather",0);
+		tier.Add ("Cotton",10);
+		tier.Add ("Silk",20);
+		tier.Add ("Cashmere",30);
+		tier.Add ("Wood",0);
+		tier.Add ("Copper",10);
+		tier.Add ("Silver",20);
+		tier.Add ("Gold",30);
+		tier.Add ("Iron",20);
+		tier.Add ("Steel",30);
+
+
+		BaseMaterials();
 		Consumables();
 		Weapons ();
 		Armor();
 		Accessory();
-		Books ();
+		BaseMaterials ();
 		Materials ();
 	}
-
+	public void BaseMaterials(){
+		AddMaterial ("Leather", "Material","Leather", 25, "",	50,1,3,0,3,2,1.05f,1.05f,0);
+		AddMaterial ("Cotton", "Material","Fabric", 25, "",		45,0.75f,2,1,2,4,1.1f,1.1f,0);
+		AddMaterial ("Silk", "Material","Fabric", 30, "",		42.5f,0.5f,1,2,2,6,1.15f,1.15f,0);
+		AddMaterial ("Cashmere", "Material","Fabric", 40, "",	40,0.25f,0,3,1,7,1.25f,1.25f,0);
+		
+		AddMaterial ("Wood", "Material","Wood", 20, "",			40,1,2,1,3,2,1.0f,1.0f,2.5f);	
+		AddMaterial ("Copper", "Material","Metal", 25, "",		45,2,3,2,4,3,0.95f,0.95f,3.5f);
+		AddMaterial ("Silver", "Material","Metal", 35, "",		50,3,3,4,4,5,0.9f,0.9f,4.5f);
+		AddMaterial ("Gold", "Material","Metal", 45, "",		65,4,3,5,4,6,0.85f,0.85f,5);
+		AddMaterial ("Iron", "Material","Metal", 30, "",		60,3,4,2,5,3,0.9f,0.9f,4);
+		AddMaterial ("Steel", "Material","Metal", 40, "",		75,2,5,2,6,3,0.85f,0.85f,4.5f);
+	}
 	public void Consumables(){
 		AddItem ("Health Vial", "Consumable","Heal", 50, "",3,5,0,0,0,0,0, true, 0);
 		AddItem ("Health Flask", "Consumable","Heal", 110, "",3,10,0,0,0,0,0, true, 0);
@@ -36,45 +65,42 @@ public class ItemDatabase
 	}
 
 	public void Weapons(){
-		AddEquipment ("Iron Sword","Weapon", "Sword", 240, "A sword made of iron",40,2,2,0,0,0,100,20,1,15,"", true,1);
-		AddEquipment ("Iron Axe","Weapon", "Axe", 220, "An axe made of iron",50,4,4,0,0,0,80,0,3,20,"", true,1);
-		AddEquipment ("Iron Spear","Weapon", "Spear", 230, "A spear made of iron",60,3,3,0,0,0,110,5,2,30,"", true,1);
-		AddEquipment ("Iron Crossbow","Weapon", "Bow", 270, "A bow made of iron",40,3,5,0,0,0,70,0,1,5,"", true,1);
-		AddEquipment ("Iron Mace", "Weapon","Mace", 250, "A mace made of iron",45,4,1,0,0,0,80,0,2,20,"", true,1);
-		AddEquipment ("Iron Dagger","Weapon", "Dagger", 210, "A dagger made of iron",35,1,1,0,0,0,85,30,1,5,"", true,1);
-		AddEquipment ("Wooden Staff","Weapon", "Staff", 260, "A staff made of wood",60,2,2,3,0,0,105,5,2,30,"", true,3);
-		AddEquipment ("Wooden Rod", "Weapon","Rod", 270, "A rod made of wood",50,1,1,4,0,0,100,20,1,5,"", true,3);
+		AddEquipment ("Sword","Weapon", "Sword", 12, "",	1,2,1.5f,0.5f,0,0,100,20,0.5f,15,1, "Wood","Metal");
+		AddEquipment ("Axe","Weapon", "Axe", 11, "",		1.25f,4,3,0.2f,0,0,80,0,1.5f,20,1, "Wood","Metal");
+		AddEquipment ("Spear","Weapon", "Spear", 11.5f, "",	1.5f,3,2.5f,0.5f,0,0,120,0,1,30,1, "Wood","Metal");
+		AddEquipment ("Bow","Weapon", "Bow", 13.5f, "",		1.25f,3,3,0.3f,0,0,75,0,0.5f,5,1, "Wood","Metal");
+		AddEquipment ("Mace", "Weapon","Mace", 12.5f, "",	1.125f,4,1.5f,1,0,0,80,0,1,20,1, "Wood","Metal");
+		AddEquipment ("Dagger","Weapon", "Dagger", 10, "",	1.125f,0.5f,1,0.5f,0,0,85,30,0.5f,5,1, "Wood","Metal");
+		AddEquipment ("Staff","Weapon", "Staff", 13, "",	1.5f,2,2,2,0,0,105,6,1,25,3, "Wood","Metal");
+		AddEquipment ("Rod", "Weapon","Rod", 13.5f, "",		1,1,1,3,0,0,100,20,0.5f,5,3, "Wood","Metal");
 	}
 
 	public void Armor(){
 
-		AddEquipment("Reinforced Clothes","Armor","Body",170,"Clothing layered for extra protection",60,1,0,0,2,2,0,0,0,0,"",true,2);
-		AddEquipment("Leather Armour","Armor","Body",180,"Armour made of thick leather",55,2,0,0,3,1,0,-3,0,0,"",true,2);
-		AddEquipment("Iron Chainmail","Armor","Body",200,"Armour made of linked iron rings to form a lightweight but strong protection",50,3,0,0,4,0,-3,-3,0,0,"",true,2);
-		AddEquipment("Iron Breastplate","Armor","Body",220,"Protects the upper body and shoulders",45,4,0,0,5,0,-3,-5,0,0,"",true,2);
-		AddEquipment("Iron Cuirass","Armor","Body",240,"Full body protection",40,5,0,0,7,0,-10,-10,0,0,"",true,2);
-		AddEquipment("Cotton Robe","Armor","Body",180,"Robe magically woven with cotton",55,0,0,1,1,2,10,10,0,0,"",true,3);
+		AddEquipment("Robe","Body","Robe",9,"",				1.2f,0.1f,0,1,.5f,2,2.5f,0,0,0,3,"Leather","Fabric");
+		AddEquipment("Vest","Body","Cloth",8.5f,"",			1.25f,1,0,0,1,1.5f,5,2.5f,0,0,2,"Leather","Fabric");
+		AddEquipment("Garb","Body","Cloth",9,"",			1.2f,2,0,0,1.5f,1,0,-2.5f,0,0,2,"Leather","Fabric");
+		AddEquipment("Chainmail","Body","Armor",10,"",		1.25f,1.5f,0,0,1.5f,1,-2.5f,-5,0,0,2,"Metal");
+		AddEquipment("Breastplate","Body","Armor",11,"",	1.125f,2,0,0,2,0.75f,-5f,-10,0,0,2,"Metal");
+		AddEquipment("Cuirass","Body","Armor",12,"",		1,2.5f,0,0,3,0.5f,-10,-15f,0,0,2,"Metal");
+
 	}
 
 	public void Accessory(){
-		AddEquipment("Wooden Shield","Accessory","Shield",135,"A shield made of wood",60,1,0,0,0,0,-5,0,4,35,"",true,2);
-		AddEquipment("Leather Helm","Accessory","Helm",145,"Helm made of leather",60,0,0,0,1,1,0,0,0,0,"",true,2);
-		AddEquipment("Cotton Hood", "Accessory","Helm",145,"Hood woven with enchanted cotton",55,0,0,0,0,2,0,0,0,0,"",true,3);
-		AddEquipment("Iron Circlet", "Accessory","Helm",150,"Magically enchanted circlet made of iron",45,0,0,1,0,1,0,0,0,0,"",true,3);
-		AddEquipment("Leather Armguard","Accessory","Gauntlet",160,"An armguard made of leather",55,0,1,0,1,0,5,0,0,0,"",true,2);
-		AddEquipment("Iron Bangle", "Accessory","Gauntlet",170,"Magically enchanted bangle made of iron",45,0,0,1,1,0,5,0,0,0,"",true,3);
-		AddEquipment("Leather Boots","Accessory","Boots",155,"Boots made out of leather",60,1,0,0,1,0,0,5,0,0,"",true,2);
+		AddEquipment("Shield","Accessory","Shield",6.75f,"",1.5f,1,0,0,0,0,-5,0,2,35,2, "Wood","Metal");
+		AddEquipment("Helm","Accessory","Helm",7.25f,"",	1.375f,0.2f,0,0,0.5f,0.5f,0,0,0,0,2,"Wood","Metal");
+		AddEquipment("Hood", "Accessory","Helm",7.25f,"",	1.2f,0.1f,0,0.75f,0,2,0,0,0,0,3,"Leather","Fabric");
+		AddEquipment("Circlet", "Accessory","Helm",7.5f,"",	1,0.1f,0,1,0,0.5f,0,0,0,0,3,"Wood","Metal");
+		AddEquipment("Armguard","Accessory","Gauntlet",8,"",1,0.1f,0.5f,0,0.5f,0,5.0f,0,0,0,2,"Leather","Metal");
+		AddEquipment("Bangle", "Accessory","Gauntlet",8.5f,"",1,0.1f,0,1,0.5f,0,5.0f,0,0,0,3,"Wood","Metal");
+		AddEquipment("Boots","Accessory","Boots",7.75f,"",	1.2f,0.5f,0,0,0.5f,0,0,5.0f,0,0,2,"Leather","Metal");
 		AddEquipment("Leather Pouch","Accessory","Backpack",75,"Pouch made of leather large enough for 5 items",60,0,5,true);
 		AddEquipment("Leather Backpack","Accessory","Backpack",175,"Backpack made of leather for gathering 10 items",50,1,5,true,0,1);
 
 	}
 
-	public void Books(){
-
-	}
-
 	public void Materials(){
-		AddItem ("Common Branch","Material","Wood",5,"You see these branches everywhere.");
+		AddItem ("Common Branch","Material","Log",5,"You see these branches everywhere.");
 		AddItem ("Lily","Material","Flower",4,"Symbolizes humility and devotion.");
 		AddItem ("Lavender","Material","Flower",4,"Gives a strong and pleasant fragrance.");
 		AddItem ("Chamomile","Material","Flower",5,"Flowers frequently used in tea and medicine.");
@@ -83,8 +109,7 @@ public class ItemDatabase
 		AddItem ("Helianthus","Material","Flower",8,"These flowers are also known as the sunflower.");
 		AddItem ("Rose","Material","Flower",10,"Look out for the thorns!");
 	}
-
-
+	
 
 
 	void AddItem(string name, string type,string subtype, int money, string description){
@@ -112,12 +137,24 @@ public class ItemDatabase
 		if (agility>0){
 			stats["Agility"]=agility;
 		}
-
 		itemList.Add (new Item (itemList.Count, name, type, money, description,durability,subtype,"", stats));
 		if (sold)
 			shopList [shop].AddItem (level, itemList.Count-1);
 	}
-
+	void AddMaterial(string name, string type, string subtype, int money, string description,float durability, float weight, float physatk, float magatk,float physdef,float magdef,float acc, float eva,float block){
+		Dictionary<string,float> stats=new Dictionary<string,float>();
+		stats["PAttack"]=physatk;
+		stats["PDefense"]=physdef;
+		stats["MAttack"]=magatk;
+		stats["MDefense"]=magdef;
+		stats["Accuracy"]=acc;
+		stats["Evade"]=eva;
+		stats["Block"]=block;
+		stats["Durability"]=durability;
+		stats["Weight"]=weight;
+		stats["Money"]=money;
+		baseMaterial.Add (new Item (itemList.Count, name, type, description,subtype, stats));
+	}
 	void AddEquipment(string name, string type, string subtype, int money, string description, int durability, int weight, int carrySize, bool sold=false, int shop=0, int level=0){
 		Dictionary<string,int> stats=new Dictionary<string,int>();
 		if (carrySize>0){
@@ -133,8 +170,8 @@ public class ItemDatabase
 
 
 
-	void AddEquipment(string name,string type, string subtype,int money,string description,int durability, int weight, int pattack, int mattack, int pdefense, int mdefense,int acc, int eva, int block, int blockchance,string element="",bool sold=false,int shop=1,int level=0){
-		Dictionary<string,int> stats= new Dictionary<string,int>();
+	void AddEquipment(string name,string type, string subtype,float money,string description,float durability, float weight, float pattack, float mattack, float pdefense, float mdefense,float acc, float eva, float block, float blockchance,int shop, string materialType1, string materialType2=""){
+		Dictionary<string,float> stats= new Dictionary<string,float>();
 		if (pattack>0){
 			stats["PAttack"]=pattack;
 		}
@@ -159,12 +196,17 @@ public class ItemDatabase
 		if (blockchance>0){
 			stats["BlockChance"]=blockchance;
 		}
+		if (durability>0){
+			stats["Durability"]=durability;
+		}
 		if (weight>0){
 			stats["Weight"]=weight;
 		}
-		itemList.Add (new Item (itemList.Count, name, type, money, description,durability,subtype,element, stats));
-		if (sold)
-			shopList [shop].AddItem (level, itemList.Count-1);
+		if (money>0){
+			stats["Money"]=money;
+		}
+		baseItem.Add (new Item (itemList.Count, name, type, description,subtype, stats));
+		CombineEquipment(baseItem.Last(),materialType1,materialType2,shop);
 	}
 
 	public void AddShop (string name, string description)
@@ -175,20 +217,29 @@ public class ItemDatabase
 
 	public Item FindItem (int id)
 	{
-		foreach (Item item in itemList) {
-			if (item.id == id)
-				return item;
+		for (int i=0;i<itemList.Count;i++){
+			if (itemList[i].id == id)
+				return itemList[i];
 		}
 		return null;
 	}
 
 	public List<Item> FindItems(string type){
 		List<Item>items=new List<Item>();
-		foreach (Item item in itemList) {
-			if (item.type == type)
-				items.Add(item);
+		for (int i=0;i<itemList.Count;i++){
+			if (itemList[i].type == type)
+				items.Add(itemList[i]);
 		}
 		return items;
+	}
+
+	public int FindItemId(string name){
+		for (int i=0;i<itemList.Count;i++){
+			if (itemList[i].name == name)
+				return itemList[i].id;
+		}
+		return 0;
+
 	}
 	public List<Item> FindGatheringItems(string subtype){
 		List<Item>items=new List<Item>();
@@ -229,5 +280,13 @@ public class ItemDatabase
 		}
 		return null;
 
+	}
+	public void CombineEquipment(Item item, string material1, string material2, int shop){
+		foreach( Item material in baseMaterial){
+			if (material.subType==material1 ||material.subType==material2){
+				itemList.Add (new Item (itemList.Count,item,material));
+				shopList [shop].AddItem (tier[material.name], itemList.Count-1);
+			}
+		}
 	}
 }

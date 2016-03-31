@@ -24,6 +24,7 @@ public class Character
 	public List<InventorySlot> equipment = new List<InventorySlot> ();
 	public List<int> abilities;
 	public bool recruited = false;
+	public bool recruitable=false;
 	public bool levelUp = false;
 	public Dictionary<string,int> levelUpStats = new Dictionary<string, int> ();
 	public bool skillUp = false;
@@ -141,6 +142,7 @@ public class Character
 		abilities = new List<int> (){0,1,2,3};
 		if (level > 1)
 			GiveExp (Database.skills.SkillList ().Count,(level - 1) * 100);
+		equipmentStats.UpdateEquipmentStats (equipment, ref blockItem);
 	}
 
 	public Ability ChooseAttack ()
@@ -235,6 +237,7 @@ public class Character
 	public bool Defend (int damage, int hitrate, string damageType, string damageSubType, string element)
 	{
 		int RNG = ExtensionMethods.Calculate(Random.Range (0, 101)+Random.Range (0, 101),0.5f) + totalStats ["Evade"];
+
 		if (hitrate > RNG) {
 			int defense = totalStats [damageType + "Defense"];
 			if (hitrate - totalStats ["BlockChance"] < RNG && totalStats ["BlockChance"] > 0) {
@@ -339,7 +342,11 @@ public class Character
 					baseStats [growth.Key] += 1;
 					statgains += 1;
 					if (levelUp) {
-						levelUpStats [growth.Key] += 1;
+						if (levelUpStats.ContainsKey(growth.Key)){
+							levelUpStats [growth.Key] += 1;
+						} else{
+							levelUpStats [growth.Key] = 1;
+						}
 					}
 					rng [growth.Key] -= 120;
 					if (statgains >= points) {
@@ -349,7 +356,6 @@ public class Character
 				}
 			}
 		}
-
 	}
 
 	public void LevelUp (int skillid)
@@ -376,7 +382,12 @@ public class Character
 		if (method == "Flat") {
 			totalStats ["Current" + type] += amount;
 		} else if (method == "Percent") {
-			totalStats ["Current" + type] += Mathf.RoundToInt (totalStats ["Max" + type] * amount / 100);
+			int heal=Mathf.RoundToInt ((float)totalStats ["Max" + type] * amount / 100);
+			Debug.Log(Mathf.RoundToInt ((float)totalStats ["Max" + type] * amount / 100));
+			if (heal<1){
+				heal=1;
+			}
+			totalStats ["Current" + type] += heal;
 		}
 		if (totalStats ["Current" + type] > totalStats ["Max" + type])
 			totalStats ["Current" + type] = totalStats ["Max" + type];

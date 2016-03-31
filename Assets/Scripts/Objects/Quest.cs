@@ -15,6 +15,7 @@ public class Quest
 	public string longDescription;
 	public int maxParticipants;
 	public int moneyReward;
+	public int guildExpReward;
 	public Dictionary<int,int> expReward;
 	public Dictionary<int,int> itemRewards;
 	public Dictionary<int,int> requiredSkills;
@@ -92,6 +93,7 @@ public class Quest
 		moneyReward = Mathf.CeilToInt (baseMoneyReward * level);
 		shortDescription = quest.shortDescription;
 		expReward = quest.expReward;
+		guildExpReward=Database.quests.QuestExp(level);
 		if (baseRequiredSkills!=null) {
 			requiredSkills = new Dictionary<int, int> ();
 			foreach (KeyValuePair<int,float> skill in baseRequiredSkills) {
@@ -137,5 +139,9 @@ public class Quest
 		}
 		if (longDescription == "")
 			longDescription = Database.strings.GetString ("NoDescription");
+	}
+	public void Reset(){
+		participants.Clear();
+		status="Open";
 	}
 }

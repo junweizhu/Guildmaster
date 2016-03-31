@@ -12,13 +12,7 @@ public class NextDayScreenDisplay : MonoBehaviour {
 	public bool show;
 	public Text longDescription;
 	public SlotInfo lastSelected;
-	// Use this for initialization
-	void Start () {
-		//prefabList.Add (GameObject.Instantiate (prefab) as GameObject);
-		//prefabList [0].transform.SetParent (scrollList);
-		//ResetTransform (prefabList [0]);
-	}
-	
+
 	// Update is called once per frame
 	void Update () {
 		if (show) {
@@ -41,15 +35,19 @@ public class NextDayScreenDisplay : MonoBehaviour {
 		if (tasks.Count+characters.Count>1){
 			count=tasks.Count+characters.Count;
 		}
-		Debug.Log(count);
+		if((Database.myGuild.paidMaintenance||Database.myGuild.levelUp)&&tasks.Count+characters.Count>0){
+			count +=1;
+		}
 		for (int i=0; i<count; i++) {
 			prefabList.GeneratePrefab(i,prefab,"Log",scrollList);
 			if(i<tasks.Count){
 				prefabList [i].GetComponent<SlotInfo>().TaskLog(tasks[i]);
 			} else if (i-tasks.Count<characters.Count){
 				prefabList [i].GetComponent<SlotInfo>().CharacterLog(characters[i-tasks.Count]);
-			} else{
 
+			} else if(Database.myGuild.paidMaintenance||Database.myGuild.levelUp){
+				prefabList [i].GetComponent<SlotInfo>().GuildLog(Database.myGuild);
+			} else {
 				prefabList [i].GetComponent<SlotInfo>().TaskLog(null);
 			}
 		}

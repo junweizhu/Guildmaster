@@ -8,7 +8,22 @@ public class CharacterScreenDisplay : MonoBehaviour {
 	public Transform memberslotList;
 	private List<GameObject> slotPrefabList=new List<GameObject>();
 	public Text slotSize;
-	
+	private bool refresh;
+	private CanvasGroup canvasGroup;
+
+	void Start(){
+		canvasGroup=GetComponent<CanvasGroup>();
+	}
+
+	void Update(){
+		if(canvasGroup.alpha!=1){
+			refresh=true;
+		} else if(refresh){
+			refresh=false;
+			UpdateText();
+		}
+	}
+
 	public void UpdateText()
 	{
 

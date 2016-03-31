@@ -40,7 +40,7 @@ public class CharacterSelectScreenDisplay : MonoBehaviour
 		}
 		for (int i=0; i<count; i++) {
 			prefabList.GeneratePrefab(i,selectPrefab,"Character",selectList);
-			if (i<prefabList.Count){
+			if (i<availablecharacters.Count){
 				prefabList [i].GetComponent<SlotInfo> ().FillSlotWithCharacter (availablecharacters [i]);
 				prefabList [i].GetComponent<SlotInfo> ().ResetSelection ();
 			} else{

@@ -64,7 +64,7 @@ public class Inventory
 					inventory [i].AddQuantity (amount);
 					break;
 				}
-				if (!inventory [i].filled&& i<size) {
+				if (!inventory [i].filled) {
 					inventory [i].FillItem (id,durability);
 					inventory [i].AddQuantity (amount);
 					SortInventory ();

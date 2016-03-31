@@ -67,4 +67,13 @@ public class QuestBoard
 	public Quest FindQuest(int number){
 		return questList[number];
 	}
+	public int AcceptedQuestCount(){
+		int count=0;
+		for (int i=0;i<questList.Count;i++){
+			if (questList [i].name!=null){
+				count++;
+			}
+		}
+		return count;
+	}
 }

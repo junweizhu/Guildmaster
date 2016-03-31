@@ -15,9 +15,8 @@ public class Dialogue
 	{
 	}
 
-	public Dialogue (int id, string name, int order, string text, List<int>stringIds=null, List<string> stringTypes=null)
+	public Dialogue (string name, int order, string text, List<int>stringIds=null, List<string> stringTypes=null)
 	{
-		this.id = id;
 		this.name = name;
 		this.order = order;
 		this.text = text;
@@ -25,6 +24,8 @@ public class Dialogue
 			for (int i=0; i<stringIds.Count; i++) {
 				stringId.Add (new KeyValuePair<int,string> (stringIds [i], stringTypes [i]));
 			}
+		} else{
+			stringId.Add (new KeyValuePair<int,string> (0, ""));
 		}
 	}
 
@@ -47,7 +48,7 @@ public class Dialogue
 		return text;
 	}
 
-	public string GetName (int id, List<string> characterlist)
+	public string GetName (int id, List<string> characterlist=null)
 	{
 		if (stringId.Count > 0) {
 			if (stringId [id].Value == "Character") {
@@ -58,8 +59,12 @@ public class Dialogue
 				return Database.items.FindItem (stringId [id].Key).name;
 			} else if (stringId [id].Value == "Area") {
 				return Database.areas.FindArea (stringId [id].Key).name;
+			} else if (stringId [id].Value == "Number"){
+				return stringId [id].Key.ToString();
+			} else if (stringId[id].Value=="Guild"){
+				return Database.guilds.FindGuild(stringId[id].Key).name;
 			}
 		}
-		return "";
+		return stringId[id].Value;
 	}
 }

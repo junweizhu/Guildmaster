@@ -14,11 +14,15 @@ public class QuestDatabase
 	private List<Quest> allQuestList = new List<Quest> ();
 	public Dictionary<string,int> rankLevel = new Dictionary<string,int> (){{"F",1},{"E",10},{"D",20},{"C",30},{"B",40},{"A",50},{"S",60}};
 	public List<Quest> generatedQuestList = new List<Quest> ();
+	private float expCalcA=5;
+	private float expCalcB=4;
+	private float expCalcC=2;
+	private float expCalcD=1;
 	// Use this for initialization
 	public QuestDatabase ()
 	{
 		NewQuest ("main", "Training", "Training", 1, 1, 100f, new Dictionary<int, int> (){{99,100},{2,100}}, "Train someone to learn the basics of important skills");
-		NewQuest ("main", "Buy 1 Potion", "Item", 0, 0, 100f, new Dictionary<int, int> (){{99,20}}, "Send someone to the shop to buy a potion", "", null, new Dictionary<int,float> (){{0,1f}});
+		NewQuest ("main", "Buy 1 Health vial", "Item", 0, 0, 100f, null, "Send someone to the shop to buy a health vial", "", null, new Dictionary<int,float> (){{0,1f}});
 		NewQuest ("random", "Test1", "Training", 2, 1, 0f, new Dictionary<int, int> (){{99,100}}, "Test", "");
 		NewQuest ("random", "Test2", "Training", 2, 1, 0f, new Dictionary<int, int> (){{1,100}}, "Test", "");
 	}
@@ -75,12 +79,12 @@ public class QuestDatabase
 		return null;
 	}
 
-	public void GenerateQuest (int id, int level, string type)
+	public void GenerateQuest (int id, int level, string type="Main")
 	{
 		generatedQuestList.Add (new Quest (generatedQuestList.Count, FindBaseQuest (id, type), level));
 	}
 
-	public void GenerateQuest (int level=1)
+	public void GenerateQuest (int level=0)
 	{
 		generatedQuestList.Add (new Quest (generatedQuestList.Count, RandomQuest (), level));
 	}
@@ -101,5 +105,10 @@ public class QuestDatabase
 			}
 		}
 		return questlist;
+	}
+
+	public int QuestExp(int level){
+		float exp=expCalcA+(expCalcB*level)+(2*expCalcC*level)+(expCalcD*Mathf.Pow(level,2));
+		return Mathf.RoundToInt(exp);
 	}
 }

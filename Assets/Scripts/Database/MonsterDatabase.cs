@@ -9,8 +9,8 @@ public class MonsterDatabase
 	// Use this for initialization
 	public MonsterDatabase ()
 	{
-		NewMonster (new Dictionary<string,int> (){{"Green Forest",100}}, "Slime", "Slime",1, 70, 60, 25, 70, 25, 25);
-		NewMonster (new Dictionary<string,int> (){{"Green Forest",40}}, "Green Slime", "Slime",1, 80, 120, 35, 70, 30, 25);
+		NewMonster (new Dictionary<string,int> (){{"Green Plains",100}}, "Slime", "Slime",1, 70, 60, 25, 70, 25, 25);
+		NewMonster (new Dictionary<string,int> (){{"Green Plains",40}}, "Green Slime", "Slime",1, 80, 120, 35, 70, 30, 25);
 	}
 
 	private void NewMonster (Dictionary<string,int> habitats, string name, string type, int size,int healthGrowth, int manaGrowth, int strengthGrowth, int intelligenceGrowth, int DexterityGrowth, int AgilityGrowth, string element="")

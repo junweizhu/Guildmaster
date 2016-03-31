@@ -46,6 +46,7 @@ public class ItemStatScreenDisplay : MonoBehaviour
 						}
 					}
 				}
+				stats["Weight"].text=item.weight.ToString();
 			}
 		} else {
 			itemName.text = "";

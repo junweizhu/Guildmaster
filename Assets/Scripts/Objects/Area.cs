@@ -12,6 +12,7 @@ public class Area
 	public int level;
 	public int difficulty;
 	public int travelTime;
+	public int size;
 	public Dictionary<int,int> linkedAreas;
 	public int maxGatheringPoints;
 	//public Dictionary<int,Dictionary<int,int>>map=new Dictionary<int,Dictionary<int,int>>();
@@ -19,7 +20,7 @@ public class Area
 	//public Vector2 startingPoint;
 
 
-	public Area (int id, string name, string type, int level, int difficulty, int traveltime, int maxpoints=0, Dictionary<int,int> links=default(Dictionary<int,int>))
+	public Area (int id, string name, string type, int level, int difficulty, int traveltime,int size, int maxpoints=0, Dictionary<int,int> links=default(Dictionary<int,int>))
 	{
 		this.id = id;
 		this.type = type;
@@ -29,6 +30,7 @@ public class Area
 		this.difficulty = difficulty;
 		linkedAreas = links;
 		maxGatheringPoints = maxpoints;
+		this.size=size;
 	}
 /*
 	public void GenerateMap(){

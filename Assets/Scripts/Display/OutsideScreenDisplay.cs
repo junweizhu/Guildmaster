@@ -12,17 +12,25 @@ public class OutsideScreenDisplay : MonoBehaviour {
 	public Text areaDifficulty;
 	public Text numberVisits;
 	public Text numberGathering;
-	public Text numberHunting;
 	public Button travelButton;
 	private SlotInfo lastSelected;
 	private Guild guild;
-	
-	// Update is called once per frame
-	void Update () {
-	
+	private bool refresh;
+	private CanvasGroup canvasGroup;
+	void Start(){
+		canvasGroup=GetComponent<CanvasGroup>();
 	}
+	void Update(){
+		if(canvasGroup.alpha!=1){
+			refresh=true;
+		} else if(refresh){
+			refresh=false;
+			UpdateText();
+		}
+	}
+
 	public void UpdateText(){
-		this.guild=Database.myGuild;
+		guild=Database.myGuild;
 		List<int> arealist=guild.knownAreas;
 
 		for (int i=0;i<arealist.Count;i++)
@@ -37,10 +45,9 @@ public class OutsideScreenDisplay : MonoBehaviour {
 			lastSelected = null;
 		}
 		travelButton.interactable=false;
-
 	}
 
-	public void FillStats(Area area,int visit=0,int gatheringpoints=0, int huntinggrounds=0)
+	public void FillStats(Area area,int visit=0,int gatheringpoints=0)
 	{
 		if (area!=null){
 			areaName.text=area.name;
@@ -55,7 +62,6 @@ public class OutsideScreenDisplay : MonoBehaviour {
 		}
 		numberVisits.text=visit.ToString();
 		numberGathering.text=gatheringpoints.ToString();
-		numberHunting.text=huntinggrounds.ToString();
 	}
 
 	public void DisplayAreaStats (SlotInfo areaslot)
@@ -63,7 +69,7 @@ public class OutsideScreenDisplay : MonoBehaviour {
 		if(lastSelected!=areaslot) {
 			areaslot.Select ();
 			int selectedarea=areaslot.id;
-			FillStats (Database.areas.FindArea(selectedarea),guild.successfulVisits[selectedarea],guild.foundGatheringPoints[selectedarea],guild.foundHuntingGrounds[selectedarea]);
+			FillStats (Database.areas.FindArea(selectedarea),guild.successfulVisits[selectedarea],guild.foundGatheringPoints[selectedarea]);
 			if (lastSelected != null) {
 				lastSelected.Select ();
 			}

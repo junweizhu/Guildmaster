@@ -16,7 +16,7 @@ public class SkillDatabase{
 	public void GenerateSkills(){
 		skillList.Add(new Skill(0,"Weapon Skill",new Dictionary<string, int>()));
 		skillList.Add(new Skill(1,"Magic Skill",new Dictionary<string, int>()));
-		skillList.Add(new Skill(2,"Combat Skill",new Dictionary<string, int>(){{"MaxHealth",1},{"MaxMana",1}}));
+		skillList.Add(new Skill(2,"Combat Skill",new Dictionary<string, int>(){{"Health",1},{"Mana",1}}));
 		skillList.Add(new Skill(3,"Field Skill",new Dictionary<string, int>()));
 		skillList.Add(new Skill(4,"Social Skill",new Dictionary<string, int>()));
 	}
@@ -57,10 +57,10 @@ public class SkillDatabase{
 		shop.AddAbility(0,4);
 		shop.AddAbility(0,5);
 		shop.AddAbility(0,6);
-		shop.AddAbility(1,7);
-		shop.AddAbility(1,8);
-		shop.AddAbility(1,9);
-		shop.AddAbility(1,10);
+		shop.AddAbility(10,7);
+		shop.AddAbility(10,8);
+		shop.AddAbility(10,9);
+		shop.AddAbility(10,10);
 	}
 
 	public Ability GetAbility(int id)
