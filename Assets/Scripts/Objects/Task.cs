@@ -12,18 +12,18 @@ public class Task
 	[System.NonSerialized]
 	public List<Character>
 		characters;
-	public Dictionary<int,int>itemList;
+	public Dictionary<int,int> itemList;
 	public Inventory itemsSold;
 	public Inventory stock;
 	public string typeSearch;
 	public int shoppingMoney;
 	private int returnMoney;
 	public bool success = false;
-	private int guildExp;
+	public int guildExp;
 	public Area area;
 	public int gatheringPointsFound = 0;
 	private Area newArea;
-	private Dictionary<Character,Dictionary<string,int>> playerExpGain = new Dictionary<Character,Dictionary<string,int>> ();
+	private Dictionary<Character,Dictionary<int,int>> characterExpGain = new Dictionary<Character,Dictionary<int,int>> ();
 	public int monstercount = 0;
 	private List<string> newRecruits = new List<string> ();
 	private int questCount = 0;
@@ -38,6 +38,10 @@ public class Task
 	public int fieldSkillId = 3;
 	public int socialSkillId = 4;
 	public int newStepsCount = 0;
+	public List<int> foundNewArea = new List<int> ();
+	public bool manual = false;
+	public bool finished;
+	public Adventure adventure;
 
 
 	public Task ()
@@ -89,7 +93,7 @@ public class Task
 		this.typeSearch = typesearch;
 	}
 
-	public Task (string type, Area area, List<Character> characters, string typesearch)//exploring
+	public Task (string type, Area area, List<Character> characters, string typesearch)//adventuring
 	{
 		SetMainData (type, characters);
 		this.area = area;
@@ -97,6 +101,12 @@ public class Task
 		this.typeSearch = typesearch;
 		itemList = new Dictionary<int, int> ();
 		success = true;
+		for (int i = 0; i < characters.Count; i++) {
+			characters [i].CreateTempEquipment ();
+			/*if (characters [i].id == 0 || characters [i].id == 1) {
+				manual = true;
+			}*/
+		}
 	}
 
 	public Task (string type, float duration, List<Character> characters)//Tavern
@@ -120,99 +130,131 @@ public class Task
 			quest.duration -= 1;
 		}
 		if (duration <= 0) {
-			guildExp = 0;
-			if (type == "Quest") {
-				Database.myGuild.FinishQuest (questnumber, characters);
-			}
-			if (type == "Shop") {
-				float payment = 1.00f;
-				for (int i=0; i< characters.Count; i++) {
-					GiveExp (characters [i], socialSkillId, 10);
-					if (Random.Range (0, 100) > (100 - (characters [i].skillLevel [socialSkillId] / (i + 1)))) {
-						payment *= 1.0f - (0.5f / (2 + i));
-					}
-				}
-				returnMoney = Mathf.CeilToInt (shoppingMoney * (1 - payment));
-				Database.myGuild.FinishShopping (itemList, returnMoney);
-				return;
-			}
-			if (type == "Sell") {
-				if (stock.Count () > 0) {
-					Inventory inventory = Database.myGuild.inventory;
-					foreach (int slot in stock.GetAllFilledSlotId()) {
-						InventorySlot itemslot = stock.GetInventorySlot (slot);
-						inventory.AddItem (itemslot.itemId, itemslot.quantity, itemslot.durability);
-						itemslot.EmptyItem ();
-					}
-				}
-				Database.myGuild.money += TotalProfit ();
-			}
-			if (type == "School") {
-				foreach (Character character in characters) {
-					if (ability != null) {
-						character.abilities.Add (ability.id);
-					}
-					if (skill != null) {
-						GiveExp (character, skill.id, 100);
-					}
-				}
-			}
-			if (type == "Socialize") {
-				Dictionary<string,int> typeSkill = new Dictionary<string,int> (){{"Fighter",weaponSkillId},{"Mage",magicSkillId},{"Adventurer",fieldSkillId},{"Social",socialSkillId}};
-				
-				for (int i=0; i< characters.Count; i++) {
-					int fame = (Random.Range (-2, 2) + Random.Range (-2, 2)) / 2;
-					List<string> skills = new List<string> (){"Fighter","Mage","Adventurer","Social"};
-					typeSearch = skills [Random.Range (0, skills.Count)];
-					float chance = characters [i].skillLevel [socialSkillId] + characters [i].skillLevel [typeSkill [typeSearch]] / 2;
-					if (Random.Range (0, 100) > 95 - chance || (!Database.events.GetTrigger (105).activated && Random.Range (0, 100) > 50 - chance && Database.characters.GetRecruitables ().Count + Database.myGuild.characterlist.Count < 5)) {
-						newRecruits.Add (Database.myGuild.FindNewRecruit (Random.Range (0, characters [i].level + Random.Range (0, 10) - 5), typeSkill [typeSearch]).name);
-						GiveExp (characters [i], socialSkillId, 10);
-						fame = 2;
-					} else if (Random.Range (0, 100) > 90 - chance && Database.events.GetTrigger (110).activated || Database.events.GetTrigger (109).activated && !Database.events.GetTrigger (110).activated && Database.quests.AvailableQuests ().Count < 1 && Database.myGuild.questBoard.questList.Count < 1) {
-						Debug.Log ("They found a quest");
-						questCount += 1;
-						int rng = Random.Range (0, 10) - 5;
-						if (rng < 1) {
-							rng = 1;
-						}
-						Database.quests.GenerateQuest ((Random.Range (0, characters [i].level + rng)));
-						GiveExp (characters [i], socialSkillId, 10);
-						fame = 2;
-					} else if (Random.Range (0, 100) > 95 - chance && Database.events.GetTrigger (107).activated) {
-						Debug.Log ("They talked about a new area");
-						int rng = Database.areas.RandomArea (characters [i].level);
-						if (Database.myGuild.knownAreas.Contains (rng)) {
-							Debug.Log ("We already know this area");
-						} else {
-							Debug.Log ("We never knew this area");
-							Database.myGuild.FindNewArea (rng);
-							GiveExp (characters [i], socialSkillId, 10);
+			if (manual && finished || !manual) {
+				guildExp = 0;
+				if (type == "Quest") {
+					//Database.myGuild.FinishQuest (questnumber, characters,false);
+					if (quest.expReward != null) {
+						foreach (KeyValuePair<int,int> expGain in quest.expReward) {
+							for (int i = 0; i < characters.Count; i++) {
+								GiveExp (characters [i], expGain.Key, expGain.Value);
+							}
 						}
 					}
-					GiveExp (characters [i], socialSkillId, Random.Range (0, 15));
-					characters [i].baseStats ["Fame"] += fame;
-					Database.myGuild.fame += fame;
+					guildExp = quest.guildExpReward;
+					if (quest.itemRewards != null) {
+						itemList = quest.itemRewards;
+						Database.myGuild.GetItems (itemList);
+					}
+					quest.finished = true;
 				}
-
-			}
-			if (type == "Adventure") {
-				if (success && itemList.Count > 0) {
-					Database.myGuild.GetItems (itemList);
-				} 
-				if (characters.IsInjured ()) {
+				if (type == "Shop") {
+					float payment = 1.00f;
+					for (int i = 0; i < characters.Count; i++) {
+						GiveExp (characters [i], socialSkillId, 10);
+						if (Random.Range (0, 100) > (100 - (characters [i].skillLevel [socialSkillId] / (i + 1)))) {
+							payment *= 1.0f - (0.5f / (2 + i));
+						}
+					}
+					returnMoney = Mathf.CeilToInt (shoppingMoney * (1 - payment));
+					Database.myGuild.FinishShopping (itemList, returnMoney);
+					return;
+				}
+				if (type == "Sell") {
+					if (stock.Count () > 0) {
+						Inventory inventory = Database.myGuild.inventory;
+						foreach (int slot in stock.GetAllFilledSlotId()) {
+							InventorySlot itemslot = stock.GetInventorySlot (slot);
+							inventory.AddItem (itemslot.itemId, itemslot.quantity, itemslot.durability);
+							itemslot.EmptyItem ();
+						}
+					}
+					Database.myGuild.money += TotalProfit ();
+				}
+				if (type == "School") {
 					foreach (Character character in characters) {
-						if (character.totalStats ["CurrentHealth"] <= 0) {
-							casualties.Add (character.name);
+						if (ability != null) {
+							character.abilities.Add (ability.id);
+						}
+						if (skill != null) {
+							GiveExp (character, skill.id, 100);
 						}
 					}
 				}
+				if (type == "Socialize") {
+					Dictionary<string,int> typeSkill = new Dictionary<string,int> () {
+						{ "Fighter",weaponSkillId },
+						{ "Mage",magicSkillId }, {
+							"Adventurer",
+							fieldSkillId
+						}, {
+							"Social",
+							socialSkillId
+						}
+					};
+				
+					for (int i = 0; i < characters.Count; i++) {
+						int fame = (Random.Range (-2, 2) + Random.Range (-2, 2)) / 2;
+						List<string> skills = new List<string> (){ "Fighter", "Mage", "Adventurer", "Social" };
+						typeSearch = skills [Random.Range (0, skills.Count)];
+						float chance = characters [i].skillLevel [socialSkillId] + characters [i].skillLevel [typeSkill [typeSearch]] / 2;
+						if (Random.Range (0, 100) > 95 - chance || (!Database.events.GetTrigger (105).activated && Random.Range (0, 100) > 50 - chance && Database.characters.GetRecruitables ().Count + Database.myGuild.characterlist.Count < 5)) {
+							newRecruits.Add (Database.myGuild.FindNewRecruit (Random.Range (0, characters [i].level + Random.Range (0, 10) - 5), typeSkill [typeSearch]).name);
+							GiveExp (characters [i], socialSkillId, 10);
+							fame = 2;
+						} else if (Random.Range (0, 100) > 90 - chance && Database.events.GetTrigger (110).activated || Database.events.GetTrigger (109).activated && !Database.events.GetTrigger (110).activated && Database.quests.AvailableQuests ().Count < 1 && Database.myGuild.questBoard.questList.Count < 1) {
+							Debug.Log ("They found a quest");
+							questCount += 1;
+							int rng = Random.Range (0, 10) - 5;
+							if (rng < 1) {
+								rng = 1;
+							}
+							Database.quests.GenerateQuest ((Random.Range (0, characters [i].level + rng)));
+							GiveExp (characters [i], socialSkillId, 10);
+							fame = 2;
+						} else if (Random.Range (0, 100) > 95 - chance && Database.events.GetTrigger (107).activated) {
+							Debug.Log ("They talked about a new area");
+							int rng = Database.areas.RandomArea (characters [i].level);
+							if (Database.myGuild.knownAreas.Contains (rng)) {
+								Debug.Log ("We already know this area");
+							} else {
+								Debug.Log ("We never knew this area");
+								Database.myGuild.FindNewArea (rng);
+								foundNewArea.Add (rng);
+								GiveExp (characters [i], socialSkillId, 10);
+							}
+						}
+						GiveExp (characters [i], socialSkillId, Random.Range (0, 15));
+						characters [i].baseStats ["Fame"] += fame;
+						Database.myGuild.fame += fame;
+					}
+				}
+				if (type == "Adventure") {
+				
+					if (success && itemList.Count > 0) {
+						Database.myGuild.GetItems (itemList);
+					} 
+					for (int i = 0; i < characters.Count; i++) {
+						characters [i].EquipmentAfterAdventure ();
+						if (characters [i].totalStats ["CurrentHealth"] <= 0) {
+							casualties.Add (characters [i].name);
+						}
+					}
+				}
+				for (int i = 0; i < characters.Count; i++) {
+					characters [i].status = "Idle";
+					characters [i].statusAdd = "";
+				}
+				DistributeExp ();
+				Database.myGuild.GiveExp (guildExp);
+				if (foundNewArea.Count > 0) {
+					for (int i = 0; i < foundNewArea.Count; i++) {
+						Database.myGuild.FindNewArea (foundNewArea [i]);
+					}
+				}
+			} else {
+				Database.game.manualTasks.Add (this);
 			}
-			for (int i=0; i< characters.Count; i++) {
-				characters [i].status = "Idle";
-				characters [i].statusAdd = "";
-			}
-			Database.myGuild.GiveExp (guildExp);
 		}
 	}
 
@@ -225,25 +267,36 @@ public class Task
 			Database.myGuild.money += shoppingMoney;
 		}
 		if (stock != null) {
-			foreach (int slot in stock.GetAllFilledSlotId()) {
-				InventorySlot itemslot = stock.GetInventorySlot (slot);
-				Database.myGuild.inventory.AddItem (itemslot.itemId, itemslot.quantity, itemslot.durability);
-				itemslot.EmptyItem ();
-			}
+			ReturnItems (stock);
+		}
+		if (itemsSold != null) {
+			ReturnItems (itemsSold);
 		}
 		foreach (Character character in characters) {
 			character.status = "Idle";
 			character.statusAdd = "";
 		}
-		if(Database.game.tasksWithCoroutine.Contains(this)){
-			Database.game.tasksWithCoroutine.Remove(this);
+
+		if (Database.game.tasksWithCoroutine.Contains (this)) {
+			Database.game.tasksWithCoroutine.Remove (this);
 		}
+	}
+
+	private void ReturnItems (Inventory items)
+	{
+		List<int> slots = items.GetAllFilledSlotId ();
+		for (int i = 0; i < slots.Count; i++) {
+			InventorySlot itemslot = items.GetInventorySlot (slots [i]);
+			Database.myGuild.inventory.AddItem (itemslot.itemId, itemslot.quantity, itemslot.durability);
+			itemslot.EmptyItem ();
+		}
+
 	}
 
 	public string ShortDescription ()
 	{
 		string names = "";
-		for (int i=0; i<characters.Count; i++) {
+		for (int i = 0; i < characters.Count; i++) {
 			if (i != 0) {
 				if (i + 1 == characters.Count) {
 					names += " " + Database.strings.GetString ("And") + " ";
@@ -265,6 +318,15 @@ public class Task
 				detail += string.Format (Database.strings.GetString ("MoneyBack"), returnMoney);
 			}
 		}
+		if (type == "Quest") {
+			detail = string.Format (Database.strings.GetString (type + "Success"), quest.name) + "\n\n";
+			if (itemList != null) {
+				detail += string.Format (Database.strings.GetString ("QuestItemReward"), Itemlist () + "\n");
+			}
+			if (quest.moneyReward > 0) {
+				detail += string.Format (Database.strings.GetString ("QuestMoneyReward"), quest.moneyReward);
+			}
+		}
 		if (type == "Adventure") {
 			if (success) {
 				detail = Database.strings.GetString (type + "Success") + "\n\n";
@@ -280,8 +342,13 @@ public class Task
 			} else {
 				detail = string.Format (Database.strings.GetString (type + "Failed"), Database.strings.GetString (characters [0].gender + "3rd")) + "\n\n";
 			}
+			if (foundNewArea.Count > 0) {
+				for (int i = 0; i < foundNewArea.Count; i++) {
+					detail += string.Format (Database.strings.GetString ("ExploreAreaFound"), Database.areas.FindArea (foundNewArea [i]).name) + "\n\n";
+				}
+			}
 			if (casualties.Count > 0) {
-				for (int i=0; i<casualties.Count; i++) {
+				for (int i = 0; i < casualties.Count; i++) {
 					detail += string.Format (Database.strings.GetString ("Injured"), casualties [i]) + "\n";
 				}
 				detail += "\n";
@@ -311,7 +378,7 @@ public class Task
 			}
 			if (newRecruits.Count > 0) {
 				string recruit = "";
-				for (int i=0; i<newRecruits.Count; i++) {
+				for (int i = 0; i < newRecruits.Count; i++) {
 					if (i != 0) {
 						if (i + 1 == newRecruits.Count) {
 							recruit += " " + Database.strings.GetString ("And") + " ";
@@ -325,6 +392,11 @@ public class Task
 			}
 			if (questCount > 0) {
 				detail += string.Format (Database.strings.GetString ("QuestFound"), questCount) + "\n\n";
+			}
+			if (foundNewArea.Count > 0) {
+				for (int i = 0; i < foundNewArea.Count; i++) {
+					detail += string.Format (Database.strings.GetString ("AreaFound"), Database.areas.FindArea (foundNewArea [i]).name) + "\n\n";
+				}
 			}
 		}
 		if (type == "Sell") {
@@ -351,34 +423,39 @@ public class Task
 
 	public void GiveExp (Character character, int skillId, int exp)
 	{
-
-		character.GiveExp (skillId, exp);
-		string skillname = "General";
-		if (skillId != 99) {
-			skillname = Database.skills.GetSkill (skillId).name;
+		if (!characterExpGain.ContainsKey (character)) {
+			characterExpGain [character] = new Dictionary<int, int> ();
 		}
-		if (!playerExpGain.ContainsKey (character)) {
-			playerExpGain [character] = new Dictionary<string, int> ();
-		}
-		if (!playerExpGain [character].ContainsKey (skillname)) {
-			playerExpGain [character] [skillname] = exp;
+		if (!characterExpGain [character].ContainsKey (skillId)) {
+			characterExpGain [character] [skillId] = exp;
 		} else {
-			playerExpGain [character] [skillname] += exp;
+			characterExpGain [character] [skillId] += exp;
+		}
+	}
+
+	public void DistributeExp ()
+	{
+		for (int i = 0; i < characters.Count; i++) {
+			if (characterExpGain.ContainsKey (characters [i])) {
+				foreach (KeyValuePair<int,int> expGain in characterExpGain[characters[i]]) {
+					characters [i].GiveExp (expGain.Key, expGain.Value);
+				}
+			}
 		}
 	}
 
 	private string CharacterExp ()
 	{
 		string text = "";
-		if (playerExpGain.Count > 0) {
-			foreach (KeyValuePair<Character,Dictionary<string,int>> character in playerExpGain) {
+		if (characterExpGain.Count > 0) {
+			foreach (KeyValuePair<Character,Dictionary<int,int>> character in characterExpGain) {
 				text += character.Key.name + "\n" + Database.strings.GetString ("Health") + ": " + character.Key.totalStats ["CurrentHealth"] + "/" + character.Key.totalStats ["MaxHealth"] + "\n" + Database.strings.GetString ("Mana") + ": " + character.Key.totalStats ["CurrentMana"] + "/" + character.Key.totalStats ["MaxMana"] + "\n";
-				if (character.Value.ContainsKey ("General")) {
-					text += string.Format (Database.strings.GetString ("LogGainedExp"), character.Value ["General"], "") + "\n";
+				if (character.Value.ContainsKey (99)) {
+					text += string.Format (Database.strings.GetString ("LogGainedExp"), character.Value [99], "") + "\n";
 				}
-				foreach (KeyValuePair<string,int> gainedexp in character.Value) {
-					if (gainedexp.Key != "General") {
-						text += string.Format (Database.strings.GetString ("LogGainedExp"), gainedexp.Value.ToString (), gainedexp.Key) + "\n";
+				foreach (KeyValuePair<int,int> gainedexp in character.Value) {
+					if (gainedexp.Key != 99) {
+						text += string.Format (Database.strings.GetString ("LogGainedExp"), gainedexp.Value.ToString (), Database.skills.GetSkill (gainedexp.Key).name) + "\n";
 					}
 				}
 				text += "\n";
@@ -402,7 +479,7 @@ public class Task
 	{
 		string list = "";
 		List<InventorySlot> items = itemsSold.GetAllItems ();
-		for (int i=0; i<items.Count; i++) {
+		for (int i = 0; i < items.Count; i++) {
 			InventorySlot slot = items [i];
 			Item item = Database.items.FindItem (slot.itemId);
 			list += slot.quantity.ToString () + " " + item.name;
@@ -418,32 +495,36 @@ public class Task
 	{
 		returnMoney = 0;
 		List<InventorySlot> items = itemsSold.GetAllItems ();
-		for (int i=0; i<items.Count; i++) {
+		for (int i = 0; i < items.Count; i++) {
 			Item item = Database.items.FindItem (items [i].itemId);
 			int value = item.sellValue * items [i].durability / item.durability;
 			returnMoney += value * items [i].quantity;
 		}
 		return returnMoney;
 	}
-	private void SetTaskToCoroutineList(){
+
+	private void SetTaskToCoroutineList ()
+	{
 		Database.game.tasksWithCoroutine.Add (this);
 	}
-	private void RemoveTaskFromCoroutineList(){
+
+	private void RemoveTaskFromCoroutineList ()
+	{
 		Database.game.tasksWithCoroutine.Remove (this);
 	}
 
 	public IEnumerator SellTime (WaitForSeconds waitTime)
 	{
-		SetTaskToCoroutineList();
+		SetTaskToCoroutineList ();
 		int charactercount = characters.Count;
-		for (int time=0; time<=12; time++) {
-			if(Database.game.tasksWithCoroutine.Contains(this)){
+		for (int time = 0; time <= 12; time++) {
+			if (Database.game.tasksWithCoroutine.Contains (this)) {
 				yield return (waitTime);
-			} else{
+			} else {
 				yield break;
 			}
 			int RNG = Random.Range (0, 100);
-			for (int i=0; i<charactercount; i++) {
+			for (int i = 0; i < charactercount; i++) {
 				if (RNG < 15 + ExtensionMethods.Calculate (characters [i].skillLevel [socialSkillId], 0.5f) || (!Database.events.GetTrigger (108).activated && !success)) {
 					success = true;
 					List<int> list = stock.GetAllFilledSlotId ();
@@ -453,209 +534,142 @@ public class Task
 					itemToSell.AddQuantity (-count);
 					GiveExp (characters [i], socialSkillId, count * 5);
 					if (stock.Count () == 0) {
-						RemoveTaskFromCoroutineList();
+						RemoveTaskFromCoroutineList ();
 						yield break;
 					}
 				}
 				GiveExp (characters [i], socialSkillId, 1);
 			}
 		}
-		RemoveTaskFromCoroutineList();
+		RemoveTaskFromCoroutineList ();
 	}
 
 	public IEnumerator AdventureTime (WaitForSeconds waitTime)
 	{//Start your adventure!
-		SetTaskToCoroutineList();
-		string action = "Idle";
-		GatheringPoint gatheringPoint = null;
-		int inventorySpace = 0;
-		for (int i=0; i<characters.Count; i++) {
-			inventorySpace += characters [i].totalStats ["CarrySize"];
-		}
-		int fieldSkillLevel = 0;
-		int combatLevel = 0;
-		int gatheringCount = 0;
-		Dictionary<Monster,int> monsters = Database.monsters.GetAreaMonsters (area.name);
-		List<Character> battleMonster = new List<Character> ();
-		int averageLevel = 0;
-		List<Character> livingMonsters;
-		List<Character> livingCharacters;
-		for (int i=0; i<characters.Count; i++) {
-			averageLevel += characters [i].level;
-			if (characters [i].skillLevel [fieldSkillId] > fieldSkillLevel) {
-				fieldSkillLevel = characters [i].skillLevel [fieldSkillId];
-			}
-			if (characters [i].skillLevel [combatSkillId] < combatLevel) {
-				combatLevel = characters [i].skillLevel [combatSkillId];
-			}
-		}
-		averageLevel /= characters.Count;
-		if (averageLevel < area.level) {
-			averageLevel = area.level;
+		SetTaskToCoroutineList ();
+		adventure = new Adventure (characters, area);
 
-		}
-		bool tookANewStep = false;
-		for (int time=0; time<=48; time++) {
-			if(Database.game.tasksWithCoroutine.Contains(this)){
+		for (int time = 0; time <= 48; time++) {
+			if (Database.game.tasksWithCoroutine.Contains (this)) {
 				yield return (waitTime);
-			} else{
+			} else {
 				yield break;
 			}
-
-			livingCharacters = characters.Alive ();
-			livingMonsters = battleMonster.Alive ();
-			if (action == "Idle") {//start doing something
-				Debug.Log ((100 * newStepsCount / area.size).ToString () + " completion " + time);
-
-				if (time >= 36 || characters.IsInjured () || (action == "Gathering" && gatheringPointsFound == area.maxGatheringPoints)) {
-					Debug.Log ("Returning to town" + time);
+			if (adventure.action == "Idle") {//start doing something
+				
+				if (time >= 36 || characters.IsInjured () || (adventure.action == "Gathering" && gatheringPointsFound == area.maxGatheringPoints)) {
+					adventure.actionList.Add ("Returning to town" + time);
+					ShowDebugLog (time);
 					break;
 				}
-
 				if (characters.IsHurt ()) {//resting to heal
 					characters.Rest ();
-					Debug.Log ("Taking a rest " + time);
+					adventure.actionList.Add ("Taking a rest " + time);
 					//Move
 				} else {
-					Debug.Log ("Exploring " + time);
-					if (Random.Range (0, 100) < 100 - Mathf.RoundToInt (100 * newStepsCount / area.size)) {
-						newStepsCount++;
-						tookANewStep = true;
-					}
-
-					if (Random.Range (0, 101) < 6) { //monster(s) encounter
-						action = "Battle";
-						bool generateMonster = true;
-						battleMonster.Clear ();
-						while (generateMonster) {
-							int RNG = Random.Range (0, 101);
-							battleMonster.Add (monsters.GenerateCharacter (RNG, averageLevel));
-							if (Random.Range (0, 100) > battleMonster.Count * 30) {
-								generateMonster = true;
-							} else {
-								generateMonster = false;
-							}
+					adventure.Explore (time, this);
+					if (adventure.action == "Battle") {
+						if (adventure.status == "Pre-emptive") {
+							TurnStart (adventure.livingCharacters, adventure.livingMonsters, time);
+						} else if (adventure.status == "Ambush") {
+							TurnStart (adventure.livingMonsters, adventure.livingCharacters, time);
 						}
-						livingMonsters = battleMonster;
-						Debug.Log ("Monster Encounter! " + battleMonster.Count.ToString () + " monsters " + time);
-						if (Random.Range (0, 101) < 15 + Mathf.FloorToInt (combatLevel / 2)) {//ambushed or not?
-							Debug.Log ("Pre-emptive battle" + time);
-							for (int i=0; i<livingCharacters.Count; i++) {
-								GiveExp (livingCharacters [i], combatSkillId, 10);
-							}
-							livingCharacters.TurnStart (this, livingMonsters, time);
-						} else if (Random.Range (0, 101) < 15 - Mathf.FloorToInt (combatLevel / 2)) {
-							Debug.Log ("Ambushed!" + time);
-							livingMonsters.TurnStart (this, livingCharacters, time);
-						}
-						if (livingMonsters.Alive ().Count == 0) {
-							action = "Idle";
-						}
-					} else if (((tookANewStep && gatheringPointsFound < area.maxGatheringPoints) || !tookANewStep) && Random.Range (0, 101) < 6 + Mathf.RoundToInt (fieldSkillLevel / 2) + Database.myGuild.foundGatheringPoints [area.id] || (!Database.events.GetTrigger (107).activated && gatheringCount == 0)) { //Found a gathering point!
-						Debug.Log ("Gathering Point Found " + time.ToString ());
+						adventure.CheckBattleIsFinished ();
+					} else if (adventure.status == "Found GatheringSpot") {
 						if (typeSearch == "Gathering" || Random.Range (0, 100) < 15) {
-							gatheringPoint = area.FindRandomGatheringPoint ();
-							if (gatheringPoint != null) {
-								gatheringCount = Random.Range (1, gatheringPoint.maxQuantity);
-								action = "Gathering";
-							}
+							adventure.actionList.Add ("Decided to gather " + time);
+							adventure.action = "Gathering";
 						}
-						if (Random.Range (0, 100) < 100 - ((Database.myGuild.foundGatheringPoints [area.id] + gatheringPointsFound) / area.maxGatheringPoints * 100)) {
-							guildExp += 2 + 3 * area.level;
-							for (int i=0; i<livingCharacters.Count; i++) {
-								GiveExp (livingCharacters [i], fieldSkillId, 5);
-							}
-							gatheringPointsFound += 1;
-							Debug.Log ("It's a new gathering point " + time);
-						} else if (Random.Range (0, 100) < (gatheringPointsFound / area.maxGatheringPoints * 100) || !tookANewStep) {
-							action = "Idle";
-							Debug.Log ("This gathering point was already discovered today " + time);
-						}
-					} else if (tookANewStep && Random.Range (0, 101) < Mathf.RoundToInt (100 * newStepsCount / area.size) && area.linkedAreas != null) {//Found a different area
-						int RNG = Random.Range (0, area.linkedAreas.Count);
-						Debug.Log ("We found a link to another area." + time);
-						if (Database.myGuild.knownAreas.Contains (area.linkedAreas [RNG])) {
-							Debug.Log ("We know this area." + time);
-						} else {
-							Debug.Log ("This is a new area." + time);
-							Database.myGuild.FindNewArea (area.linkedAreas [RNG]);
-						}
-					} else {
-						guildExp += 1 * area.level;
-						for (int i=0; i<livingCharacters.Count; i++) {
-							GiveExp (livingCharacters [i], fieldSkillId, 2);
-						}
+					}
 
-					}
-					tookANewStep = false;
 				}
-			} else if (action == "Gathering") {
-				for (int i=0; i<livingCharacters.Count; i++) {
-					if (Random.Range (0, 101) < 25 + livingCharacters [i].skillLevel [fieldSkillId]) {
-						int maxAmount = 1 + Mathf.FloorToInt (livingCharacters [i].skillLevel [fieldSkillId] / 10);
-						int gathered = 1;
-						if (maxAmount > 1) {
-							gathered = Random.Range (1, maxAmount);
-						}
-						if (gathered > inventorySpace) {
-							gathered = inventorySpace;
-						} 
-						if (gathered > gatheringCount) {
-							gathered = gatheringCount;
-						}
-						inventorySpace -= gathered;
-						GiveExp (livingCharacters [i], fieldSkillId, gathered * 2);
-						int type = gatheringPoint.FindRandomItem ().id;
-						if (itemList.ContainsKey (type)) {
-							itemList [type] += gathered;
-						} else {
-							itemList [type] = gathered;
-						}
-						gatheringCount -= gathered;
-						if (inventorySpace == 0) {
-							break;
-						}
-						if (gatheringCount == 0) {
-							Debug.Log ("Finished Gathering " + time);
-							break;
-						}
-						Debug.Log (livingCharacters [i].name + " gathered " + gathered + " " + Database.items.FindItem (type).name + " " + time);
-					} else {
-						Debug.Log (livingCharacters [i].name + " failed to gather anything " + time);
-					}
+				adventure.actionList.Add ((100 * newStepsCount / area.size).ToString () + " completion");
+			} else if (adventure.action == "Gathering") {
+				adventure.Gather (this, time);
+				if ((typeSearch == "Gathering" || Random.Range (0, 100) < 20) && adventure.gatheringCount != 0) {
+					adventure.action = "Gathering";
+				} else {
+					adventure.actionList.Add ("Spent enough time gathering here. " + time);
+					adventure.action = "Idle";
 				}
-				if (time >= 36) {
+				if (adventure.status == "Finished") {
+					ShowDebugLog (time);
 					break;
 				}
-				if ((typeSearch == "Gathering" || Random.Range (0, 100) < 20) && gatheringCount != 0) {
-					action = "Gathering";
-				} else {
-					action = "Idle";
+			} else if (adventure.action == "Battle") {
+				adventure.livingCharacters = characters.Alive ();
+				adventure.livingMonsters = adventure.battleMonster.Alive ();
+				TurnStart (adventure.livingCharacters, adventure.livingMonsters, time);
+				if (adventure.livingMonsters.Alive ().Count > 0 && adventure.livingCharacters.Alive ().Count > 0) {
+					TurnStart (adventure.livingMonsters, adventure.livingCharacters, time);
 				}
-			} else if (action == "Battle") {
-				livingCharacters.TurnStart (this, livingMonsters, time);
-				if (livingMonsters.Alive ().Count > 0 && livingCharacters.Alive ().Count > 0) {
-					livingMonsters.TurnStart (this, livingCharacters, time);
-				}
-				if (livingMonsters.Alive ().Count == 0) {
-					Debug.Log ("Battle is won! " + time.ToString ());
-					action = "Idle";
+				if (adventure.livingMonsters.Alive ().Count == 0) {
+					adventure.actionList.Add ("Battle is won! " + time.ToString ());
+					adventure.action = "Idle";
 					guildExp += 2 + 3 * area.level;
-					for (int i=0; i<livingCharacters.Count; i++) {
-						GiveExp (livingCharacters [i], combatSkillId, 5 * area.level);
+					for (int i = 0; i < adventure.livingCharacters.Count; i++) {
+						GiveExp (adventure.livingCharacters [i], combatSkillId, 5 * area.level);
 					}
 				}
-				if (livingCharacters.Alive ().Count == 0) {
-					Debug.Log ("Party is wiped out");
+				if (adventure.livingCharacters.Alive ().Count == 0) {
+					adventure.actionList.Add ("Party is wiped out");
 					success = false;
+					ShowDebugLog (time);
 					break;
 				}
 			}
-			if (typeSearch == "Gathering" && (inventorySpace == 0 || action == "idle" && gatheringPointsFound == area.maxGatheringPoints)) {
-				Debug.Log ("Inventory is full, returning to town/ all gatheringpoints found" + time);
+			if (typeSearch == "Gathering" && (adventure.inventorySpace == 0 || adventure.action == "idle" && gatheringPointsFound == area.maxGatheringPoints)) {
+				if (adventure.inventorySpace == 0) {
+					adventure.actionList.Add ("Inventory is full, returning to town" + time);
+				} else if(adventure.action == "idle" && gatheringPointsFound == area.maxGatheringPoints){
+					adventure.actionList.Add ("all gatheringpoints found, returning to town " + time);
+				}
+				ShowDebugLog (time);
 				break;
 			}
+			ShowDebugLog (time);
 		}
-		RemoveTaskFromCoroutineList();
+		RemoveTaskFromCoroutineList ();
+	}
+	public void ShowDebugLog(int time){
+		for (int i = 0; i < adventure.actionList.Count; i++) {
+			Debug.Log (adventure.actionList [i] + " " + time);
+		}
+		adventure.actionList.Clear ();
+	}
+	public void TurnStart (List<Character> attackers, List<Character> defenders, int turn)
+	{
+		if (defenders != null) {
+			if (attackers [0].isEnemy) {
+				adventure.actionList.Add ("Enemy turn." + turn.ToString ());
+			} else {
+				adventure.actionList.Add ("Player turn" + turn.ToString ());
+			}
+			string action="";
+			Character defender=null;
+			Ability attack=null;
+			for (int i = 0; i < attackers.Count; i++) {
+				PlayerTurn (attackers [i],attackers, defenders, ref action, ref defender, ref attack);
+				if (action == "Fight") {
+					Ability counter = defender.ChooseCounterAttack (attack.range, attackers [i]);
+					adventure.Fight (attackers [i], attack, defender, counter, this);
+					if (defenders.Alive ().Count == 0 || attackers.Alive ().Count == 0) {
+						return;
+					}
+				}
+				defenders = defenders.Alive ();
+			}
+		}
+	}
+
+	public void PlayerTurn (Character attacker,List<Character> allies, List<Character> enemies, ref string action, ref Character enemy, ref Ability attack)
+	{
+		if (attacker.totalStats ["CurrentHealth"] > 0) {
+			action = attacker.ChooseBattleAction (allies);
+			if (action == "Fight") {
+				enemy = enemies [Random.Range (0, enemies.Count)];
+				attack = attacker.ChooseAttack (enemy);
+			}
+		}
 	}
 }

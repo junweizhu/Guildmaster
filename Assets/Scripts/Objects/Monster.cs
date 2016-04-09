@@ -9,27 +9,27 @@ public class Monster
 	public string name;
 	public int level;
 	public int exp = 0;
+	public int size;
 	public string status;
 	public string type;
 	public string element;
 	public Dictionary<string,int> baseStats = new Dictionary<string, int> ();
-	public Dictionary<string,int> bonusStats = new Dictionary<string, int> ();
-	public Dictionary<string,int> equipmentStats = new Dictionary<string, int> ();
 	public Dictionary<string,int> statGrowth = new Dictionary<string,int> ();
 	public Dictionary<string,int> totalStats = new Dictionary<string, int> ();
 	public List<InventorySlot> equipment = new List<InventorySlot> ();
 	public List<int> abilities;
-	public int blockItem;
-	public bool canAttack=false;
 
 	public Monster ()
 	{
 	}
 
-	public Monster (int id, string name, string type, int size, Dictionary<string,int> statgrowth=null, string element="")
+	public Monster (int id, string name, string type, int size,Dictionary<string,int> basestats, Dictionary<string,int> statgrowth, string element="")
 	{
 		this.id = id;
 		this.name = name;
+		this.size = size;
+		this.type = type;
+		baseStats = basestats;
 		statGrowth = statgrowth;
 		this.element = element;
 	}

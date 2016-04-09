@@ -48,9 +48,10 @@ public class GameManager : MonoBehaviour
 	private SaveData data;
 	public Button loadButton;
 	private WaitForSeconds waitTime=new WaitForSeconds(0.5f);
-	private WaitForSeconds sellWaitTime=new WaitForSeconds(0.3f);
-	private WaitForSeconds adventureWaitTime=new WaitForSeconds(0.05f);
+	private WaitForSeconds sellWaitTime=new WaitForSeconds(0.1f);
+	private WaitForSeconds adventureWaitTime=new WaitForSeconds(0.02f);
 	public List<Task> tasksWithCoroutine=new List<Task>();
+	public List<Task> manualTasks = new List<Task> ();
 	public CanvasGroup waitingScreen;
 
 	// Use this for initialization
@@ -105,7 +106,6 @@ public class GameManager : MonoBehaviour
 			Database.myGuild.RecruitCharacter (Database.characters.GetCharacter (0));
 			Database.myGuild.RecruitCharacter (Database.characters.GetCharacter (1));
 			Database.quests.GenerateQuest (0, 0, "main");
-			Database.quests.GenerateQuest (1, 0, "main");
 		}
 		screenDisplay="Main";
 		DisplayScreen ("Start",startScreen);
@@ -201,10 +201,13 @@ public class GameManager : MonoBehaviour
 
 	public void PromptRecruit (int id)
 	{
+		
 		if (id != 999) {
 			statDisplayId = id;
+		} else {
+
 		}
-		InputText ("Recruit", Database.characters.GetRecruitables () [id].id);
+		InputText ("Recruit", Database.characters.GetRecruitables () [statDisplayId].id);
 	}
 
 	public void InputText (string action, int id, string type="Character", bool forced=true)
@@ -309,7 +312,9 @@ public class GameManager : MonoBehaviour
 			selectedcharacters [i].status = searchScreen.searchType.name;
 			selectedcharacters [i].statusAdd = outsideScreen.GetSelectedArea ().name;
 		}
-		StartCoroutine(task.AdventureTime(adventureWaitTime));
+		if (!task.manual) {
+			StartCoroutine(task.AdventureTime(adventureWaitTime));
+		}
 		ReturnToLastScreen ();
 	}
 
@@ -378,7 +383,7 @@ public class GameManager : MonoBehaviour
 			}
 			Task sellTask=new Task (task, 1.0f, shopScreen.buyers, shopScreen.GetItemToBuyOrSell (), money);
 			myGuild.AddTask (sellTask);
-			if (task=="Sell"){
+			if (task=="Sell"&& !sellTask.manual){
 				StartCoroutine(sellTask.SellTime(sellWaitTime));
 			}
 		} else {
@@ -432,30 +437,38 @@ public class GameManager : MonoBehaviour
 		questStatScreen.show = true;
 	}
 	public void StartNextDay(){
+		if (manualTasks.Count > 0) {
+			StartManualTask ();
+		}
 		StartCoroutine(WaitForTasksToBeDone());
 	}
+	public void StartManualTask(){
 
+
+	}
 	public void NextDay ()
 	{
 		if (myGuild.inventory.GetSpace () >= 0) {
 			int day = Database.day;
 			int month = Database.month;
 			int year = Database.year;
-			myGuild.UpdateTasks (day);
 
-			if (myGuild.tasklog.Count > 0) {
-				nextDayScreen.UpdateText (day, month, year, myGuild.tasklog, myGuild.GetCharacterActivity ());
-			} else
-				nextDayScreen.UpdateText (day, month, year, null, myGuild.GetCharacterActivity ());
+			myGuild.UpdateTasks (day);
 			Database.day += 1;
 			if (Database.day > 30) {
 				Database.month += 1;
 				Database.day -= 30;
+				Database.guilds.GuildMaintenancePay ();
 				if (Database.month > 12) {
 					Database.year += 1;
 					Database.month -= 12;
 				}
 			}
+			if (myGuild.tasklog.Count > 0) {
+				nextDayScreen.UpdateText (day, month, year, myGuild.tasklog, myGuild.GetCharacterActivity ());
+			} else
+				nextDayScreen.UpdateText (day, month, year, null, myGuild.GetCharacterActivity ());
+			
 			myGuild.UpdateCharacters ();
 			nextDayScreen.show = true;
 			myGuild.NextDayReset ();

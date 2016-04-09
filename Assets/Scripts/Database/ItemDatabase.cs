@@ -11,6 +11,7 @@ public class ItemDatabase
 	private List<Item> baseMaterial=new List<Item>();
 	private List<Item> baseItem=new List<Item>();
 	private Dictionary<string,int> tier= new Dictionary<string,int> ();
+	public int firstMaterialId;
 
 	// Use this for initialization
 	public ItemDatabase ()
@@ -38,7 +39,7 @@ public class ItemDatabase
 		Weapons ();
 		Armor();
 		Accessory();
-		BaseMaterials ();
+		firstMaterialId = itemList.Count;
 		Materials ();
 	}
 	public void BaseMaterials(){
@@ -65,49 +66,130 @@ public class ItemDatabase
 	}
 
 	public void Weapons(){
-		AddEquipment ("Sword","Weapon", "Sword", 12, "",	1,2,1.5f,0.5f,0,0,100,20,0.5f,15,1, "Wood","Metal");
-		AddEquipment ("Axe","Weapon", "Axe", 11, "",		1.25f,4,3,0.2f,0,0,80,0,1.5f,20,1, "Wood","Metal");
-		AddEquipment ("Spear","Weapon", "Spear", 11.5f, "",	1.5f,3,2.5f,0.5f,0,0,120,0,1,30,1, "Wood","Metal");
-		AddEquipment ("Bow","Weapon", "Bow", 13.5f, "",		1.25f,3,3,0.3f,0,0,75,0,0.5f,5,1, "Wood","Metal");
-		AddEquipment ("Mace", "Weapon","Mace", 12.5f, "",	1.125f,4,1.5f,1,0,0,80,0,1,20,1, "Wood","Metal");
-		AddEquipment ("Dagger","Weapon", "Dagger", 10, "",	1.125f,0.5f,1,0.5f,0,0,85,30,0.5f,5,1, "Wood","Metal");
-		AddEquipment ("Staff","Weapon", "Staff", 13, "",	1.5f,2,2,2,0,0,105,6,1,25,3, "Wood","Metal");
-		AddEquipment ("Rod", "Weapon","Rod", 13.5f, "",		1,1,1,3,0,0,100,20,0.5f,5,3, "Wood","Metal");
+		AddEquipment ("Sword","Weapon", "Sword", 6, "",		1,2,1.5f,0.5f,0,0,100,20,0.5f,15,1, "Wood","Metal");
+		AddEquipment ("Axe","Weapon", "Axe", 5.5f, "",		1.25f,4,3,0.2f,0,0,80,0,1.5f,20,1, "Wood","Metal");
+		AddEquipment ("Spear","Weapon", "Spear", 5.75f, "",	1.5f,3,2.5f,0.5f,0,0,120,0,1,30,1, "Wood","Metal");
+		AddEquipment ("Bow","Weapon", "Bow", 6.75f, "",		1.25f,3,3,0.3f,0,0,75,0,0.5f,5,1, "Wood","Metal");
+		AddEquipment ("Mace", "Weapon","Mace", 6.25f, "",	1.125f,4,1.5f,1,0,0,80,0,1,20,1, "Wood","Metal");
+		AddEquipment ("Dagger","Weapon", "Dagger", 5, "",	1.125f,0.5f,1,0.5f,0,0,85,30,0.5f,5,1, "Wood","Metal");
+		AddEquipment ("Staff","Weapon", "Staff", 6.5f, "",	1.5f,2,2,2,0,0,105,6,1,25,3, "Wood","Metal");
+		AddEquipment ("Rod", "Weapon","Rod", 6.75f, "",		1,1,1,3,0,0,100,20,0.5f,5,3, "Wood","Metal");
 	}
 
 	public void Armor(){
 
-		AddEquipment("Robe","Body","Robe",9,"",				1.2f,0.1f,0,1,.5f,2,2.5f,0,0,0,3,"Leather","Fabric");
-		AddEquipment("Vest","Body","Cloth",8.5f,"",			1.25f,1,0,0,1,1.5f,5,2.5f,0,0,2,"Leather","Fabric");
-		AddEquipment("Garb","Body","Cloth",9,"",			1.2f,2,0,0,1.5f,1,0,-2.5f,0,0,2,"Leather","Fabric");
-		AddEquipment("Chainmail","Body","Armor",10,"",		1.25f,1.5f,0,0,1.5f,1,-2.5f,-5,0,0,2,"Metal");
-		AddEquipment("Breastplate","Body","Armor",11,"",	1.125f,2,0,0,2,0.75f,-5f,-10,0,0,2,"Metal");
-		AddEquipment("Cuirass","Body","Armor",12,"",		1,2.5f,0,0,3,0.5f,-10,-15f,0,0,2,"Metal");
+		AddEquipment("Robe","Body","Robe",4.5f,"",			1.2f,0.1f,0,1,.5f,2,2.5f,0,0,0,3,"Leather","Fabric");
+		AddEquipment("Tunic","Body","Cloth",4.25f,"",		1.25f,1,0,0,1,1.5f,5,2.5f,0,0,2,"Leather","Fabric");
+		AddEquipment("Garb","Body","Cloth",4.5f,"",			1.2f,2,0,0,1.5f,1,0,-2.5f,0,0,2,"Leather","Fabric");
+		AddEquipment("Chainmail","Body","Armor",5,"",		1.25f,1.5f,0,0,1.5f,1,-2.5f,-5,0,0,2,"Metal");
+		AddEquipment("Breastplate","Body","Armor",5.5f,"",	1.125f,2,0,0,2,0.75f,-5f,-10,0,0,2,"Metal");
+		AddEquipment("Cuirass","Body","Armor",6,"",			1,2.5f,0,0,3,0.5f,-10,-15f,0,0,2,"Metal");
 
 	}
 
 	public void Accessory(){
-		AddEquipment("Shield","Accessory","Shield",6.75f,"",1.5f,1,0,0,0,0,-5,0,2,35,2, "Wood","Metal");
-		AddEquipment("Helm","Accessory","Helm",7.25f,"",	1.375f,0.2f,0,0,0.5f,0.5f,0,0,0,0,2,"Wood","Metal");
-		AddEquipment("Hood", "Accessory","Helm",7.25f,"",	1.2f,0.1f,0,0.75f,0,2,0,0,0,0,3,"Leather","Fabric");
-		AddEquipment("Circlet", "Accessory","Helm",7.5f,"",	1,0.1f,0,1,0,0.5f,0,0,0,0,3,"Wood","Metal");
-		AddEquipment("Armguard","Accessory","Gauntlet",8,"",1,0.1f,0.5f,0,0.5f,0,5.0f,0,0,0,2,"Leather","Metal");
-		AddEquipment("Bangle", "Accessory","Gauntlet",8.5f,"",1,0.1f,0,1,0.5f,0,5.0f,0,0,0,3,"Wood","Metal");
-		AddEquipment("Boots","Accessory","Boots",7.75f,"",	1.2f,0.5f,0,0,0.5f,0,0,5.0f,0,0,2,"Leather","Metal");
-		AddEquipment("Leather Pouch","Accessory","Backpack",75,"Pouch made of leather large enough for 5 items",60,0,5,true);
+		AddEquipment("Shield","Accessory","Shield",3.375f,"",1.5f,1,0,0,0,0,-5,0,2,35,2, "Wood","Metal");
+		AddEquipment("Helm","Accessory","Helm",3.625f,"",	1.375f,0.2f,0,0,0.5f,0.5f,0,0,0,0,2,"Wood","Metal");
+		AddEquipment("Hood", "Accessory","Helm",3.625f,"",	1.2f,0.1f,0,0.75f,0,2,0,0,0,0,3,"Leather","Fabric");
+		AddEquipment("Circlet", "Accessory","Helm",3.75f,"",	1,0.1f,0,1,0,0.5f,0,0,0,0,3,"Wood","Metal");
+		AddEquipment("Armguard","Accessory","Gauntlet",4,"",1,0.1f,0.5f,0,0.5f,0,5.0f,0,0,0,2,"Leather","Metal");
+		AddEquipment("Bangle", "Accessory","Gauntlet",4.25f,"",1,0.1f,0,1,0.5f,0,5.0f,0,0,0,3,"Wood","Metal");
+		AddEquipment("Boots","Accessory","Boots",3.875f,"",	1.2f,0.5f,0,0,0.5f,0,0,5.0f,0,0,2,"Leather","Metal");
+		AddEquipment("Leather Pouch","Accessory","Backpack",50,"Pouch made of leather large enough for 5 items",60,0,5,true);
 		AddEquipment("Leather Backpack","Accessory","Backpack",175,"Backpack made of leather for gathering 10 items",50,1,5,true,0,1);
 
 	}
 
 	public void Materials(){
-		AddItem ("Common Branch","Material","Log",5,"You see these branches everywhere.");
-		AddItem ("Lily","Material","Flower",4,"Symbolizes humility and devotion.");
-		AddItem ("Lavender","Material","Flower",4,"Gives a strong and pleasant fragrance.");
-		AddItem ("Chamomile","Material","Flower",5,"Flowers frequently used in tea and medicine.");
-		AddItem ("Saffron","Material","Flower",6,"These flowers can also be used as spices.");
-		AddItem ("Orchid","Material","Flower",7,"Very colourful and often fragrant flower.");
-		AddItem ("Helianthus","Material","Flower",8,"These flowers are also known as the sunflower.");
-		AddItem ("Rose","Material","Flower",10,"Look out for the thorns!");
+		//Wood
+		AddItem ("Common Stick","Material","Log",10,"You see these wooden sticks almost everywhere.");//0-6
+		AddItem ("Oak wood","Material","Log",14,"");
+		AddItem ("Pine wood","Material","Log",16,"");
+		AddItem ("Cypress","Material","Log",18,"");
+		AddItem ("Birch","Material","Log",26,"");
+		AddItem ("Bamboo","Material","Log",28,"");
+		AddItem ("Ebony","Material","Log",32,"");
+
+		//Ores
+		AddItem ("Pebble","Material","Ore",4,"");//7-13
+		AddItem ("Large stone","Material","Ore",10,"");
+		AddItem ("Coal","Material","Ore",16,"");
+		AddItem ("Copper ore","Material","Ore",20,"");
+		AddItem ("Iron ore","Material","Ore",30,"");
+		AddItem ("Silver ore","Material","Ore",40,"");
+		AddItem ("Gold ore","Material","Ore",45,"");
+
+		//Gemstones
+		AddItem ("Turquoise","Material","Gemstone",36,"");//14-20
+		AddItem ("Lapis Lazuli","Material","Gemstone",36,"");
+		AddItem ("Amethyst","Material","Gemstone",50,"");
+		AddItem ("Emerald","Material","Gemstone",50,"");
+		AddItem ("Sapphire","Material","Gemstone",70,"");
+		AddItem ("Ruby","Material","Gemstone",70,"");
+		AddItem ("Diamond","Material","Gemstone",110,"");
+
+		//Flowers
+		AddItem ("Lily","Material","Flower",8,"");//21-27
+		AddItem ("Lavender","Material","Flower",8,"Gives a strong and pleasant fragrance.");
+		AddItem ("Chamomile","Material","Flower",10,"Flowers frequently used in tea and medicine.");
+		AddItem ("Saffron","Material","Flower",12,"These flowers can also be used as spices.");
+		AddItem ("Orchid","Material","Flower",14,"Very colourful and often fragrant flower.");
+		AddItem ("Helianthus","Material","Flower",16,"These flowers are also known as the sunflower.");
+		AddItem ("Rose","Material","Flower",20,"Look out for the thorns!");
+
+		//Fruits
+		AddItem ("Apple","Material","Fruit",10,"");//28-34
+		AddItem ("Orange","Material","Fruit",10,"");
+		AddItem ("Banana","Material","Fruit",12,"");
+		AddItem ("Peach","Material","Fruit",12,"");
+		AddItem ("Grape","Material","Fruit",14,"");
+		AddItem ("Strawberry","Material","Fruit",20,"");
+		AddItem ("Pineapple","Material","Fruit",30,"");
+
+		//Herbs 
+		AddItem ("Mushroom","Material","Herb",8,"");//35-41
+		AddItem ("Ginger","Material","Herb",10,"");
+		AddItem ("Wolfberry","Material","Herb",10,"");
+		AddItem ("Cinnamon","Material","Herb",11,"");
+		AddItem ("Licorice","Material","Herb",12,"");
+		AddItem ("Rhubarb","Material","Herb",14,"");
+		AddItem ("Ginseng","Material","Herb",17,"");
+
+		//Meat
+		AddItem ("Poultry","Material","Meat",8,"");//42-48
+		AddItem ("Animal meat","Material","Meat",9,"");
+		AddItem ("Pork","Material","Meat",10,"");
+		AddItem ("Beef","Material","Meat",10,"");
+		AddItem ("Venison","Material","Meat",12,"");
+		AddItem ("Fish","Material","Meat",14,"");
+		AddItem ("Shellfish","Material","Meat",17,"");
+
+		//Skin
+		AddItem ("Bird Feather","Material","Skin",8,"");//49-55
+		AddItem ("Bird Down","Material","Skin",10,"");
+		AddItem ("Animal pelt","Material","Skin",10,"");
+		AddItem ("Animal skin","Material","Skin",11,"");
+		AddItem ("Animal hide","Material","Skin",12,"");
+		AddItem ("Animal fur","Material","Skin",14,"");
+		AddItem ("Animal scale","Material","Skin",17,"");
+
+		//Claws
+		AddItem ("Bird Talon","Material","Claws",8,"");//56-62
+		AddItem ("Predator's talon","Material","Claws",10,"");
+		AddItem ("Lizard claws","Material","Claws",10,"");
+		AddItem ("Large reptilian claws","Material","Claws",11,"");
+		AddItem ("Humanoid nails","Material","Claws",12,"");
+		AddItem ("Animal hoof","Material","Claws",14,"");
+		AddItem ("Beast claws","Material","Claws",17,"");
+
+		//Bones
+		AddItem ("Bird beak","Material","Bone",8,"");//63-69
+		AddItem ("Lizard teeth","Material","Bone",10,"");
+		AddItem ("Beast fang","Material","Bone",10,"");
+		AddItem ("Ivory","Material","Bone",11,"");
+		AddItem ("Antler","Material","Bone",12,"");
+		AddItem ("Animal horn","Material","Bone",14,"");
+		AddItem ("Large animal bone","Material","Bone",17,"");
 	}
 	
 
@@ -241,11 +323,11 @@ public class ItemDatabase
 		return 0;
 
 	}
-	public List<Item> FindGatheringItems(string subtype){
-		List<Item>items=new List<Item>();
-		foreach (Item item in itemList) {
-			if (item.subType == subtype)
-				items.Add(item);
+	public List<int> FindGatheringItems(string subtype){
+		List<int>items=new List<int>();
+		for (int i=0;i<itemList.Count;i++){
+			if (itemList[i].subType == subtype)
+				items.Add(itemList[i].id);
 		}
 		return items;
 	}

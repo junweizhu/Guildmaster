@@ -6,10 +6,10 @@ using System.Collections.Generic;
 public class GatheringPoint{
 	public int id;
 	public string type;
-	public List<Item> gatherableItems=new List<Item>();
+	public List<int> gatherableItems=new List<int>();
 	public int maxQuantity;
 
-	public GatheringPoint(int id,string type,List<Item>items,int maxgathering)
+	public GatheringPoint(int id,string type,List<int>items,int maxgathering)
 	{
 		this.id=id;
 		this.type=type;
@@ -20,10 +20,10 @@ public class GatheringPoint{
 		Item selected=null;
 		int lastRNG=0;
 		int currentRNG=0;
-		foreach (Item item in gatherableItems){
+		for (int i=0;i<gatherableItems.Count;i++){
 			currentRNG=Random.Range(1,1000);
 			if (currentRNG>lastRNG){
-				selected=item;
+				selected=Database.items.FindItem(gatherableItems[i]);
 				lastRNG=currentRNG;
 			}
 		}

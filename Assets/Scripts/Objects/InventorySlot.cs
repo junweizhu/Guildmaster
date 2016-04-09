@@ -19,6 +19,14 @@ public class InventorySlot
 	public InventorySlot ()
 	{
 	}
+	public InventorySlot (InventorySlot slot)
+	{
+		id = slot.id;
+		itemId = slot.itemId;
+		filled = slot.filled;
+		durability = slot.durability;
+		quantity = slot.quantity;
+	}
 
 	public void FillItem (int id, int durability)
 	{
@@ -58,5 +66,13 @@ public class InventorySlot
 		durability = 0;
 		quantity = 0;
 		itemId=9999;
+	}
+	public void Copy (InventorySlot slot)
+	{
+		id = slot.id;
+		itemId = slot.itemId;
+		filled = slot.filled;
+		durability = slot.durability;
+		quantity = slot.quantity;
 	}
 }

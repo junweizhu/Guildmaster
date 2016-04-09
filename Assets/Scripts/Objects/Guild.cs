@@ -41,7 +41,6 @@ public class Guild
 
 	public Guild ()
 	{
-
 	}
 
 	public Guild (int id, string name, int level, int fame, int money)
@@ -101,7 +100,6 @@ public class Guild
 
 	public void UpdateTasks (int day)
 	{
-		tasklog.Clear ();
 		if (taskList.Count > 0) {
 			for (int i=0; i<taskList.Count; i++) {
 				taskList [i].UpdateTask ();
@@ -123,10 +121,8 @@ public class Guild
 							itemsGathered += tasklog [i].itemList.Count;
 							if (successfulVisits.ContainsKey (tasklog [i].area.id)) {
 								successfulVisits [tasklog [i].area.id]++;
-								foundGatheringPoints [tasklog [i].area.id] += tasklog [i].gatheringPointsFound;
 							} else {
 								successfulVisits [tasklog [i].area.id] = 1;
-								foundGatheringPoints [tasklog [i].area.id] = tasklog [i].gatheringPointsFound;
 							}
 						}
 					} else if (tasklog [i].type == "Socialize") {
@@ -203,7 +199,7 @@ public class Guild
 		taskList.RemoveAt (index);
 	}
 
-	public void FinishQuest (int questid, List<Character> characters)
+	public void FinishQuest (int questid, List<Character> characters, bool showDialog=true)
 	{
 		Quest quest = questBoard.FindQuest (questid);
 		if (quest.requiredItems != null && quest.requiredItems.Count > 0) {
@@ -223,7 +219,9 @@ public class Guild
 		}
 		GiveExp (quest.guildExpReward);
 		money += quest.moneyReward;
-		GameObject.FindObjectOfType<DialogueScreenDisplay> ().ShowDialogue (quest.guildExpReward,quest.moneyReward, quest.itemRewards);
+		if (showDialog){
+			GameObject.FindObjectOfType<DialogueScreenDisplay> ().ShowDialogue (quest.guildExpReward,quest.moneyReward, quest.itemRewards,quest.expReward,null);
+		}
 		quest.finished = true;
 	}
 
@@ -267,6 +265,7 @@ public class Guild
 			maintenanceCost=0;
 		}
 		levelUp=false;
+		tasklog.Clear ();
 	}
 
 	public void GiveItemToCharacter (int inventoryId, int equipslotId, int characterId)

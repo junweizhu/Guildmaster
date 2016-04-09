@@ -21,18 +21,18 @@ public class QuestDatabase
 	// Use this for initialization
 	public QuestDatabase ()
 	{
-		NewQuest ("main", "Training", "Training", 1, 1, 100f, new Dictionary<int, int> (){{99,100},{2,100}}, "Train someone to learn the basics of important skills");
-		NewQuest ("main", "Buy 1 Health vial", "Item", 0, 0, 100f, null, "Send someone to the shop to buy a health vial", "", null, new Dictionary<int,float> (){{0,1f}});
-		NewQuest ("random", "Test1", "Training", 2, 1, 0f, new Dictionary<int, int> (){{99,100}}, "Test", "");
-		NewQuest ("random", "Test2", "Training", 2, 1, 0f, new Dictionary<int, int> (){{1,100}}, "Test", "");
+		NewQuest ("main", "Test Training", "Training", 5, 1, 100f, new Dictionary<int, int> (){{99,100},{2,100}},5, "Test a new training.","A new training has been developed and we need people to test the training to see its results. Training will be free of charge.");
+		NewQuest ("main", "Buy 1 Health vial", "Item", 0, 0, 100f, null,0, "Send someone to the shop to buy a health vial", "", null, new Dictionary<int,float> (){{0,1f}});
+		NewQuest ("random", "Test1", "Training", 2, 1, 0f, new Dictionary<int, int> (){{99,100}},0, "Test", "");
+		NewQuest ("random", "Test2", "Training", 2, 1, 0f, new Dictionary<int, int> (){{1,100}},0, "Test", "");
 	}
-	public void NewQuest (string questtype, string name, string type, int maxparticipants, int duration, float money=0f, Dictionary<int,int> exp=null, string shortdescription="", string longdescription="", Dictionary<int,float> reward=default(Dictionary<int,float>), Dictionary<int,float> items=default(Dictionary<int,float>), Dictionary<int,float> skills=default(Dictionary<int,float>))
+	public void NewQuest (string questtype, string name, string type, int maxparticipants, int duration, float money=0f, Dictionary<int,int> exp=null,int baseguildexp=0, string shortdescription="", string longdescription="", Dictionary<int,float> reward=default(Dictionary<int,float>), Dictionary<int,float> items=default(Dictionary<int,float>), Dictionary<int,float> skills=default(Dictionary<int,float>))
 	{
 		if (questtype == "main") {
-			mainQuestList.Add (new Quest (allQuestList.Count, name, type, maxparticipants, duration, money, exp, shortdescription, longdescription, reward, items, skills));
+			mainQuestList.Add (new Quest (allQuestList.Count, name, type, maxparticipants, duration, money, exp,baseguildexp, shortdescription, longdescription, reward, items, skills));
 			allQuestList.Add (mainQuestList [mainQuestList.Count - 1]);
 		} else if (questtype == "random") {
-			randomQuestList.Add (new Quest ((allQuestList.Count), name, type, maxparticipants, duration, money, exp, shortdescription, longdescription, reward, items, skills));
+			randomQuestList.Add (new Quest ((allQuestList.Count), name, type, maxparticipants, duration, money, exp,baseguildexp, shortdescription, longdescription, reward, items, skills));
 			allQuestList.Add (randomQuestList [randomQuestList.Count - 1]);
 		}
 

@@ -7,14 +7,15 @@ public class CharDatabase {
 	private List<Character> memberList= new List<Character>();
 	private List<string> maleNames=new List<string>(){"Test3","Test4","Test5","Test6","Test7","Test8"};
 	private List<string> femaleNames=new List<string>(){"test3","test4","test5","test6","test7","test8"};
+	int magicSkillId=1;
 
 	// Use this for initialization
 	public CharDatabase () {
 	}
 
 	public void Generate(){
-		memberList.Add (new Character(0, "Test",true,1,"Warrior"));
-		memberList.Add (new Character(1, "Test2",false,1,"Mage"));
+		GenerateNewCharacter (1, 2, true);
+		GenerateNewCharacter (1, 3, true,false,true);
 	}
 	public List<Character> GetCharacter(){
 		return memberList;
@@ -41,11 +42,14 @@ public class CharDatabase {
 		}
 		return name;
 	}
-
-	public Character GenerateNewCharacter(int level,int mainSkill)
+		
+	public Character GenerateNewCharacter(int level,int mainSkill,bool fixedGender=false, bool genderIsMale=true,bool learnMagic=false)
 	{
 		string charName;
-		bool male=(Random.Range(0,2)==0);
+		bool male = (Random.Range (0, 2) == 0);
+		if (fixedGender) {
+			male = genderIsMale;
+		} 
 		if (male){
 			charName=maleNames[Random.Range(0,maleNames.Count)];
 			maleNames.Remove(charName);
@@ -66,6 +70,10 @@ public class CharDatabase {
 
 			int exp=Mathf.RoundToInt(Random.Range(50*modifier,((level)*modifier)*100))+minimum;
 			memberList[memberList.Count-1].GiveExp(skill.id,exp);
+		}
+		if (mainSkill == magicSkillId ||Random.Range(0,100)<=15||learnMagic) {
+			int magic = Random.Range(4,7);
+			memberList [memberList.Count - 1].abilities.Add (magic);
 		}
 		memberList[memberList.Count-1].NextDayResets();
 		memberList[memberList.Count-1].recruitable=true;

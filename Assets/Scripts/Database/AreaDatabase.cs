@@ -5,12 +5,13 @@ using System.Collections.Generic;
 public class AreaDatabase {
 	private List<Area> areaList=new List<Area>();
 	private List<GatheringPoint> gatheringList=new List<GatheringPoint>();
-	private Dictionary<string,List<string>> areaGatheringType=new Dictionary<string,List<string>>();
+	private Dictionary<string,Dictionary<string,int>> areaGatheringType=new Dictionary<string,Dictionary<string,int>>();
 	// Use this for initialization
 
 	public AreaDatabase () {
-		areaGatheringType["Forest"]=new List<string>(){"Flower","Herb","Fruit","Wood"};
-		areaGatheringType["Plains"]=new List<string>(){"Flower","Herb","Fruit"};
+		areaGatheringType["Plains"]=new Dictionary<string,int>(){{"Flowerspot",100},{"Animal",40},{"Livestock",10}};
+		//areaGatheringType["Forest"]=new List<string>(){{"Flower","Herb","Fruit","Wood"};
+
 		GenerateGatheringPoints();
 		GenerateAreas();
 	}
@@ -21,8 +22,11 @@ public class AreaDatabase {
 
 	void GenerateGatheringPoints()
 	{
-		gatheringList.Add(new GatheringPoint(0,"Flower",Database.items.FindGatheringItems("Flower"),5));
-		gatheringList.Add(new GatheringPoint(1,"Wood",Database.items.FindGatheringItems("Wood"),5));
+		int i = Database.items.firstMaterialId;
+		gatheringList.Add(new GatheringPoint(0,"Flowerspot",new List<int>(){21+i,22+i,23+i},5));
+		gatheringList.Add(new GatheringPoint(1,"Bird",new List<int>(){42+i,49+i,50+i,56+i,63+i},4));
+		gatheringList.Add(new GatheringPoint(2,"Animal",new List<int>(){43+i,51+i,52+i,61+i,62+i},2));
+		gatheringList.Add(new GatheringPoint(3,"Livestock",new List<int>(){44+i,45+i,53+i,69+i},2));
 	}
 
 	void GenerateAreas()
@@ -32,12 +36,12 @@ public class AreaDatabase {
 
 	}
 
-	public List<GatheringPoint> GetTypeGatheringPoint(string areatype)
+	public List<KeyValuePair<GatheringPoint,int>> GetTypeGatheringPoint(string areatype)
 	{
-		List<GatheringPoint>gatheringpoints=new List<GatheringPoint>();
+		List<KeyValuePair<GatheringPoint,int>>gatheringpoints=new List<KeyValuePair<GatheringPoint,int>>();
 		foreach (GatheringPoint point in gatheringList) {
-			if (areaGatheringType[areatype].Contains(point.type))
-				gatheringpoints.Add(point);
+			if (areaGatheringType[areatype].ContainsKey(point.type))
+				gatheringpoints.Add(new KeyValuePair<GatheringPoint, int>(point,areaGatheringType[areatype][point.type]));
 		}
 		return gatheringpoints;
 

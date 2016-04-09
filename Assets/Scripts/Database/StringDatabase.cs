@@ -67,7 +67,7 @@ public class StringDatabase{
 		textList.Add ("SearchQuest","Select who should look for new quests");
 		textList.Add ("SocializeSelect","Who should go to the tavern?");
 		textList.Add ("AdventureTitle","Adventure");
-		textList.Add ("SocializeTitle","Quest Search");
+		textList.Add ("SocializeTitle","Socialize");
 		textList.Add ("Adventure","Select who should travel to this place");
 		textList.Add ("QuestSelect","Select who should participate in this quest");
 		textList.Add ("SelectItems","Select items to give to this member");
@@ -116,8 +116,12 @@ public class StringDatabase{
 		textList.Add ("SchoolLog","{0} went to the training hall");
 		textList.Add ("SocializeLog","{0} visited the tavern.");
 		textList.Add ("SocializeSuccess","{0} talked to various people in the tavern.");
+		textList.Add ("QuestSuccess","Successfully finished {0}.");
+		textList.Add ("QuestItemReward","Received Reward: \n{0}");
+		textList.Add ("QuestMoneyReward","Received "+textList["Currency"]);
 		textList.Add ("AdventureLog","{0} returned from an adventure");
 		textList.Add ("ExploreLog","Explored {0} % of the area.");
+		textList.Add ("ExploreAreaFound", "Found a way to the {0}");
 		textList.Add ("MemberUp","{0} improved {1} skills!");
 		textList.Add ("LevelUp","Level Up! {0} gained:\n{1}");
 		textList.Add ("SkillUp","{0}'s {1}s are improved");
@@ -135,6 +139,7 @@ public class StringDatabase{
 		textList.Add ("MoneyBack","Due to negotiations, {0} less gold was paid.");
 		textList.Add ("QuestFound","{0} people requested for your guild's help");
 		textList.Add ("RecruitFound", "{0} wants to join your guild.");
+		textList.Add ("AreaFound", "One of the visitors showed the location of the {0}");
 		textList.Add ("GainedExp","{0} gained {1} {2} experience.");
 		textList.Add ("LogGainedExp","+ {0} {1} exp");
 		textList.Add ("AdventureSuccess","The adventure ended safely.");
@@ -155,7 +160,7 @@ public class StringDatabase{
 		textList.Add ("Guild","Guild");
 		textList.Add ("GainedItem", "Received {0}x {1}");
 		textList.Add ("GuildGainedExp","Guild received {0} experience");
-		textList.Add ("GuildGainedMoney","Received {0}" +textList["CurrencyCounter"]+".");
+		textList.Add ("GuildGainedMoney","Received " +textList["Currency"]+".");
 		textList.Add ("GuildGainedArea","You can now go to {0}.");
 		textList.Add ("GuildGainedQuest","\"{0}\" has been added to the list of acceptable requests. Go to the tavern for more information.");
 		textList.Add ("GuildGainedRecruit","{0} wants to join your guild. Find {1} in the tavern.");
@@ -183,8 +188,8 @@ public class StringDatabase{
 
 		dialogueList.Add (new Dialogue("RecruitMember",0,"{0}? Your registration is complete. You have finished the first step of becoming an official guild. Congratulations.",new List<int>(){0,0},new List<string>(){dialogueStringType[0],"Guild"}));
 		dialogueList.Add (new Dialogue("RecruitMember",1,"For now, you will be given a small room for you to use as your guildhouse for the time being, free of charge.",standardDialogueStringId,dialogueStringType));
-		dialogueList.Add (new Dialogue("RecruitMember",2,"Before we can officially recognize your guild, you will be given several tasks which would help you learn your roles and abilities as a guild.",standardDialogueStringId,dialogueStringType));
-		dialogueList.Add (new Dialogue("RecruitMember",3,"In order to be recognized as an official guild, you should have at least have five members in the guild.",standardDialogueStringId,dialogueStringType));
+		dialogueList.Add (new Dialogue("RecruitMember",2,"Before we can officially recognize your guild, you will be given several tasks which would help you to learn your roles and abilities as a guild.",standardDialogueStringId,dialogueStringType));
+		dialogueList.Add (new Dialogue("RecruitMember",3,"In order to be recognized as an official guild, you should have at least five members in the guild.",standardDialogueStringId,dialogueStringType));
 		dialogueList.Add (new Dialogue("RecruitMember",4,"This means you would need at least three more members before you are considered large enough to be a guild. So your first task is to find these three recruits.",standardDialogueStringId,dialogueStringType));
 		dialogueList.Add (new Dialogue("RecruitMember",5,"To find recruits, go to the tavern and choose to socialize.",standardDialogueStringId,dialogueStringType));
 		dialogueList.Add (new Dialogue("RecruitMember",6,"Then pick at most five of your members to do your recruiting. I suggest both of you should look for new recruits",standardDialogueStringId,dialogueStringType));

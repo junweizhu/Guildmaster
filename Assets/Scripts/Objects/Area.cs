@@ -20,7 +20,7 @@ public class Area
 	//public Vector2 startingPoint;
 
 
-	public Area (int id, string name, string type, int level, int difficulty, int traveltime,int size, int maxpoints=0, Dictionary<int,int> links=default(Dictionary<int,int>))
+	public Area (int id, string name, string type, int level, int difficulty, int traveltime, int size, int maxpoints = 0, Dictionary<int,int> links = default(Dictionary<int,int>))
 	{
 		this.id = id;
 		this.type = type;
@@ -30,38 +30,20 @@ public class Area
 		this.difficulty = difficulty;
 		linkedAreas = links;
 		maxGatheringPoints = maxpoints;
-		this.size=size;
+		this.size = size;
 	}
-/*
-	public void GenerateMap(){
-		for(int x=0;x<10;x++){
-			map[x]=new Dictionary<int,int>();
-			eventMap[x]=new Dictionary<int,string>();
-			for (int y=0;y<10;y++){
-				map[x][y]=0;
-				eventMap[x][y]="";
-			}
-		}
-		int startX=Random.Range(0,9);
-		int startY=Random.Range(0,9);
-		if (startX!=0&&startX!=9&&startY!=0&&startY!=9){
-			startY=Random.Range(0,1)*9;
-		}
-		startingPoint=new Vector2(startX,startY);
-	}*/
 
 	public GatheringPoint FindRandomGatheringPoint ()
 	{
 		GatheringPoint selected = null;
-		int lastRNG = 0;
-		int currentRNG = 0;
-		foreach (GatheringPoint point in Database.areas.GetTypeGatheringPoint(type)) {
-			if (point.gatherableItems.Count > 0) {
-				currentRNG = Random.Range (1, 1000);
-				if (currentRNG > lastRNG) {
-					selected = point;
-					lastRNG = currentRNG;
-				}
+		int lowestChance = 101;
+		int RNG = 0;
+		RNG = Mathf.RoundToInt (Random.Range (1, 1000) / 10);
+		List<KeyValuePair<GatheringPoint,int>> gatheringpoints = Database.areas.GetTypeGatheringPoint (type);
+		for (int i = 0; i < gatheringpoints.Count; i++) {
+			if (gatheringpoints [i].Value >= RNG && gatheringpoints [i].Value < lowestChance) {
+				selected = gatheringpoints [i].Key;
+				lowestChance = gatheringpoints [i].Value;
 			}
 		}
 		return selected;

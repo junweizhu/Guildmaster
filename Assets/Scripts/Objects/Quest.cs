@@ -20,6 +20,7 @@ public class Quest
 	public Dictionary<int,int> itemRewards;
 	public Dictionary<int,int> requiredSkills;
 	public Dictionary<int,int> requiredItems;
+	public int baseGuildExpReward;
 	public float baseMoneyReward;
 	public Dictionary<int,float> baseItemRewards;
 	public Dictionary<int,float> baseRequiredSkills;
@@ -27,13 +28,15 @@ public class Quest
 	public bool finished = false;
 	public bool accepted=false;
 	public List<Character> participants = new List<Character> ();
+	public int baseQuest;
+	public int level;
 
 	public Quest ()
 	{
 
 	}
 
-	public Quest (int id, string name, string type, int maxparticipants, int duration, float money=0f, Dictionary<int,int> exp=default(Dictionary<int,int>), string shortdescription="", string longdescription="", Dictionary<int,float> reward=default(Dictionary<int,float>), Dictionary<int,float> items=default(Dictionary<int,float>), Dictionary<int,float> skills=default(Dictionary<int,float>))
+	public Quest (int id, string name, string type, int maxparticipants, int duration, float money=0f, Dictionary<int,int> exp=default(Dictionary<int,int>),int baseguildexp=0, string shortdescription="", string longdescription="", Dictionary<int,float> reward=default(Dictionary<int,float>), Dictionary<int,float> items=default(Dictionary<int,float>), Dictionary<int,float> skills=default(Dictionary<int,float>))
 	{
 		baseId = id;
 		this.name = name;
@@ -47,6 +50,7 @@ public class Quest
 		baseItemRewards = reward;
 		baseRequiredItems = items;
 		this.longDescription = longdescription;
+		baseGuildExpReward=baseguildexp;
 
 		/*		if (longDescription!="")
 		{
@@ -84,16 +88,17 @@ public class Quest
 	public Quest (int id, Quest quest, int level)
 	{
 		this.id = id;
-
+		baseQuest = quest.baseId;
 		name = quest.name;
 		type = quest.type;
+		this.level = level;
 		status = "Open";
 		maxParticipants = quest.maxParticipants;
 		duration = quest.duration;
 		moneyReward = Mathf.CeilToInt (baseMoneyReward * level);
 		shortDescription = quest.shortDescription;
 		expReward = quest.expReward;
-		guildExpReward=Database.quests.QuestExp(level);
+		guildExpReward=Database.quests.QuestExp(level)+quest.baseGuildExpReward;
 		if (baseRequiredSkills!=null) {
 			requiredSkills = new Dictionary<int, int> ();
 			foreach (KeyValuePair<int,float> skill in baseRequiredSkills) {
@@ -140,6 +145,7 @@ public class Quest
 		if (longDescription == "")
 			longDescription = Database.strings.GetString ("NoDescription");
 	}
+
 	public void Reset(){
 		participants.Clear();
 		status="Open";

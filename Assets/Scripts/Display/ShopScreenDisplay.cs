@@ -43,7 +43,7 @@ public class ShopScreenDisplay : MonoBehaviour
 		if (show) {
 			GetComponent<CanvasGroup> ().alpha = 1;
 			GetComponent<CanvasGroup> ().blocksRaycasts = true;
-			if ((buyers.Count > 0 && GetItemToBuyOrSell ().Count > 0 && TotalCost () < guildMoney) || (shop != null && shop.useSkill && lastSelected != null)) {
+			if ((buyers.Count > 0 && GetItemToBuyOrSell ().Count > 0 && TotalCost () < guildMoney) || (buyers.Count > 0 &&shop != null && shop.useSkill && lastSelected != null)||(!buying&&buyers.Count > 0)) {
 				buyButton.interactable = true;
 			} else {
 				buyButton.interactable = false;
@@ -55,8 +55,6 @@ public class ShopScreenDisplay : MonoBehaviour
 			GetComponent<CanvasGroup> ().alpha = 0;
 			GetComponent<CanvasGroup> ().blocksRaycasts = false;
 		}
-
-
 	}
 
 	public void UpdateText (Shop shop, bool buying=true)
@@ -118,7 +116,7 @@ public class ShopScreenDisplay : MonoBehaviour
 		}
 		shopItemList.SetSize (shopslotCount, 64);
 		guildFunds.text = guildMoney.ToString () + " G";
-
+		UpdateSlotButtons ();
 	}
 
 	public void LeaveShop ()

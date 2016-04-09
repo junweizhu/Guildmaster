@@ -84,67 +84,6 @@ public static class ExtensionMethods
 		return new Character (selectedmonster, level);
 	}
 
-	public static void TurnStart (this List<Character> attackers, Task task, List<Character> defenders, int turn)
-	{
-		if (defenders != null) {
-			if (attackers[0].isEnemy){
-				Debug.Log ("Enemy turn." + turn.ToString ());
-			} else{
-				Debug.Log ("Player turn" + turn.ToString ());
-			}
-
-			for (int i=0;i<attackers.Count;i++) {
-				Debug.Log(attackers[i].name);
-				if (attackers[i].totalStats ["CurrentHealth"] > 0) {
-					if ((float)attackers[i].totalStats ["CurrentHealth"] / attackers[i].totalStats ["MaxHealth"] * 100 < 30 && attackers[i].HasHealingItems ()) {
-						attackers[i].UseHealingItem ();
-					} else if(attackers.NeedsHealing(attackers[i])){
-						attackers[i].Heal(attackers.GetCharacterToHeal(attackers[i]));
-					}else {
-						Character defender = defenders [Random.Range (0, defenders.Count)];
-						Ability attack=attackers[i].ChooseAttack();
-						Ability counter=defender.ChooseCounterAttack(attack.range);
-						attackers[i].Attack (defender,attack);
-						AttackSkillExpGain(attackers[i],attack.element,3,task);
-						if (defender.canAttack&&defender.totalStats ["CurrentHealth"] > 0) {
-							defender.Attack (attackers[i],counter);
-							AttackSkillExpGain(defender,counter.element,3,task);
-							if (attackers[i].canAttack&&CanAttack (attackers[i].totalStats ["CurrentHealth"], attackers[i].totalStats ["Speed"], defender.totalStats ["Speed"])) {
-								attackers[i].Attack (defender,attack);
-								AttackSkillExpGain(attackers[i],attack.element,3,task);
-							} else if (defender.canAttack&&attackers[i].totalStats ["CurrentHealth"] > 0 && CanAttack (defender.totalStats ["CurrentHealth"], defender.totalStats ["Speed"], attackers[i].totalStats ["Speed"])) {
-								defender.Attack (attackers[i],counter);
-								AttackSkillExpGain(defender,counter.element,3,task);
-							}
-						}
-						if (attackers[i].isEnemy){
-							DistributeExp (defender, attackers[i], task);
-							task.GiveExp(defender,task.combatSkillId,3);
-						} else{
-							DistributeExp (attackers[i], defender, task);
-							task.GiveExp(attackers[i],task.combatSkillId,3);
-						}
-						if (defenders.Alive ().Count == 0 || attackers.Alive ().Count == 0) {
-							return;
-						}
-					}
-				}
-				defenders = defenders.Alive ();
-			}
-		}
-	}
-
-	public static void AttackSkillExpGain(Character character, string element,int amount,Task task){
-		if (!character.isEnemy){
-			if (element=="Physical"){
-				task.GiveExp(character,task.weaponSkillId,amount);
-			} else{
-				task.GiveExp(character,task.magicSkillId,amount);
-			}
-		}
-	}
-
-
 	public static bool CanAttack (int currentHealth, int firstUnitSpeed, int secondUnitSpeed)
 	{
 		if (currentHealth > 0) {
