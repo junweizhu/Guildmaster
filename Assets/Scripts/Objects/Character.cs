@@ -93,7 +93,7 @@ public class Character
 		baseStats ["Dexterity"] = 1;
 		baseStats ["Agility"] = 1;
 		baseStats ["Intelligence"] = 1;
-		baseStats ["Fame"] += 0;
+		baseStats ["Fame"] = 0;
 		SetUpDefaultStats (level);
 	}
 
@@ -169,7 +169,6 @@ public class Character
 		} else {
 			chosenAbility = abilities [0];
 		}
-		totalStats ["CurrentMana"] -= chosenAbility.manaCost;
 		Debug.Log (name + " uses " + chosenAbility.name + " " + System.DateTime.Now.Millisecond.ToString ());
 		canAttack = true;
 		return chosenAbility;
@@ -190,13 +189,13 @@ public class Character
 		}
 		return damage;
 	}*/
-	public string ChooseBattleAction (List<Character> allies)
+	public string ChooseBattleAction (List<Character> allies, Adventure adventure)
 	{
 		if ((float)totalStats ["CurrentHealth"] / totalStats ["MaxHealth"] * 100 < 30 && HasHealingItems ()) {
 			UseHealingItem ();
 			return "Heal";
 		} else if (allies.NeedsHealing (this)) {
-			Heal (allies.GetCharacterToHeal (this));
+			Heal (allies.GetCharacterToHeal (this),adventure);
 			return "Heal";
 		} else {
 			return "Fight";
@@ -227,20 +226,19 @@ public class Character
 				chosenAbility = abilities [0];
 			}
 			Debug.Log (name + " uses " + chosenAbility.name + " as counterattack " + System.DateTime.Now.Millisecond.ToString ());
-			totalStats ["CurrentMana"] -= chosenAbility.manaCost;
 			canAttack = true;
 		}
 		return chosenAbility;
 	}
 
 
-	public List<Ability> GetUsableAbilities (bool attacking = true, int range = 1)
+	public List<Ability> GetUsableAbilities (bool attacking = true, int range = 1,bool alsoHealing=false)
 	{
 		List<Ability> usableAbilities = new List<Ability> ();
 		string weapontype = GetWeaponType ();
 		for (int i = 0; i < abilities.Count; i++) {
 			Ability ability = Database.skills.GetAbility (abilities [i]);
-			if ((ability.weaponType == null || (ability.weaponType != null && ability.weaponType.Contains (weapontype))) && ability.manaCost <= totalStats ["CurrentMana"] && ability.element != "Healing") {
+			if ((ability.weaponType == null || (ability.weaponType != null && ability.weaponType.Contains (weapontype))) && ability.manaCost <= totalStats ["CurrentMana"] && (ability.element != "Healing" ||alsoHealing)) {
 				if (attacking || (!attacking && ability.range == range))
 					usableAbilities.Add (ability);
 			}
@@ -256,10 +254,10 @@ public class Character
 
 		bool hit = false;
 		if (chosenAbility.element == "Physical") {
-			adventure.actionList.Add (name + " attacks with " + totalStats ["PAttack"]+" (" + System.DateTime.Now.Millisecond.ToString () + ")");
+			adventure.actionList.Add (name + " attacks");
 			hit = target.Defend (chosenAbility.CalculateDamage (totalStats ["PAttack"], totalStats ["MAttack"]), totalStats ["Accuracy"], "P", GetWeaponType (), GetWeaponElement (),adventure);
 		} else {
-			adventure.actionList.Add (name + " attacks (" + System.DateTime.Now.Millisecond.ToString () + ")");
+			adventure.actionList.Add (name + " attacks");
 			hit = target.Defend (chosenAbility.CalculateDamage (totalStats ["PAttack"], totalStats ["MAttack"]), totalStats ["Accuracy"], "M", "", chosenAbility.element,adventure);
 		}
 		if (hit) {
@@ -297,7 +295,7 @@ public class Character
 			int defense = totalStats [damageType + "Defense"];
 			if (hitrate - totalStats ["BlockChance"] < RNG && totalStats ["BlockChance"] > 0) {
 				defense += totalStats ["Block"];
-				adventure.actionList.Add (name + " blocked the attack  (" + System.DateTime.Now.Millisecond.ToString () + ")");
+				adventure.actionList.Add (name + " blocked the attack ");
 				if (tempEquipment [blockItem].filled) {
 					tempEquipment [blockItem].Use ();
 				}
@@ -311,7 +309,10 @@ public class Character
 				damage = 0;
 			}
 			totalStats ["CurrentHealth"] -= damage;
-			adventure.actionList.Add (name + " received " + damage.ToString () + " damage. (" + totalStats ["CurrentHealth"].ToString () + " health left, blocked " + defense + " damage)" + System.DateTime.Now.Millisecond.ToString ());
+			if (totalStats ["CurrentHealth"] < 0) {
+				totalStats ["CurrentHealth"] = 0;
+			}
+			adventure.actionList.Add (name + " received " + damage.ToString () + " damage.");
 			if (tempEquipment [1].filled) {
 				tempEquipment [1].Use ();
 			}
@@ -324,7 +325,7 @@ public class Character
 			}
 			return true;
 		} else {
-			adventure.actionList.Add (name + " dodged the attack (" + RNG.ToString () + ")" + System.DateTime.Now.Millisecond.ToString ());
+			adventure.actionList.Add (name + " dodged the attack");
 			return false;
 		}
 	}
@@ -510,16 +511,44 @@ public class Character
 		}
 		return 0;
 	}
+	public List<int> GetConsumables(){
+		List<int> slotsWithConsumables = new List<int> ();
+		for (int i = 2; i < tempEquipment.Count; i++) {
+			if (tempEquipment [i].filled) {
+				Item item = Database.items.FindItem (tempEquipment [i].itemId);
+				if (item.type == "Consumable")
+					slotsWithConsumables.Add (i);
+			}
+		}
+		return slotsWithConsumables;
+	}
 
-	public void UseHealingItem (string type = "Health")
-	{
-		InventorySlot slot = tempEquipment [GetHealingItem (type)];
+	public bool HasConsumables(){
+		for (int i = 2; i < tempEquipment.Count; i++) {
+			if (tempEquipment [i].filled) {
+				Item item = Database.items.FindItem (tempEquipment [i].itemId);
+				if (item.type == "Consumable")
+					return true;
+			}
+		}
+		return false;
+	}
+
+	public void UseConsumable(int slotId, Adventure adventure){
+		InventorySlot slot = tempEquipment [slotId];
 		Item item = Database.items.FindItem (slot.itemId);
 		foreach (KeyValuePair<string,int> stat in item.stats) {
-			Heal (stat.Value, "Flat", stat.Key);
-			Debug.Log (name + " used " + item.name + " and recovered " + stat.Value + " " + type + ".");
+			if (stat.Key == "Health" || stat.Key == "Mana") {
+				Heal (stat.Value, "Flat", stat.Key);
+				adventure.actionList.Add (name + " used " + item.name + " and recovered " + stat.Value + " " + stat.Key + ".");
+			}
 		}
 		slot.Use ();
+	}
+	public void UseHealingItem (string type = "Health", Adventure adventure=null)
+	{
+		int slotId = GetHealingItem (type);
+		UseConsumable (slotId, adventure);
 	}
 
 	public string ShortDescription ()
@@ -569,10 +598,16 @@ public class Character
 		return false;
 	}
 
-	public void Heal (Character character)
+	public void Heal (Character character, Adventure adventure)
 	{
 		character.Heal (Mathf.RoundToInt (totalStats ["MAttack"] / 2), "Flat", "Health");
-		totalStats ["CurrentMana"] -= GetHealingAbility ().manaCost;
-		Debug.Log (name + " healed " + character.name + " for " + Mathf.RoundToInt (totalStats ["MAttack"] / 2).ToString () + " health " + System.DateTime.Now.Millisecond.ToString ());
+		Ability ability = GetHealingAbility ();
+		totalStats ["CurrentMana"] -= ability.manaCost;
+		string targetname = character.name;
+		if (character == this) {
+			targetname = Database.strings.GetString (gender + "Poss") + "self";
+		}
+
+		adventure.actionList.Add (name + " used " +ability.name+" on " + targetname + ", healed " + Mathf.RoundToInt (totalStats ["MAttack"] / 2).ToString () + " health");
 	}
 }

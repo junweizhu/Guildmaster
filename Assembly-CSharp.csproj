@@ -64,6 +64,8 @@
      <Compile Include="Assets\Scripts\Display\CharacterSelectScreenDisplay.cs" />
      <Compile Include="Assets\Scripts\Display\CharacterStatScreenDisplay.cs" />
      <Compile Include="Assets\Scripts\Display\CharacterStatusDisplay.cs" />
+     <Compile Include="Assets\Scripts\Display\ChoiceButton.cs" />
+     <Compile Include="Assets\Scripts\Display\ChoiceScreen.cs" />
      <Compile Include="Assets\Scripts\Display\DialogueScreenDisplay.cs" />
      <Compile Include="Assets\Scripts\Display\EventLogScreenDisplay.cs" />
      <Compile Include="Assets\Scripts\Display\FinancialScreenDisplay.cs" />

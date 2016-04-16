@@ -89,38 +89,41 @@ public class EventDatabase
 
 	public void GenerateEvent ()
 	{//event trigger here is what the event would trigger once done, 0 for no trigger
-		events.Add (new GameEvent (0, "GiveNameToMale", 102, "NameToMale", "Character", 0));
-		events.Add (new GameEvent (1, "GiveNameToFemale", 103, "NameToFemale", "Character", 1));
-		events.Add (new GameEvent (2, "GiveNameToGuild", 104, "NameToGuild", "Guild", 0));
-		events.Add (new GameEvent (3, "RecruitMembers", 0, "RecruitMember"));
-		events.Add (new GameEvent (4, "RecruitMembersTalk", 0, "RecruitMemberTalk"));
-		events.Add (new GameEvent (5, "VisitShop", 0, "VisitShop", 500));
-		events.Add (new GameEvent (6, "VisitShopTalk", 0, "VisitShopTalk"));
-		events.Add (new GameEvent (7, "GoToFirstArea", 0, "FirstArea", null, null, null, new List<int> (){0}));
-		events.Add (new GameEvent (8, "GoToFirstAreaTalk", 0, "FirstAreaTalk"));
-		events.Add (new GameEvent (9, "SellItem", 0, "FirstSale"));
-		events.Add (new GameEvent (10, "SellItemTalk", 0, "FirstSaleTalk"));
-		events.Add (new GameEvent (11, "CompleteFirstQuest", 0, "FirstQuest"));
-		events.Add (new GameEvent (12, "CompleteFirstQuestTalk", 0, "FirstQuestTalk"));
-		events.Add (new GameEvent (13, "UpgradeGuild", 0, "FirstUpgrade", 500));
-		events.Add (new GameEvent (14, "UpgradeGuildTalk", 0, "FirstUpgradeTalk"));
-		events.Add (new GameEvent (15, "TutorialFinish", 0, "TutorialFinish"));
+
+		events.Add (new GameEvent (0,"Null",0,"",0));
+		events.Add (new GameEvent (1, "GiveNameToMale", 102, "NameToMale", "Character", 0));
+		events.Add (new GameEvent (2, "GiveNameToFemale", 103, "NameToFemale", "Character", 1));
+		events.Add (new GameEvent (3, "GiveNameToGuild", 104, "NameToGuild", "Guild", 0));
+		events.Add (new GameEvent (4, "RecruitMembers", 0, "RecruitMember"));
+		events.Add (new GameEvent (5, "RecruitMembersTalk", 0, "RecruitMemberTalk"));
+		events.Add (new GameEvent (6, "VisitShop", 0, "VisitShop", 500));
+		events.Add (new GameEvent (7, "VisitShopTalk", 0, "VisitShopTalk"));
+		events.Add (new GameEvent (8, "GoToFirstArea", 0, "FirstArea", null, null, null, new List<int> (){0}));
+		events.Add (new GameEvent (9, "GoToFirstAreaTalk", 0, "FirstAreaTalk"));
+		events.Add (new GameEvent (10, "SellItem", 0, "FirstSale"));
+		events.Add (new GameEvent (11, "SellItemTalk", 0, "FirstSaleTalk"));
+		events.Add (new GameEvent (12, "CompleteFirstQuest", 0, "FirstQuest"));
+		events.Add (new GameEvent (13, "CompleteFirstQuestTalk", 0, "FirstQuestTalk"));
+		events.Add (new GameEvent (14, "UpgradeGuild", 0, "FirstUpgrade", 500));
+		events.Add (new GameEvent (15, "UpgradeGuildTalk", 0, "FirstUpgradeTalk"));
+		events.Add (new GameEvent (16, "TutorialFinish", 0, "TutorialFinish"));
 		events.Add (new GameEvent (99, "NormalTalk", 0, "NormalTalk"));
 		events.Add (new GameEvent (100, "StorageTooFull", 0, "StorageTooFull"));
+
 	}
 
 	public void SetEventTriggers ()
 	{//Which event should require which trigger(s)?
-		TriggersToEvent (0, 101);
-		TriggersToEvent (1, 102);
-		TriggersToEvent (2, 103);
-		TriggersToEvent (3, 104);
-		TriggersToEvent (5, 105);
-		TriggersToEvent (7, 106);
-		TriggersToEvent (9, 107);
-		TriggersToEvent (11, 108);
-		TriggersToEvent (13, 109);
-		TriggersToEvent (15, 110);
+		TriggersToEvent (1, 101);
+		TriggersToEvent (2, 102);
+		TriggersToEvent (3, 103);
+		TriggersToEvent (4, 104);
+		TriggersToEvent (6, 105);
+		TriggersToEvent (8, 106);
+		TriggersToEvent (10, 107);
+		TriggersToEvent (12, 108);
+		TriggersToEvent (14, 109);
+		TriggersToEvent (16, 110);
 		TriggersToEvent (100, 100);
 	}
 
@@ -163,6 +166,7 @@ public class EventDatabase
 
 	public void AddToQueue (int id)
 	{
+		Debug.Log (id);
 		foreach (GameEvent gameevent in events) {
 			if (gameevent.id == id) {
 				eventQueue.Add (gameevent);
@@ -198,7 +202,7 @@ public class EventDatabase
 				if (events [i].eventId.Count > 0) {
 					for (int j=0; j<events[i].eventId.Count; j++) {
 						if (!GetTrigger (events [i].eventId [j]).activated)
-							return i - 1;
+							return events[i].id;
 					}
 				}
 			}

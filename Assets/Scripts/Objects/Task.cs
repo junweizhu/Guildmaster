@@ -77,8 +77,8 @@ public class Task
 		shoppingMoney = money;
 	}
 
-	public Task (string type, float duration, List<Character> characters, Skill skill, Ability ability, int money)
-	{ //training
+	public Task (string type, float duration, List<Character> characters, Skill skill, Ability ability, int money)//training
+	{ 
 		SetMainData (type, characters);
 		this.duration = duration;
 		this.skill = skill;
@@ -103,9 +103,9 @@ public class Task
 		success = true;
 		for (int i = 0; i < characters.Count; i++) {
 			characters [i].CreateTempEquipment ();
-			/*if (characters [i].id == 0 || characters [i].id == 1) {
+			if (characters [i].id == 0 || characters [i].id == 1) {
 				manual = true;
-			}*/
+			}
 		}
 	}
 
@@ -431,6 +431,9 @@ public class Task
 		} else {
 			characterExpGain [character] [skillId] += exp;
 		}
+		if (skillId == 99) {
+			adventure.actionList.Add(character.name +" gained "+ exp+" exp.");
+		}
 	}
 
 	public void DistributeExp ()
@@ -547,7 +550,7 @@ public class Task
 	public IEnumerator AdventureTime (WaitForSeconds waitTime)
 	{//Start your adventure!
 		SetTaskToCoroutineList ();
-		adventure = new Adventure (characters, area);
+		adventure = new Adventure (characters, area, this);
 
 		for (int time = 0; time <= 48; time++) {
 			if (Database.game.tasksWithCoroutine.Contains (this)) {
@@ -558,26 +561,30 @@ public class Task
 			if (adventure.action == "Idle") {//start doing something
 				
 				if (time >= 36 || characters.IsInjured () || (adventure.action == "Gathering" && gatheringPointsFound == area.maxGatheringPoints)) {
-					adventure.actionList.Add ("Returning to town" + time);
+					adventure.actionList.Add ("Returning to town");
 					ShowDebugLog (time);
 					break;
 				}
 				if (characters.IsHurt ()) {//resting to heal
-					characters.Rest ();
-					adventure.actionList.Add ("Taking a rest " + time);
+					adventure.Rest();
 					//Move
 				} else {
-					adventure.Explore (time, this);
+					adventure.Explore ();
 					if (adventure.action == "Battle") {
 						if (adventure.status == "Pre-emptive") {
-							TurnStart (adventure.livingCharacters, adventure.livingMonsters, time);
+							if (typeSearch == "Training" || Random.Range (0, 100) < 20) {
+								TurnStart (adventure.livingCharacters, adventure.livingMonsters);
+							} else {
+								adventure.action = "Idle";
+								adventure.actionList.Add ("Decided to ignore them and walk away");
+							}
 						} else if (adventure.status == "Ambush") {
-							TurnStart (adventure.livingMonsters, adventure.livingCharacters, time);
+							TurnStart (adventure.livingMonsters, adventure.livingCharacters);
 						}
 						adventure.CheckBattleIsFinished ();
 					} else if (adventure.status == "Found GatheringSpot") {
-						if (typeSearch == "Gathering" || Random.Range (0, 100) < 15) {
-							adventure.actionList.Add ("Decided to gather " + time);
+						if (typeSearch == "Gathering" || Random.Range (0, 100) < 20) {
+							adventure.actionList.Add ("Decided to gather");
 							adventure.action = "Gathering";
 						}
 					}
@@ -585,26 +592,25 @@ public class Task
 				}
 				adventure.actionList.Add ((100 * newStepsCount / area.size).ToString () + " completion");
 			} else if (adventure.action == "Gathering") {
-				adventure.Gather (this, time);
+				adventure.Gather ();
 				if ((typeSearch == "Gathering" || Random.Range (0, 100) < 20) && adventure.gatheringCount != 0) {
 					adventure.action = "Gathering";
 				} else {
-					adventure.actionList.Add ("Spent enough time gathering here. " + time);
+					adventure.actionList.Add ("Spent enough time gathering here.");
 					adventure.action = "Idle";
 				}
-				if (adventure.status == "Finished") {
+				if (time >= 36) {
 					ShowDebugLog (time);
 					break;
 				}
 			} else if (adventure.action == "Battle") {
-				adventure.livingCharacters = characters.Alive ();
-				adventure.livingMonsters = adventure.battleMonster.Alive ();
-				TurnStart (adventure.livingCharacters, adventure.livingMonsters, time);
+				adventure.RefreshBattleCharacterList ();
+				TurnStart (adventure.livingCharacters, adventure.livingMonsters);
 				if (adventure.livingMonsters.Alive ().Count > 0 && adventure.livingCharacters.Alive ().Count > 0) {
-					TurnStart (adventure.livingMonsters, adventure.livingCharacters, time);
+					TurnStart (adventure.livingMonsters, adventure.livingCharacters);
 				}
 				if (adventure.livingMonsters.Alive ().Count == 0) {
-					adventure.actionList.Add ("Battle is won! " + time.ToString ());
+					adventure.actionList.Add ("Battle is won!");
 					adventure.action = "Idle";
 					guildExp += 2 + 3 * area.level;
 					for (int i = 0; i < adventure.livingCharacters.Count; i++) {
@@ -620,9 +626,9 @@ public class Task
 			}
 			if (typeSearch == "Gathering" && (adventure.inventorySpace == 0 || adventure.action == "idle" && gatheringPointsFound == area.maxGatheringPoints)) {
 				if (adventure.inventorySpace == 0) {
-					adventure.actionList.Add ("Inventory is full, returning to town" + time);
+					adventure.actionList.Add ("Inventory is full, returning to town");
 				} else if(adventure.action == "idle" && gatheringPointsFound == area.maxGatheringPoints){
-					adventure.actionList.Add ("all gatheringpoints found, returning to town " + time);
+					adventure.actionList.Add ("all gatheringpoints found, returning to town");
 				}
 				ShowDebugLog (time);
 				break;
@@ -633,26 +639,26 @@ public class Task
 	}
 	public void ShowDebugLog(int time){
 		for (int i = 0; i < adventure.actionList.Count; i++) {
-			Debug.Log (adventure.actionList [i] + " " + time);
+			Debug.Log (adventure.actionList [i] + " " + time+"-"+i);
 		}
 		adventure.actionList.Clear ();
 	}
-	public void TurnStart (List<Character> attackers, List<Character> defenders, int turn)
+	public void TurnStart (List<Character> attackers, List<Character> defenders)
 	{
 		if (defenders != null) {
 			if (attackers [0].isEnemy) {
-				adventure.actionList.Add ("Enemy turn." + turn.ToString ());
+				adventure.actionList.Add ("Enemy turn.");
 			} else {
-				adventure.actionList.Add ("Player turn" + turn.ToString ());
+				adventure.actionList.Add ("Player turn");
 			}
 			string action="";
 			Character defender=null;
 			Ability attack=null;
 			for (int i = 0; i < attackers.Count; i++) {
-				PlayerTurn (attackers [i],attackers, defenders, ref action, ref defender, ref attack);
+				adventure.PlayerTurn (attackers [i],attackers, defenders, ref action, ref defender, ref attack);
 				if (action == "Fight") {
 					Ability counter = defender.ChooseCounterAttack (attack.range, attackers [i]);
-					adventure.Fight (attackers [i], attack, defender, counter, this);
+					adventure.Fight (attackers [i], attack, defender, counter);
 					if (defenders.Alive ().Count == 0 || attackers.Alive ().Count == 0) {
 						return;
 					}
@@ -661,15 +667,5 @@ public class Task
 			}
 		}
 	}
-
-	public void PlayerTurn (Character attacker,List<Character> allies, List<Character> enemies, ref string action, ref Character enemy, ref Ability attack)
-	{
-		if (attacker.totalStats ["CurrentHealth"] > 0) {
-			action = attacker.ChooseBattleAction (allies);
-			if (action == "Fight") {
-				enemy = enemies [Random.Range (0, enemies.Count)];
-				attack = attacker.ChooseAttack (enemy);
-			}
-		}
-	}
+		
 }

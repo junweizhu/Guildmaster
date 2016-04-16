@@ -24,13 +24,13 @@ public static class ExtensionMethods
 	{
 		list.GetComponent<RectTransform> ().offsetMax = new Vector2 (list.GetComponent<RectTransform> ().offsetMax.x, 0);
 		list.GetComponent<RectTransform> ().sizeDelta = new Vector2 (0, count * slotSize);
-		if (list.GetComponent<RectTransform> ().rect.height > list.parent.GetComponent<RectTransform> ().rect.height)
-			list.GetComponent<ScrollRect> ().vertical = true;
-		else
-			list.GetComponent<ScrollRect> ().vertical = false;
-		
+		if (list.GetComponent<ScrollRect> () != null) {
+			if (list.GetComponent<RectTransform> ().rect.height > list.parent.GetComponent<RectTransform> ().rect.height)
+				list.GetComponent<ScrollRect> ().vertical = true;
+			else
+				list.GetComponent<ScrollRect> ().vertical = false;
+		}
 	}
-
 	public static void SetSize (this Transform list, ScrollRect rect, int count, int slotSize)
 	{
 		list.GetComponent<RectTransform> ().offsetMax = new Vector2 (list.GetComponent<RectTransform> ().offsetMax.x, 0);

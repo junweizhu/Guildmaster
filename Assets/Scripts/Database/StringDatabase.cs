@@ -73,14 +73,12 @@ public class StringDatabase{
 		textList.Add ("SelectItems","Select items to give to this member");
 		textList.Add ("Idle","Idle");
 		textList.Add ("Shopping","Shopping");
-		//textList.Add ("SearchRecruiting","Looking for new recruits");
-		//textList.Add ("SearchQuesting","Looking for new quests");
 		textList.Add ("Questing", "Doing the quest {0}");
 		textList.Add ("Socializeing","Going to the tavern");
 		textList.Add ("Ongoing","Ongoing");
 		textList.Add ("Exploring", "Exploring the {0}");
 		textList.Add ("Gathering", "Gathering at the {0}");
-		textList.Add ("Hunting", "Hunting at the {0}");
+		//textList.Add ("Hunting", "Hunting at the {0}");
 		textList.Add ("Training", "Training at the {0}");
 		textList.Add ("Studying", "Studying");
 		textList.Add ("Open","Open");
@@ -168,12 +166,12 @@ public class StringDatabase{
 
 	void GenerateObjectiveText(){
 		objectiveText.Add(0,"");
-		objectiveText.Add(4,"Have a total of 5 members in your guild.");
-		objectiveText.Add(6,"Visit the shop and buy supplies for your first adventure.");
-		objectiveText.Add(8,"Explore the first area.");
-		objectiveText.Add(10,"Sell an item.");
-		objectiveText.Add(12,"Find and complete a request.");
-		objectiveText.Add(14,"Upgrade your guildhouse.");
+		objectiveText.Add(5,"Have a total of 5 members in your guild.");
+		objectiveText.Add(7,"Visit the shop and buy supplies for your first adventure.");
+		objectiveText.Add(9,"Explore the first area.");
+		objectiveText.Add(11,"Sell an item.");
+		objectiveText.Add(13,"Find and complete a request.");
+		objectiveText.Add(15,"Upgrade your guildhouse.");
 	}
 	void GenerateDialogue(){
 		dialogueList.Add (new Dialogue("StorageTooFull",0,"There's not enough space in the storage to hold all these items, we have to sell or throw away some of them.",new List<int>(){0},new List<string>(){"Character"}));

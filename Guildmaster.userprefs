@@ -1,21 +1,19 @@
 ﻿<Properties StartupItem="Assembly-CSharp.csproj">
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" PreferredExecutionTarget="Unity.Instance.Unity Editor" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\Scripts\Objects\Area.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\Scripts\Objects\Adventure.cs">
     <Files>
-      <File FileName="Assets\Scripts\Display\CharacterStatusDisplay.cs" Line="14" Column="18" />
-      <File FileName="Assets\Scripts\Database\MonsterDatabase.cs" Line="1" Column="1" />
-      <File FileName="Assets\Scripts\Database\ItemDatabase.cs" Line="1" Column="1" />
-      <File FileName="Assets\Scripts\Objects\Area.cs" Line="52" Column="1" />
-      <File FileName="Assets\Scripts\Display\ShopScreenDisplay.cs" Line="1" Column="1" />
-      <File FileName="Assets\Scripts\Objects\Ability.cs" Line="55" Column="4" />
-      <File FileName="Assets\Scripts\GameManager.cs" Line="314" Column="4" />
-      <File FileName="Assets\Scripts\Objects\Guild.cs" Line="1" Column="1" />
-      <File FileName="Assets\Scripts\Display\AdventureScreen.cs" Line="17" Column="23" />
-      <File FileName="Assets\Scripts\ExtensionMethods.cs" Line="1" Column="1" />
-      <File FileName="Assets\Scripts\Objects\Task.cs" Line="655" Column="69" />
-      <File FileName="Assets\Scripts\Objects\Adventure.cs" Line="207" Column="43" />
-      <File FileName="Assets\Scripts\Database\SkillDatabase.cs" Line="35" Column="75" />
-      <File FileName="Assets\Scripts\Objects\Character.cs" Line="288" Column="4" />
+      <File FileName="Assets\Scripts\Database\SkillDatabase.cs" Line="34" Column="80" />
+      <File FileName="Assets\Scripts\Database\EventDatabase.cs" Line="1" Column="1" />
+      <File FileName="Assets\Scripts\Database\CharDatabase.cs" Line="1" Column="1" />
+      <File FileName="Assets\Scripts\Display\AdventureScreen.cs" Line="1" Column="1" />
+      <File FileName="Assets\Scripts\Objects\Adventure.cs" Line="226" Column="26" />
+      <File FileName="Assets\Scripts\Display\ChoiceScreen.cs" Line="1" Column="1" />
+      <File FileName="Assets\Scripts\Objects\Task.cs" Line="1" Column="1" />
+      <File FileName="Assets\Scripts\Objects\EventTrigger.cs" Line="1" Column="1" />
+      <File FileName="Assets\Scripts\Objects\Ability.cs" Line="39" Column="27" />
+      <File FileName="Assets\Scripts\Database\StringDatabase.cs" Line="1" Column="1" />
+      <File FileName="Assets\Scripts\Display\CharacterStatusDisplay.cs" Line="1" Column="1" />
+      <File FileName="Assets\Scripts\Display\DialogueScreenDisplay.cs" Line="1" Column="1" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>

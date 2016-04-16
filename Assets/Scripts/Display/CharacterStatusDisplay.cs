@@ -24,5 +24,13 @@ public class CharacterStatusDisplay : MonoBehaviour {
 			transform.SetParent (activeParent);
 			characterName.text = character.name;
 		}
+		this.character = character;
+		UpdateCharacter ();
+	}
+
+	public void UpdateCharacter(){
+		if (character!=null &&character.totalStats ["CurrentHealth"] <= 0) {
+			character = null;
+		}
 	}
 }

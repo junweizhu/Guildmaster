@@ -25,8 +25,9 @@ public class Adventure
 	public int socialSkillId = 4;
 	public Area area;
 	public List<string> actionList = new List<string> ();
+	private Task task;
 
-	public Adventure (List<Character> characters, Area area)
+	public Adventure (List<Character> characters, Area area, Task task)
 	{
 		action = "Idle";
 		this.area = area;
@@ -54,20 +55,23 @@ public class Adventure
 		tookANewStep = false;
 		livingCharacters = characters.Alive ();
 		livingMonsters = battleMonster.Alive ();
+		this.task = task;
 	}
 	
 
-
-	public void Explore (int time, Task task)
+	public void Explore ()
 	{
-		actionList.Add ("Exploring");
-		if (Random.Range (0, 100) < 100 - Mathf.RoundToInt (100 * task.newStepsCount / area.size)) {
+		status = "";
+		actionList.Add ("We walk");
+		if (Random.Range (0, 100) < 100 - Mathf.RoundToInt (100 * task.newStepsCount / area.size)||livingCharacters.Contains(Database.characters.GetCharacter(0))) {
 			task.newStepsCount++;
 			tookANewStep = true;
 		}
 
-		if (Random.Range (0, 101) < 6) { //monster(s) encounter
+		//if (Random.Range (0, 100) < 10) { //monster(s) encounter
+		if (true){
 			action = "Battle";
+			status = "";
 			bool generateMonster = true;
 			battleMonster.Clear ();
 			while (generateMonster) {
@@ -81,15 +85,15 @@ public class Adventure
 			}
 			livingMonsters = battleMonster;
 			actionList.Add ("Monster Encounter! " + battleMonster.Count.ToString () + " monsters");
-			if (Random.Range (0, 101) < 15 + Mathf.FloorToInt (combatLevel / 2)) {//ambushed or not?
+			if (Random.Range (0, 100) < 15 + Mathf.FloorToInt (combatLevel / 2)) {//ambushed or not?
 				status = "Pre-emptive";
-				actionList.Add ("Pre-emptive battle" + time);
+				actionList.Add ("But they haven't noticed us yet");
 				for (int i = 0; i < livingCharacters.Count; i++) {
 					task.GiveExp (livingCharacters [i], combatSkillId, 10);
 				}
 			} else if (Random.Range (0, 101) < 15 - Mathf.FloorToInt (combatLevel / 2)) {
 				status = "Ambush";
-				actionList.Add ("Ambushed!" + time);
+				actionList.Add ("Ambushed!");
 			} else {
 				status = "";
 			}
@@ -97,10 +101,10 @@ public class Adventure
 				action = "Idle";
 			}
 		} else if (((tookANewStep && task.gatheringPointsFound < area.maxGatheringPoints) || !tookANewStep) && Random.Range (0, 101) < 6 + Mathf.RoundToInt (fieldSkillLevel / 2) + Database.myGuild.foundGatheringPoints [area.id] || (!Database.events.GetTrigger (107).activated && gatheringCount == 0)) { //Found a gathering point!
-			actionList.Add ("Gathering Point Found " + time.ToString ());
-			if (Random.Range (0, 100) < Mathf.RoundToInt ((float)task.gatheringPointsFound * 100 / area.maxGatheringPoints) || !tookANewStep) {
-				actionList.Add ("This gathering point was already discovered today ");
+			if (Random.Range (0, 100) < Mathf.RoundToInt ((float)task.gatheringPointsFound * 100 / area.maxGatheringPoints) && !tookANewStep) {
+				actionList.Add ("We already gathered here.");
 			} else {
+				actionList.Add ("Gathering Spot Found.");
 				gatheringPoint = area.FindRandomGatheringPoint ();
 				Debug.Log (gatheringPoint);
 				task.gatheringPointsFound++;
@@ -114,7 +118,7 @@ public class Adventure
 					}
 					Database.myGuild.foundGatheringPoints [area.id]++;
 					newGatheringpointsFound++;
-					actionList.Add ("It's a newly discovered gatheringpoint! ");
+					actionList.Add ("This gathering spot is new to us.");
 				} else {
 					task.guildExp += 2 * area.level;
 					for (int i = 0; i < livingCharacters.Count; i++) {
@@ -125,12 +129,13 @@ public class Adventure
 			}
 		} else if (tookANewStep && Random.Range (0, 101) < Mathf.RoundToInt (100 * task.newStepsCount / area.size) && area.linkedAreas != null) {//Found a different area
 			int RNG = Random.Range (0, area.linkedAreas.Count);
-			actionList.Add ("We found a link to another area.");
+			actionList.Add ("We found another area.");
 			if (Database.myGuild.knownAreas.Contains (area.linkedAreas [RNG]) || task.foundNewArea.Contains (area.linkedAreas [RNG])) {
 				actionList.Add ("We know this area.");
 			} else {
 				actionList.Add ("This is a new area.");
 				task.foundNewArea.Add (area.linkedAreas [RNG]);
+				actionList.Add ("We can now go to the "+Database.areas.FindArea(area.linkedAreas [RNG]).name);
 				task.guildExp += 3 + 3 * area.level;
 				for (int i = 0; i < livingCharacters.Count; i++) {
 					task.GiveExp (livingCharacters [i], fieldSkillId, 10);
@@ -151,8 +156,11 @@ public class Adventure
 			action = "Idle";
 		}
 	}
-
-	public void Gather (Task task, int time)
+	public void Rest(){
+		livingCharacters.Rest ();
+		actionList.Add ("Taking a rest");
+	}
+	public void Gather ()
 	{
 		for (int i = 0; i < livingCharacters.Count; i++) {
 			if (Random.Range (0, 101) < 25 + livingCharacters [i].skillLevel [fieldSkillId]) {
@@ -179,45 +187,68 @@ public class Adventure
 				if (inventorySpace == 0) {
 					break;
 				}
-				if (gatheringCount == 0) {
-					actionList.Add ("Finished Gathering ");
-					break;
-				}
-				actionList.Add (livingCharacters [i].name + " gathered " + gathered + " " + Database.items.FindItem (type).name);
+				actionList.Add (livingCharacters [i].name + " looked around: Gathered " + gathered + " " + Database.items.FindItem (type).name);
 			} else {
-				actionList.Add (livingCharacters [i].name + " failed to gather anything");
+				actionList.Add (livingCharacters [i].name + " looked around: Found nothing of value.");
+			}
+			if (gatheringCount == 0) {
+				actionList.Add ("There is nothing more of value here.");
+				status = "";
+				break;
 			}
 		}
-		if (time >= 36) {
-			status = "Finished";
-		}
-
 	}
 
-	public void Fight(Character attacker,Ability attack, Character defender, Ability counter,Task task){
+	public void RefreshBattleCharacterList(){
+		livingCharacters = task.characters.Alive ();
+		livingMonsters = battleMonster.Alive ();
+	}
+
+	public void PlayerTurn (Character attacker,List<Character> allies, List<Character> enemies, ref string action, ref Character enemy, ref Ability attack)
+	{
+		if (attacker.totalStats ["CurrentHealth"] > 0) {
+			action = attacker.ChooseBattleAction (allies,this);
+			if (action == "Fight") {
+				enemy = enemies [Random.Range (0, enemies.Count)];
+
+				attack = attacker.ChooseAttack (enemy);
+				actionList.Add (attacker.name + " is going to attack " + enemy.name);
+			}
+		}
+	}
+	public void KillAllMonsters(){
+		for (int i = 0; i < battleMonster.Count; i++) {
+			battleMonster [i].totalStats ["CurrentHealth"] = 0;
+		}
+	}
+	public void Fight(Character attacker,Ability attack, Character defender, Ability counter){
+		attacker.totalStats ["CurrentMana"] -= attack.manaCost;
+		defender.totalStats ["CurrentMana"] -= counter.manaCost;
 		attacker.Attack (defender,attack,this);
-		AttackSkillExpGain(attacker,attack.element,3,task);
+		AttackSkillExpGain(attacker,attack.element,3);
 		if (defender.canAttack&&defender.totalStats ["CurrentHealth"] > 0) {
 			defender.Attack (attacker,counter,this);
-			AttackSkillExpGain(defender,counter.skill,3,task);
+			AttackSkillExpGain(defender,counter.skill,3);
 			if (attacker.canAttack&&CanAttack (attacker.totalStats ["CurrentHealth"], attacker.totalStats ["Speed"], defender.totalStats ["Speed"])) {
 				attacker.Attack (defender,attack,this);
-				AttackSkillExpGain(attacker,attack.element,3,task);
+				AttackSkillExpGain(attacker,attack.element,3);
 			} else if (defender.canAttack&&attacker.totalStats ["CurrentHealth"] > 0 && CanAttack (defender.totalStats ["CurrentHealth"], defender.totalStats ["Speed"], attacker.totalStats ["Speed"])) {
 				defender.Attack (attacker,counter,this);
-				AttackSkillExpGain(defender,counter.element,3,task);
+				AttackSkillExpGain(defender,counter.element,3);
 			}
 		}
 		if (attacker.isEnemy){
-			DistributeExp (defender, attacker, task);
+			DistributeExp (defender, attacker);
 			task.GiveExp(defender,task.combatSkillId,3);
 		} else{
-			DistributeExp (attacker, defender, task);
+			DistributeExp (attacker, defender);
 			task.GiveExp(attacker,task.combatSkillId,3);
 		}
+		livingCharacters = livingCharacters.Alive ();
+		livingMonsters = livingMonsters.Alive ();
 	}
 
-	public void AttackSkillExpGain(Character character, string skill,int amount,Task task){
+	public void AttackSkillExpGain(Character character, string skill,int amount){
 		if (!character.isEnemy){
 			if (skill=="Physical"){
 				task.GiveExp(character,task.weaponSkillId,amount);
@@ -240,7 +271,7 @@ public class Adventure
 		return false;
 	}
 
-	public void DistributeExp (Character character, Character monster, Task task)
+	public void DistributeExp (Character character, Character monster)
 	{
 		int expGain=1;
 		if (monster.totalStats ["CurrentHealth"] <= 0) {

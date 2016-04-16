@@ -16,8 +16,9 @@ public class Ability {
 	public int percentageMagDamage;
 	public string skill;
 	public Dictionary<string,int> statBonus;
+	public string target;
 
-	public Ability(int id,string name,string skill, string element,int range,int percentPhys, int percentMag,int manaCost, int teachingCost, List<string> weaponType,Dictionary<string,int> statBonus=null){
+	public Ability(int id,string name,string skill, string element,int range,string target,int percentPhys, int percentMag,int manaCost, int teachingCost, List<string> weaponType,Dictionary<string,int> statBonus=null){
 		this.id=id;
 		this.name=name;
 		this.element=element;
@@ -29,6 +30,7 @@ public class Ability {
 		percentagePhysDamage = percentPhys;
 		percentageMagDamage = percentMag;
 		this.skill = skill;
+		this.target = target;
 	}
 
 	public int CalculateDamage(int pDamage,int mDamage, Character target=null,string weaponType=""){

@@ -22,23 +22,23 @@ public class SkillDatabase{
 	}
 	
 	public void GenerateAbilities(){
-		abilityList.Add(new Ability(0,"Punch","Physical","Physical",		1,100,0,0,0,new List<string>(){"Fist"}));
-		abilityList.Add(new Ability(1,"Swing","Physical","Physical",		1,100,0,0,0,new List<string>(){"Sword","Dagger","Mace","Axe","Staff","Spear","Rod"}));
-		abilityList.Add(new Ability(2,"Thrust","Physical","Physical",		1,100,0,0,0,new List<string>(){"Sword","Spear"}));
-		abilityList.Add(new Ability(3,"Shoot","Physical","Physical",		2,100,0,0,0,new List<string>(){"Bow"}));
-		abilityList.Add(new Ability(4,"Fireball","Magic","Fire",			2,0,100,2,300,null, new Dictionary<string,int>(){{"Attack",1}}));
-		abilityList.Add(new Ability(5,"Ice Arrow","Magic","Ice",			2,0,100,2,300,null, new Dictionary<string,int>(){{"Attack",1}}));
-		abilityList.Add(new Ability(6,"Lightning Shock","Magic","Lightning",2,0,100,2,300,null, new Dictionary<string,int>(){{"Attack",1}}));
-		abilityList.Add(new Ability(7,"Shadow Blast","Magic","Dark",		2,0,100,2,400,null, new Dictionary<string,int>(){{"Attack",1}}));
-		abilityList.Add(new Ability(8,"Photon Ray","Magic","Light",			2,0,100,2,400,null, new Dictionary<string,int>(){{"Attack",1}}));
-		abilityList.Add(new Ability(9,"Mana Shot","Magic","None",			2,0,100,2,400,null));
-		abilityList.Add(new Ability(10,"Healing wind","Magic","Healing",	2,0,100,2,700,null));
-		abilityList.Add(new Ability(11,"Blazing Scimitar","Mixed","Fire",	1,75,50,2,0,new List<string>(){"Sword"}));
-		abilityList.Add(new Ability(12,"Freezing Cutlass","Mixed","Ice",	1,75,50,2,0,new List<string>(){"Sword"}));
-		abilityList.Add(new Ability(13,"Lightning Foil","Mixed","Lightning",1,75,50,2,0,new List<string>(){"Sword"}));
-		abilityList.Add(new Ability(14,"Twilight Falcata","Mixed","Dark",	1,75,50,2,0,new List<string>(){"Sword"}));
-		abilityList.Add(new Ability(15,"Shining Gladius","Mixed","Light",	1,75,50,2,0,new List<string>(){"Sword"}));
-		abilityList.Add(new Ability(16,"Ethereal Sword","Mixed","None",			1,65,60,2,0,new List<string>(){"Sword"}));
+		abilityList.Add(new Ability(0,"Punch","Physical","Physical",		1,"Enemy",100,0,0,0,new List<string>(){"Fist"}));
+		abilityList.Add(new Ability(1,"Swing","Physical","Physical",		1,"Enemy",100,0,0,0,new List<string>(){"Sword","Dagger","Mace","Axe","Staff","Spear","Rod"}));
+		abilityList.Add(new Ability(2,"Thrust","Physical","Physical",		1,"Enemy",100,0,0,0,new List<string>(){"Sword","Spear"}));
+		abilityList.Add(new Ability(3,"Shoot","Physical","Physical",		2,"Enemy",100,0,0,0,new List<string>(){"Bow"}));
+		abilityList.Add(new Ability(4,"Fireball","Magic","Fire",			2,"Enemy",0,100,2,300,null, new Dictionary<string,int>(){{"Attack",1}}));
+		abilityList.Add(new Ability(5,"Ice Arrow","Magic","Ice",			2,"Enemy",0,100,2,300,null, new Dictionary<string,int>(){{"Attack",1}}));
+		abilityList.Add(new Ability(6,"Lightning Shock","Magic","Lightning",2,"Enemy",0,100,2,300,null, new Dictionary<string,int>(){{"Attack",1}}));
+		abilityList.Add(new Ability(7,"Shadow Blast","Magic","Dark",		2,"Enemy",0,100,2,400,null, new Dictionary<string,int>(){{"Attack",1}}));
+		abilityList.Add(new Ability(8,"Photon Ray","Magic","Light",			2,"Enemy",0,100,2,400,null, new Dictionary<string,int>(){{"Attack",1}}));
+		abilityList.Add(new Ability(9,"Mana Shot","Magic","None",			2,"Enemy",0,100,2,400,null));
+		abilityList.Add(new Ability(10,"Healing wind","Magic","Healing",	2,"Ally",0,100,2,700,null));
+		abilityList.Add(new Ability(11,"Blazing Scimitar","Mixed","Fire",	1,"Enemy",75,50,2,0,new List<string>(){"Sword"}));
+		abilityList.Add(new Ability(12,"Freezing Cutlass","Mixed","Ice",	1,"Enemy",75,50,2,0,new List<string>(){"Sword"}));
+		abilityList.Add(new Ability(13,"Lightning Foil","Mixed","Lightning",1,"Enemy",75,50,2,0,new List<string>(){"Sword"}));
+		abilityList.Add(new Ability(14,"Twilight Falcata","Mixed","Dark",	1,"Enemy",75,50,2,0,new List<string>(){"Sword"}));
+		abilityList.Add(new Ability(15,"Shining Gladius","Mixed","Light",	1,"Enemy",75,50,2,0,new List<string>(){"Sword"}));
+		abilityList.Add(new Ability(16,"Ethereal Sword","Mixed","None",		1,"Enemy",65,60,2,0,new List<string>(){"Sword"}));
 	}
 		
 	public Skill GetSkill(int id)

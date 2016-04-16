@@ -36,6 +36,8 @@ public class GameManager : MonoBehaviour
 	public PromptScreenDisplay textInputScreen;
 	public DialogueScreenDisplay dialogueScreen;
 	public TownHallScreenDisplay townhallScreen;
+	public ChoiceScreen choiceScreen;
+	public AdventureScreen adventureScreen;
 	public CanvasGroup gameMenu;
 	public GameEvent gameEvent;
 	public string screenDisplay;
@@ -57,6 +59,7 @@ public class GameManager : MonoBehaviour
 	// Use this for initialization
 	void Start ()
 	{
+		Database.game = this;
 		Application.targetFrameRate = 15;
 		screenDisplay="Start";
 		DisplayScreen ("Start",startScreen);
@@ -75,6 +78,7 @@ public class GameManager : MonoBehaviour
 		displayScreen.Add ("Recruit", recruitScreen.GetComponent<CanvasGroup> ());
 		displayScreen.Add ("Request", requestScreen.GetComponent<CanvasGroup> ());
 		displayScreen.Add ("TownHall", townhallScreen.GetComponent<CanvasGroup> ());
+		displayScreen.Add ("Adventure", adventureScreen.GetComponent<CanvasGroup> ());
 		screenList=new List<string>(displayScreen.Keys);
 	}
 
@@ -313,7 +317,9 @@ public class GameManager : MonoBehaviour
 			selectedcharacters [i].statusAdd = outsideScreen.GetSelectedArea ().name;
 		}
 		if (!task.manual) {
-			StartCoroutine(task.AdventureTime(adventureWaitTime));
+			StartCoroutine (task.AdventureTime (adventureWaitTime));
+		} else {
+			manualTasks.Add (task);
 		}
 		ReturnToLastScreen ();
 	}
@@ -437,14 +443,19 @@ public class GameManager : MonoBehaviour
 		questStatScreen.show = true;
 	}
 	public void StartNextDay(){
-		if (manualTasks.Count > 0) {
-			StartManualTask ();
-		}
+		StartManualTask ();
 		StartCoroutine(WaitForTasksToBeDone());
 	}
 	public void StartManualTask(){
-
-
+		if (manualTasks.Count > 0) {
+			if (manualTasks [0].type == "Adventure") {
+				adventureScreen.StartAdventure (manualTasks [0]);
+			}
+		}
+	}
+	public void FinishManualTask(Task task){
+		manualTasks.Remove (task);
+		StartManualTask ();
 	}
 	public void NextDay ()
 	{
@@ -517,8 +528,8 @@ public class GameManager : MonoBehaviour
 		waitingScreen.alpha=1;
 		waitingScreen.interactable=true;
 		waitingScreen.blocksRaycasts=true;
-		while (tasksWithCoroutine.Count>0){
-			Debug.Log(tasksWithCoroutine.Count);
+
+		while (tasksWithCoroutine.Count>0||manualTasks.Count>0){
 			yield return waitTime;
 		}
 		waitingScreen.alpha=0;

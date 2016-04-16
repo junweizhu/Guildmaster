@@ -15,16 +15,22 @@ public class DialogueScreenDisplay : MonoBehaviour
 	public bool show;
 	public string stringToDialogue = "";
 	public WaitForSeconds timePerLetter = new WaitForSeconds (0.05f);
+	public WaitForSeconds timePerLetterFast = new WaitForSeconds (0.02f);
+	public bool adventure=false;
 
 	// Update is called once per frame
 	void Update ()
 	{
-		GetComponent<CanvasGroup> ().SetShow (show);
+		
+		if (adventure) {
+			GetComponent<CanvasGroup> ().SetShow (true);
+		} else {
+			GetComponent<CanvasGroup> ().SetShow (show);
+		}
 	}
 
 	public void ShowDialogue (GameEvent gameevent, List<int> names)
 	{
-		//Debug.Log (gameevent.dialogue);
 		eventId = gameevent.id;
 		dialogueDisplay = Database.strings.GetDialogue (gameevent.dialogue);
 		eventTrigger = gameevent.eventTrigger;
@@ -80,9 +86,23 @@ public class DialogueScreenDisplay : MonoBehaviour
 		dialogueIndex = 0;
 		UpdateText ();
 		show = true;
-		Debug.Log("NewText");
+	}
+	public void ShowAdventureText(List<string> textList){
+		dialogueIndex = 0;
+		dialogueDisplay.Clear ();
+		dialogueDisplay.Add (new Dialogue ("Log", 0, ""));
+		for (int i = 0; i < textList.Count; i++) {
+			dialogueDisplay [0].text += textList[i] + "\n";
+		}
+		UpdateText ();
 	}
 
+	public void ShowAdventureText(string text){
+		dialogueIndex = 0;
+		dialogueDisplay.Clear ();
+		dialogueDisplay.Add (new Dialogue ("Log", 0, text));
+		UpdateText ();
+	}
 	public void UpdateText ()
 	{
 		if (dialogueDisplay.Count > 0) {
@@ -109,26 +129,28 @@ public class DialogueScreenDisplay : MonoBehaviour
 					ShowTextInputScreen ();
 				}
 			}
-		} else if (dialogueDisplay.Count > dialogueIndex + 1) {
-			dialogueIndex++;
-			UpdateText ();
-		} else {
-			GameEvent gameevent = Database.events.GetEvent (eventId);
-			if (Database.events.GetEvent (eventId).enterName) {
-				if (gameevent.changeNameType == "Guild") {
-					Database.guilds.FindGuild (gameevent.changeNameId).name = Database.game.textInputScreen.textInput.text;
-				} else {
-					Database.characters.GetCharacter (gameevent.changeNameId).name = Database.game.textInputScreen.textInput.text;
+		} else if (!adventure) {
+			if (dialogueDisplay.Count > dialogueIndex + 1) {
+				dialogueIndex++;
+				UpdateText ();
+			} else {
+				GameEvent gameevent = Database.events.GetEvent (eventId);
+				if (gameevent!=null &&gameevent.enterName) {
+					if (gameevent.changeNameType == "Guild") {
+						Database.guilds.FindGuild (gameevent.changeNameId).name = Database.game.textInputScreen.textInput.text;
+					} else {
+						Database.characters.GetCharacter (gameevent.changeNameId).name = Database.game.textInputScreen.textInput.text;
+					}
 				}
-			}
-			Database.events.GetTrigger (eventTrigger).Activate ();
-			Database.game.DisplayScreen(Database.game.screenDisplay,Database.game.displayScreen[Database.game.screenDisplay]);
-			dialogueDisplay.Clear ();
-			dialogue.text="";
-			stringToDialogue="";
-			show = false;
-			if (!gameevent.finished){
-				gameevent.FinishEvent();
+				Database.events.GetTrigger (eventTrigger).Activate ();
+				Database.game.DisplayScreen (Database.game.screenDisplay, Database.game.displayScreen [Database.game.screenDisplay]);
+				dialogueDisplay.Clear ();
+				dialogue.text = "";
+				stringToDialogue = "";
+				show = false;
+				if (!gameevent.finished) {
+					gameevent.FinishEvent ();
+				}
 			}
 		}
 	}
@@ -146,9 +168,15 @@ public class DialogueScreenDisplay : MonoBehaviour
 		dialogue.text = "";
 		while (i < strComplete.Length) {
 			dialogue.text += strComplete [i++];
-			yield return timePerLetter;
+			if (adventure) {
+				yield return timePerLetterFast;
+			} else {
+				yield return timePerLetter;
+			}
 		}
-		if (dialogueDisplay.Count == dialogueIndex + 1) {
+		if (adventure) {
+			Database.game.adventureScreen.PickChoice ();
+		}else if (dialogueDisplay.Count == dialogueIndex + 1) {
 			if (Database.events.GetEvent (eventId).enterName && dialogueDisplay.Count > dialogueIndex) {
 				ShowTextInputScreen ();
 			}
