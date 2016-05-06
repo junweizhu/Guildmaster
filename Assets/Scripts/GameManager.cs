@@ -30,6 +30,7 @@ public class GameManager : MonoBehaviour
 	public QuestStatScreenDisplay questStatScreen;
 	public ShopScreenDisplay shopScreen;
 	public CharacterSelectScreenDisplay selectScreen;
+	public SocializeScreenDisplay talkScreen;
 	public NextDayScreenDisplay nextDayScreen;
 	public ItemSelectScreenDisplay itemSelectScreen;
 	public PromptScreenDisplay promptScreen;
@@ -72,6 +73,7 @@ public class GameManager : MonoBehaviour
 		displayScreen.Add ("Questlist", questScreen.GetComponent<CanvasGroup> ());
 		displayScreen.Add ("Upgrade", upgradeScreen.GetComponent<CanvasGroup> ());
 		displayScreen.Add ("Task", taskScreen.GetComponent<CanvasGroup> ());
+		displayScreen.Add ("Talk", talkScreen.GetComponent<CanvasGroup> ());
 		displayScreen.Add ("Tavern", tavernScreen.GetComponent<CanvasGroup> ());
 		displayScreen.Add ("Market", marketScreen.GetComponent<CanvasGroup> ());
 		displayScreen.Add ("Outside", outsideScreen.GetComponent<CanvasGroup> ());
@@ -193,7 +195,7 @@ public class GameManager : MonoBehaviour
 	{
 		Debug.Log ("Recruiting");
 		Character character = Database.characters.GetRecruitables () [statDisplayId];
-		character.name = textInputScreen.textInput.text;
+		character.nickname = textInputScreen.textInput.text;
 		myGuild.RecruitCharacter (character);
 		recruitScreen.UpdateText ();
 		characterStatScreen.CloseScreen ();
@@ -444,8 +446,10 @@ public class GameManager : MonoBehaviour
 	}
 	public void StartNextDay(){
 		StartManualTask ();
+		TaskEvents ();
 		StartCoroutine(WaitForTasksToBeDone());
 	}
+
 	public void StartManualTask(){
 		if (manualTasks.Count > 0) {
 			if (manualTasks [0].type == "Adventure") {
@@ -457,6 +461,14 @@ public class GameManager : MonoBehaviour
 		manualTasks.Remove (task);
 		StartManualTask ();
 	}
+
+	public void TaskEvents(){
+		for (int i = 0; i < Database.myGuild.taskList.Count; i++) {
+			Database.myGuild.taskList [i].CheckEvent ();
+		}
+	}
+
+
 	public void NextDay ()
 	{
 		if (myGuild.inventory.GetSpace () >= 0) {
@@ -528,9 +540,37 @@ public class GameManager : MonoBehaviour
 		waitingScreen.alpha=1;
 		waitingScreen.interactable=true;
 		waitingScreen.blocksRaycasts=true;
+		bool wait = false;
+		while (true){ 
+			wait = false;
+			if (Database.events.eventQueue.Count > 0||(dialogueScreen.eventId!=0 && !Database.events.GetEvent (dialogueScreen.eventId).finished)) {
+				wait = true;
+			}
+			if (!wait) {
+				if (tasksWithCoroutine.Count > 0) {
+					for (int i = 0; i < tasksWithCoroutine.Count; i++) {
+						if (tasksWithCoroutine [i].duration == 1) {
+							wait = true;
+							break;
+						}
+					}
+				}
+			}
+			if (!wait) {
+					for (int i = 0; i < manualTasks.Count; i++) {
+						if (manualTasks [i].duration == 1) {
+							wait = true;
+							break;
+						}
+					}
+				}
 
-		while (tasksWithCoroutine.Count>0||manualTasks.Count>0){
-			yield return waitTime;
+			//manualTasks.Count>0
+			if (wait) {
+				yield return waitTime;
+			} else {
+				break;
+			}
 		}
 		waitingScreen.alpha=0;
 		waitingScreen.interactable=false;

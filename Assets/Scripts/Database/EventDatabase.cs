@@ -7,6 +7,7 @@ public class EventDatabase
 	public List<EventTrigger> eventTriggers = new List<EventTrigger> ();
 	public List<GameEvent> events = new List<GameEvent> ();
 	public List<GameEvent> eventQueue = new List<GameEvent> ();
+	public List<GameEvent> activeSocializeEvents = new List<GameEvent> ();
 	private int lastObjectiveId = 98;
 
 	public EventDatabase ()
@@ -85,6 +86,7 @@ public class EventDatabase
 		eventTriggers.Add (new EventTrigger (108, "FirstItemSold", 0, 0, 0, 1, 0, 0));
 		eventTriggers.Add (new EventTrigger (109, "FirstQuest", 0, 1));
 		eventTriggers.Add (new EventTrigger (110, "FirstUpgrade", null, null, 0, null, null, null, new Dictionary<int,int> (){{0,1}}));
+
 	}
 
 	public void GenerateEvent ()
@@ -109,7 +111,7 @@ public class EventDatabase
 		events.Add (new GameEvent (16, "TutorialFinish", 0, "TutorialFinish"));
 		events.Add (new GameEvent (99, "NormalTalk", 0, "NormalTalk"));
 		events.Add (new GameEvent (100, "StorageTooFull", 0, "StorageTooFull"));
-
+		events.Add (new GameEvent (101, "TestSocialization", 0, "Socialize1",true));
 	}
 
 	public void SetEventTriggers ()
@@ -125,8 +127,14 @@ public class EventDatabase
 		TriggersToEvent (14, 109);
 		TriggersToEvent (16, 110);
 		TriggersToEvent (100, 100);
+		TriggersToEvent (101, 106);
 	}
 
+	public void SetEventEndTriggers(){//Until which trigger(s) activation is the event available?
+		EndTriggersToEvent(101,107);
+
+
+	}
 	public void AddButton (string name)
 	{
 		eventTriggers.Add (new EventTrigger (eventTriggers.Count, name, false, true));
@@ -138,14 +146,24 @@ public class EventDatabase
 			TriggersToEvent (eventID, triggers [i]);
 		}
 	}
-
 	public void TriggersToEvent (int eventID, int triggerID)
 	{
 		GameEvent gameEvent = GetEvent (eventID);
 		gameEvent.eventId.Add (triggerID);
 		GetTrigger (triggerID).gameEvent.Add (gameEvent.id);
 	}
-	
+	public void EndTriggersToEvent (int eventID, List<int> triggers)
+	{
+		for (int i=0; i<triggers.Count; i++) {
+			EndTriggersToEvent (eventID, triggers [i]);
+		}
+	}
+	public void EndTriggersToEvent (int eventID, int triggerID)
+	{
+		GameEvent gameEvent = GetEvent (eventID);
+		gameEvent.negEventId.Add (triggerID);
+		GetTrigger (triggerID).gameEvent.Add (gameEvent.id);
+	}
 	public GameEvent GetEvent (int id)
 	{
 		foreach (GameEvent gameevent in events) {
@@ -166,15 +184,12 @@ public class EventDatabase
 
 	public void AddToQueue (int id)
 	{
-		Debug.Log (id);
-		foreach (GameEvent gameevent in events) {
-			if (gameevent.id == id) {
-				eventQueue.Add (gameevent);
-				return;
-			}
-		}
+		eventQueue.Add (GetEvent(id));
 	}
 
+	public void AddToSocializeEvent(int id){
+		activeSocializeEvents.Add (GetEvent (id));
+	}
 	public GameEvent GetActiveEvent ()
 	{
 		if (eventQueue.Count > 0) {
@@ -185,7 +200,6 @@ public class EventDatabase
 			return null;
 		}
 	}
-
 	public void UpdateTrigger ()
 	{
 		for (int i=0; i<eventTriggers.Count; i++) {
@@ -202,7 +216,7 @@ public class EventDatabase
 				if (events [i].eventId.Count > 0) {
 					for (int j=0; j<events[i].eventId.Count; j++) {
 						if (!GetTrigger (events [i].eventId [j]).activated)
-							return events[i].id;
+							return events[i].id-1;
 					}
 				}
 			}

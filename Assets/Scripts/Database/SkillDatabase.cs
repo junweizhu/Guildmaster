@@ -33,12 +33,12 @@ public class SkillDatabase{
 		abilityList.Add(new Ability(8,"Photon Ray","Magic","Light",			2,"Enemy",0,100,2,400,null, new Dictionary<string,int>(){{"Attack",1}}));
 		abilityList.Add(new Ability(9,"Mana Shot","Magic","None",			2,"Enemy",0,100,2,400,null));
 		abilityList.Add(new Ability(10,"Healing wind","Magic","Healing",	2,"Ally",0,100,2,700,null));
-		abilityList.Add(new Ability(11,"Blazing Scimitar","Mixed","Fire",	1,"Enemy",75,50,2,0,new List<string>(){"Sword"}));
-		abilityList.Add(new Ability(12,"Freezing Cutlass","Mixed","Ice",	1,"Enemy",75,50,2,0,new List<string>(){"Sword"}));
-		abilityList.Add(new Ability(13,"Lightning Foil","Mixed","Lightning",1,"Enemy",75,50,2,0,new List<string>(){"Sword"}));
-		abilityList.Add(new Ability(14,"Twilight Falcata","Mixed","Dark",	1,"Enemy",75,50,2,0,new List<string>(){"Sword"}));
-		abilityList.Add(new Ability(15,"Shining Gladius","Mixed","Light",	1,"Enemy",75,50,2,0,new List<string>(){"Sword"}));
-		abilityList.Add(new Ability(16,"Ethereal Sword","Mixed","None",		1,"Enemy",65,60,2,0,new List<string>(){"Sword"}));
+		abilityList.Add(new Ability(11,"Blazing Scimitar","Mixed","Fire",	1,"Enemy",75,50,2,0,new List<string>(){"Fist"}));
+		abilityList.Add(new Ability(12,"Freezing Cutlass","Mixed","Ice",	1,"Enemy",75,50,2,0,new List<string>(){"Fist"}));
+		abilityList.Add(new Ability(13,"Lightning Foil","Mixed","Lightning",1,"Enemy",75,50,2,0,new List<string>(){"Fist"}));
+		abilityList.Add(new Ability(14,"Twilight Falcata","Mixed","Dark",	1,"Enemy",75,50,2,0,new List<string>(){"Fist"}));
+		abilityList.Add(new Ability(15,"Shining Gladius","Mixed","Light",	1,"Enemy",75,50,2,0,new List<string>(){"Fist"}));
+		abilityList.Add(new Ability(16,"Ethereal Sword","Mixed","None",		1,"Enemy",65,60,2,0,new List<string>(){"Fist"}));
 	}
 		
 	public Skill GetSkill(int id)

@@ -15,7 +15,7 @@ public class DialogueScreenDisplay : MonoBehaviour
 	public bool show;
 	public string stringToDialogue = "";
 	public WaitForSeconds timePerLetter = new WaitForSeconds (0.05f);
-	public WaitForSeconds timePerLetterFast = new WaitForSeconds (0.02f);
+	public WaitForSeconds timePerLetterFast = new WaitForSeconds (0.01f);
 	public bool adventure=false;
 
 	// Update is called once per frame
@@ -90,6 +90,7 @@ public class DialogueScreenDisplay : MonoBehaviour
 	public void ShowAdventureText(List<string> textList){
 		dialogueIndex = 0;
 		dialogueDisplay.Clear ();
+		StopAllCoroutines ();
 		dialogueDisplay.Add (new Dialogue ("Log", 0, ""));
 		for (int i = 0; i < textList.Count; i++) {
 			dialogueDisplay [0].text += textList[i] + "\n";
@@ -103,6 +104,7 @@ public class DialogueScreenDisplay : MonoBehaviour
 		dialogueDisplay.Add (new Dialogue ("Log", 0, text));
 		UpdateText ();
 	}
+
 	public void UpdateText ()
 	{
 		if (dialogueDisplay.Count > 0) {
@@ -110,7 +112,7 @@ public class DialogueScreenDisplay : MonoBehaviour
 				if (dialogueText.order == dialogueIndex) {
 					characterName.text = dialogueText.GetSpeakerName (names);
 					stringToDialogue = dialogueText.GetText (names);
-					StartCoroutine (AnimateText (stringToDialogue));
+					StartCoroutine (AnimateDialogueText (stringToDialogue));
 					return;
 				}
 			}
@@ -124,7 +126,9 @@ public class DialogueScreenDisplay : MonoBehaviour
 		if (stringToDialogue != dialogue.text) {
 			StopAllCoroutines ();
 			dialogue.text = stringToDialogue;	
-			if (dialogueDisplay.Count == dialogueIndex + 1) {
+			if (adventure) {
+				Database.game.adventureScreen.PickChoice ();
+			} else if (dialogueDisplay.Count == dialogueIndex + 1) {
 				if (Database.events.GetEvent (eventId).enterName && dialogueDisplay.Count > dialogueIndex) {
 					ShowTextInputScreen ();
 				}
@@ -162,7 +166,7 @@ public class DialogueScreenDisplay : MonoBehaviour
 		GameObject.FindObjectOfType<GameManager> ().InputText ("Dialogue", gameevent.changeNameId, gameevent.changeNameType);
 	}
 
-	IEnumerator AnimateText (string strComplete)
+	IEnumerator AnimateDialogueText (string strComplete)
 	{
 		int i = 0;
 		dialogue.text = "";

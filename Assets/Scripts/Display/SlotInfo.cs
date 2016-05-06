@@ -88,6 +88,10 @@ public class SlotInfo : MonoBehaviour
 		slotDuration.text=string.Format (Database.strings.GetString ("Duration"),task.duration.ToString ("f1"));
 		cancelButton.interactable=task.canBeCanceled;
 	}
+	public void FillSlotWithTopic (GameEvent topic){
+		id = topic.id;
+		slotName.text = topic.name;
+	}
 
 	public void FillSlotWithQuest (int slotnr, Quest quest)
 	{
@@ -336,7 +340,9 @@ public class SlotInfo : MonoBehaviour
 			return;
 		}
 	}
-
+	public void ActivateEvent(){
+		Database.events.AddToQueue (id);
+	}
 	public void Recruit ()
 	{
 		Database.game.PromptRecruit (id);

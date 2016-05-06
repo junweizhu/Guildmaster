@@ -104,7 +104,7 @@ public class EventTrigger
 			activated = true;
 			if (gameEvent.Count > 0) {
 				for (int i=0; i<gameEvent.Count; i++) {
-					Database.events.GetEvent (gameEvent [i]).CheckTrigger ();
+					Database.events.GetEvent (gameEvent [i]).CheckIfActivated ();
 				}
 			}
 			if (!activatesOnce) {

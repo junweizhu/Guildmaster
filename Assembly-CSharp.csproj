@@ -84,6 +84,7 @@
      <Compile Include="Assets\Scripts\Display\SearchScreenDisplay.cs" />
      <Compile Include="Assets\Scripts\Display\ShopScreenDisplay.cs" />
      <Compile Include="Assets\Scripts\Display\SlotInfo.cs" />
+     <Compile Include="Assets\Scripts\Display\SocializeScreenDisplay.cs" />
      <Compile Include="Assets\Scripts\Display\TaskScreenDisplay.cs" />
      <Compile Include="Assets\Scripts\Display\TavernScreenDisplay.cs" />
      <Compile Include="Assets\Scripts\Display\TownHallScreenDisplay.cs" />
@@ -99,6 +100,7 @@
      <Compile Include="Assets\Scripts\Objects\Area.cs" />
      <Compile Include="Assets\Scripts\Objects\BaseMaterial.cs" />
      <Compile Include="Assets\Scripts\Objects\Character.cs" />
+     <Compile Include="Assets\Scripts\Objects\CharacterClass.cs" />
      <Compile Include="Assets\Scripts\Objects\Dialogue.cs" />
      <Compile Include="Assets\Scripts\Objects\EventTrigger.cs" />
      <Compile Include="Assets\Scripts\Objects\GameEvent.cs" />

@@ -15,6 +15,8 @@ public class Area
 	public int size;
 	public Dictionary<int,int> linkedAreas;
 	public int maxGatheringPoints;
+	public Dictionary<int,int> visitEvent = new Dictionary<int,int> ();
+	public Dictionary<int,int> progressEvent=new Dictionary<int, int>();
 	//public Dictionary<int,Dictionary<int,int>>map=new Dictionary<int,Dictionary<int,int>>();
 	//public Dictionary<int,Dictionary<int,string>>eventMap=new Dictionary<int,Dictionary<int,string>>();
 	//public Vector2 startingPoint;

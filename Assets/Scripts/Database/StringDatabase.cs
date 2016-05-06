@@ -273,5 +273,8 @@ public class StringDatabase{
 		dialogueList.Add (new Dialogue("TutorialFinish",8,"My task here is done. May your names be heard by all of us, members of {0}.",new List<int>(){0,0},new List<string>(){dialogueStringType[0],"Guild"}));
 
 		dialogueList.Add (new Dialogue("NormalTalk",0,"Hello, members of {0}, is everything going fine?",new List<int>(){0,0},new List<string>(){dialogueStringType[0],"Guild"}));
+
+		dialogueList.Add (new Dialogue("Socialize1",0,"Testing the socializing event. {0}, what do you think?",new List<int>(){1,0},new List<string>(){"Character","Character"}));
+		dialogueList.Add (new Dialogue("Socialize1",1,"So far, so good {0}. Let's do our best.",new List<int>(){0,1},new List<string>(){"Character","Character"}));
 	}
 }

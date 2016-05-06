@@ -35,13 +35,14 @@ public class Character
 	public bool canAttack = false;
 	public bool isEnemy = false;
 	public List<InventorySlot> tempEquipment = new List<InventorySlot> ();
+	public int totalStatCount = 0;
 
 	public Character ()
 	{
 
 	}
 
-	public Character (int id, string name, bool male, int level, string type = "")
+	public Character (int id, string name, bool male, int level, string type = "", Dictionary<string,int> statgrowth=null)
 	{
 		this.id = id;
 		this.name = name;
@@ -50,62 +51,79 @@ public class Character
 		else
 			gender = "Female";
 		this.level = 1;
-		int healthmanamod = Random.Range (10, 20);
-		int strintmod = Random.Range (10, 20);
-		if (type == "Mage") {
-			healthmanamod *= -1;
-			strintmod *= -1;
-		} else if (type == "Adventurer") {
-			healthmanamod = Mathf.CeilToInt (0.5f * healthmanamod);
-			strintmod = Mathf.CeilToInt (0.5f * strintmod);
-		} else if (type == "Social") {
-			healthmanamod = Mathf.CeilToInt (-0.5f * healthmanamod);
-			strintmod = Mathf.CeilToInt (-0.5f * strintmod);
-		} else {
-			healthmanamod = 0;
-			strintmod = 0;
-		}
-		statGrowth ["Health"] = (Random.Range (60, 120) + Random.Range (60, 120)) / 2 + healthmanamod;
-		statGrowth ["Mana"] = (Random.Range (60, 120) + Random.Range (60, 120)) / 2 - healthmanamod;
-		statGrowth ["Strength"] = (Random.Range (15, 55) + Random.Range (15, 55)) / 2 + strintmod;
-		statGrowth ["Intelligence"] = (Random.Range (15, 55) + Random.Range (15, 55)) / 2 - strintmod;
-		statGrowth ["Dexterity"] = (Random.Range (35, 65) + Random.Range (35, 65)) / 2;
-		statGrowth ["Agility"] = (Random.Range (35, 65) + Random.Range (35, 65)) / 2;
-		if (statGrowth ["Strength"] > statGrowth ["Intelligence"]) {
-			if (statGrowth ["Strength"] < 50) {
-				statGrowth ["Strength"] += 10;
+		if (statgrowth == null) {
+			int healthmanamod = Random.Range (10, 20);
+			int strintmod = Random.Range (10, 20);
+			if (type == "Mage") {
+				healthmanamod *= -1;
+				strintmod *= -1;
+			} else if (type == "Adventurer") {
+				healthmanamod = Mathf.CeilToInt (0.5f * healthmanamod);
+				strintmod = Mathf.CeilToInt (0.5f * strintmod);
+			} else if (type == "Social") {
+				healthmanamod = Mathf.CeilToInt (-0.5f * healthmanamod);
+				strintmod = Mathf.CeilToInt (-0.5f * strintmod);
+			} else {
+				healthmanamod = 0;
+				strintmod = 0;
 			}
-			if (statGrowth ["Mana"] > statGrowth ["Health"]) {
-				statGrowth ["Mana"] -= 20;
-			}
-		} else {
-			if (statGrowth ["Intelligence"] < 50) {
-				statGrowth ["Intelligence"] += 10;
-				if (statGrowth ["Health"] > statGrowth ["Mana"]) {
-					statGrowth ["Health"] -= 20;
+
+			statGrowth ["Health"] = (Random.Range (60, 120) + Random.Range (60, 120)) / 2 + healthmanamod;
+			statGrowth ["Mana"] = (Random.Range (40, 120) + Random.Range (40, 120)) / 2 - healthmanamod;
+			statGrowth ["Strength"] = (Random.Range (15, 55) + Random.Range (15, 55)) / 2 + strintmod;
+			statGrowth ["Intelligence"] = (Random.Range (15, 55) + Random.Range (15, 55)) / 2 - strintmod;
+			statGrowth ["Dexterity"] = (Random.Range (35, 65) + Random.Range (35, 65)) / 2;
+			statGrowth ["Agility"] = (Random.Range (35, 65) + Random.Range (35, 65)) / 2;
+			if (statGrowth ["Strength"] > statGrowth ["Intelligence"]) {
+				if (statGrowth ["Strength"] < 50) {
+					statGrowth ["Strength"] += 10;
+				}
+				if (statGrowth ["Mana"] > statGrowth ["Health"]) {
+					statGrowth ["Mana"] -= 20;
+				}
+			} else {
+				if (statGrowth ["Intelligence"] < 50) {
+					statGrowth ["Intelligence"] += 10;
+					if (statGrowth ["Health"] > statGrowth ["Mana"]) {
+						statGrowth ["Health"] -= 20;
+					}
 				}
 			}
+		} else {
+			statGrowth = statgrowth;
 		}
 		baseStats = new Dictionary<string, int> ();
 		baseStats ["Health"] = 5;
-		baseStats ["Mana"] = 5;
+		if (statGrowth ["Mana"] > 0) {
+			baseStats ["Mana"] = 5;
+		} else {
+			baseStats ["Mana"] = 0;
+		}
 		baseStats ["Strength"] = 1;
 		baseStats ["Dexterity"] = 1;
 		baseStats ["Agility"] = 1;
-		baseStats ["Intelligence"] = 1;
+		if (statGrowth ["Intelligence"] > 0) {
+			baseStats ["Intelligence"] = 1;
+		} else {
+			baseStats ["Intelligence"] = 0;
+		}
 		baseStats ["Fame"] = 0;
 		SetUpDefaultStats (level);
+
 	}
 
 	public Character (Monster monster, int level = 1, bool isEnemy = true)
 	{
 		id = monster.id;
 		name = monster.name;
+		nickname = monster.name;
 		this.level = 1;
 		statGrowth = monster.statGrowth;
-		baseStats = monster.baseStats;
+		baseStats = monster.baseStats.ToDictionary(entry=>entry.Key,entry=>(int)entry.Value);
+		Debug.Log ("Before "+baseStats ["Health"] + " " + baseStats ["Mana"] + " " + baseStats ["Strength"] + " " + baseStats ["Dexterity"] + " " + baseStats ["Agility"] + " " + baseStats ["Intelligence"]);
 		SetUpDefaultStats (level);
 		this.isEnemy = isEnemy;
+		Debug.Log ("After "+baseStats ["Health"] + " " + baseStats ["Mana"] + " " + baseStats ["Strength"] + " " + baseStats ["Dexterity"] + " " + baseStats ["Agility"] + " " + baseStats ["Intelligence"]);
 	}
 
 	public void SetUpDefaultStats (int level, Monster monster = null)
@@ -116,7 +134,7 @@ public class Character
 		totalStats ["MAttack"] = 0;
 		totalStats ["PDefense"] = 0;
 		totalStats ["MDefense"] = 0;
-		totalStats ["Accuracy"] = 70;
+		totalStats ["Accuracy"] = 50;
 		totalStats ["Evade"] = 10;
 		totalStats ["Block"] = 0;
 		totalStats ["BlockChance"] = 0;
@@ -147,7 +165,7 @@ public class Character
 		abilities = new List<int> (){ 0, 1, 2, 3 };
 		if (level > 1)
 			GiveExp (Database.skills.SkillList ().Count, (level - 1) * 100);
-		equipmentStats.UpdateEquipmentStats (equipment, ref blockItem);
+		UpdateStats ();
 	}
 
 	public Ability ChooseAttack (Character target)
@@ -169,7 +187,7 @@ public class Character
 		} else {
 			chosenAbility = abilities [0];
 		}
-		Debug.Log (name + " uses " + chosenAbility.name + " " + System.DateTime.Now.Millisecond.ToString ());
+		Debug.Log (nickname + " uses " + chosenAbility.name + " " + System.DateTime.Now.Millisecond.ToString ());
 		canAttack = true;
 		return chosenAbility;
 	}
@@ -207,7 +225,7 @@ public class Character
 		List<Ability> abilities = GetUsableAbilities (false, range);
 		Ability chosenAbility = null;
 		if (abilities.Count == 0) {
-			Debug.Log (name + " can't attack from this range! " + System.DateTime.Now.Millisecond.ToString ());
+			Debug.Log (nickname + " can't attack from this range! " + System.DateTime.Now.Millisecond.ToString ());
 			canAttack = false;
 		} else {
 			if (abilities.Count > 1) {
@@ -225,7 +243,7 @@ public class Character
 			} else if (abilities.Count == 1) {
 				chosenAbility = abilities [0];
 			}
-			Debug.Log (name + " uses " + chosenAbility.name + " as counterattack " + System.DateTime.Now.Millisecond.ToString ());
+			Debug.Log (nickname + " uses " + chosenAbility.name + " as counterattack " + System.DateTime.Now.Millisecond.ToString ());
 			canAttack = true;
 		}
 		return chosenAbility;
@@ -239,6 +257,7 @@ public class Character
 		for (int i = 0; i < abilities.Count; i++) {
 			Ability ability = Database.skills.GetAbility (abilities [i]);
 			if ((ability.weaponType == null || (ability.weaponType != null && ability.weaponType.Contains (weapontype))) && ability.manaCost <= totalStats ["CurrentMana"] && (ability.element != "Healing" ||alsoHealing)) {
+				Debug.Log (ability.manaCost + " " + totalStats ["CurrentMana"]);
 				if (attacking || (!attacking && ability.range == range))
 					usableAbilities.Add (ability);
 			}
@@ -254,10 +273,10 @@ public class Character
 
 		bool hit = false;
 		if (chosenAbility.element == "Physical") {
-			adventure.actionList.Add (name + " attacks");
+			adventure.actionList.Add (nickname + " attacks");
 			hit = target.Defend (chosenAbility.CalculateDamage (totalStats ["PAttack"], totalStats ["MAttack"]), totalStats ["Accuracy"], "P", GetWeaponType (), GetWeaponElement (),adventure);
 		} else {
-			adventure.actionList.Add (name + " attacks");
+			adventure.actionList.Add (nickname + " attacks");
 			hit = target.Defend (chosenAbility.CalculateDamage (totalStats ["PAttack"], totalStats ["MAttack"]), totalStats ["Accuracy"], "M", "", chosenAbility.element,adventure);
 		}
 		if (hit) {
@@ -295,7 +314,7 @@ public class Character
 			int defense = totalStats [damageType + "Defense"];
 			if (hitrate - totalStats ["BlockChance"] < RNG && totalStats ["BlockChance"] > 0) {
 				defense += totalStats ["Block"];
-				adventure.actionList.Add (name + " blocked the attack ");
+				adventure.actionList.Add (nickname + " blocked the attack ");
 				if (tempEquipment [blockItem].filled) {
 					tempEquipment [blockItem].Use ();
 				}
@@ -312,7 +331,7 @@ public class Character
 			if (totalStats ["CurrentHealth"] < 0) {
 				totalStats ["CurrentHealth"] = 0;
 			}
-			adventure.actionList.Add (name + " received " + damage.ToString () + " damage.");
+			adventure.actionList.Add (nickname + " received " + damage.ToString () + " damage.");
 			if (tempEquipment [1].filled) {
 				tempEquipment [1].Use ();
 			}
@@ -325,7 +344,7 @@ public class Character
 			}
 			return true;
 		} else {
-			adventure.actionList.Add (name + " dodged the attack");
+			adventure.actionList.Add (nickname + " dodged the attack");
 			return false;
 		}
 	}
@@ -423,6 +442,7 @@ public class Character
 				while (rng [growth.Key] >= 100) {
 					baseStats [growth.Key] += 1;
 					statgains += 1;
+					totalStatCount += 1;
 					if (levelUp) {
 						if (levelUpStats.ContainsKey (growth.Key)) {
 							levelUpStats [growth.Key] += 1;
@@ -444,7 +464,7 @@ public class Character
 	{
 
 		if (!skillLevel.ContainsKey (skillid)) {
-			Debug.Log (name + " levels Up!");
+			Debug.Log (nickname + " levels Up!");
 			levelUp = true;
 			DistributeStats (4);
 		} else { 
@@ -540,7 +560,7 @@ public class Character
 		foreach (KeyValuePair<string,int> stat in item.stats) {
 			if (stat.Key == "Health" || stat.Key == "Mana") {
 				Heal (stat.Value, "Flat", stat.Key);
-				adventure.actionList.Add (name + " used " + item.name + " and recovered " + stat.Value + " " + stat.Key + ".");
+				adventure.actionList.Add (nickname + " used " + item.name + " and recovered " + stat.Value + " " + stat.Key + ".");
 			}
 		}
 		slot.Use ();
@@ -554,7 +574,7 @@ public class Character
 	public string ShortDescription ()
 	{
 		if (levelUp || skillUp) {
-			return string.Format (Database.strings.GetString ("MemberUp"), name, Database.strings.GetString (gender + "Poss"));
+			return string.Format (Database.strings.GetString ("MemberUp"), nickname, Database.strings.GetString (gender + "Poss"));
 		} 
 		return null;
 	}
@@ -569,11 +589,11 @@ public class Character
 					stats += stat.Value.ToString () + " " + Database.strings.GetString (stat.Key) + "\n";
 				}
 			}
-			details = string.Format (Database.strings.GetString ("LevelUp"), name, stats) + "\n";
+			details = string.Format (Database.strings.GetString ("LevelUp"), nickname, stats) + "\n";
 		}
 		if (skillUp) {
 			foreach (string skill in leveledSkill) {
-				details += string.Format (Database.strings.GetString ("SkillUp"), name, skill) + "\n\n";
+				details += string.Format (Database.strings.GetString ("SkillUp"), nickname, skill) + "\n\n";
 			}
 		}
 		return details;
@@ -603,11 +623,11 @@ public class Character
 		character.Heal (Mathf.RoundToInt (totalStats ["MAttack"] / 2), "Flat", "Health");
 		Ability ability = GetHealingAbility ();
 		totalStats ["CurrentMana"] -= ability.manaCost;
-		string targetname = character.name;
+		string targetname = character.nickname;
 		if (character == this) {
 			targetname = Database.strings.GetString (gender + "Poss") + "self";
 		}
 
-		adventure.actionList.Add (name + " used " +ability.name+" on " + targetname + ", healed " + Mathf.RoundToInt (totalStats ["MAttack"] / 2).ToString () + " health");
+		adventure.actionList.Add (nickname + " used " +ability.name+" on " + targetname + ", healed " + Mathf.RoundToInt (totalStats ["MAttack"] / 2).ToString () + " health");
 	}
 }

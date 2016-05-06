@@ -69,6 +69,7 @@ public static class ExtensionMethods
 		} else {
 			level = Random.Range (1, averagelevel + 2);
 		}
+		Debug.Log ("Level " + level);
 		foreach (KeyValuePair<Monster,int> monster in monsterlist) {
 
 			if (monster.Value >= RNG) {
@@ -208,8 +209,8 @@ public static class ExtensionMethods
 					blockItem=equipment[i].id;
 				}
 			} else if (equipment[i].id == 0) {
-				equipmentStats ["Accuracy"] += 85;
-				equipmentStats ["Evade"] += 15;
+				equipmentStats ["Accuracy"] += 50;
+				equipmentStats ["Evade"] += 10;
 			}
 		}
 		equipmentStats["Weight"]=Calculate(weight,1);
@@ -237,17 +238,18 @@ public static class ExtensionMethods
 		}
 		totalStats ["PAttack"] += baseStats ["Strength"]+bonusStats ["Strength"];
 		totalStats ["MAttack"] += baseStats ["Intelligence"]+bonusStats ["Intelligence"];
-		totalStats ["Accuracy"] += baseStats ["Dexterity"]+bonusStats ["Dexterity"];
-		totalStats ["Evade"] += baseStats ["Agility"]+bonusStats ["Agility"];
-		totalStats ["BlockChance"] += baseStats ["Dexterity"]+bonusStats ["Dexterity"];
+		totalStats ["Accuracy"] += 10*(baseStats ["Dexterity"]+bonusStats ["Dexterity"]);
+		totalStats ["Evade"] += 10*(baseStats ["Agility"]+bonusStats ["Agility"]);
+		totalStats ["BlockChance"] += 5*(baseStats ["Dexterity"]+bonusStats ["Dexterity"]);
+		totalStats ["Block"] += Mathf.RoundToInt(0.25f * (float)(baseStats ["Strength"] +baseStats ["Intelligence"]+ bonusStats ["Strength"]+bonusStats ["Intelligence"]));
 		totalStats ["Speed"] += baseStats ["Agility"]+bonusStats ["Agility"];
 		if (totalStats ["Weight"] < baseStats ["Strength"]+bonusStats ["Strength"]&& totalStats.ContainsKey("CarrySize")) {
 			totalStats ["CarrySize"]+=1;
 		}
 		if (totalStats ["Weight"] > baseStats ["Strength"]+bonusStats ["Strength"]) {
-			totalStats ["Accuracy"] += (baseStats ["Strength"]+bonusStats ["Strength"] - totalStats ["Weight"]) * 5;
-			totalStats ["Evade"] += (baseStats ["Strength"]+bonusStats ["Strength"] - totalStats ["Weight"]) * 4;
-			totalStats ["BlockChance"] += (baseStats ["Strength"]+bonusStats ["Strength"] - totalStats ["Weight"]) * 3;
+			totalStats ["Accuracy"] += (baseStats ["Strength"]+bonusStats ["Strength"] - totalStats ["Weight"]) * 10;
+			totalStats ["Evade"] += (baseStats ["Strength"]+bonusStats ["Strength"] - totalStats ["Weight"]) * 10;
+			totalStats ["BlockChance"] += (baseStats ["Strength"]+bonusStats ["Strength"] - totalStats ["Weight"]) * 5;
 			totalStats ["Speed"] += baseStats ["Strength"]+bonusStats ["Strength"] - totalStats ["Weight"];
 		}
 	}

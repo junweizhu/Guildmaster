@@ -28,7 +28,7 @@ public class AdventureScreen : MonoBehaviour
 	private List<Ability> abilityChoices;
 	private List<int> itemSlotChoices;
 	private string turn = ""; //player or enemy turn
-	private string phase = ""; //for players only: Choose ability, item or enemy.
+	public string phase = ""; //for players only: Choose ability, item or enemy.
 	private string action;
 	private int turnsUntilTimeIncrease;
 	private string choice="";
@@ -73,10 +73,10 @@ public class AdventureScreen : MonoBehaviour
 		int min = (time - (hourSpent * 6)) * 10;
 
 		int hour = hourSpent + 8;
-		if (hour > 23) {
+		while (hour > 23) {
 			hour -= 24;
 		}
-		clock.text = (hourSpent + 8).ToString ("00") + ":"+min.ToString ("00");
+		clock.text = (hour).ToString ("00") + ":"+min.ToString ("00");
 		progress.text = (100 * task.newStepsCount / task.area.size).ToString ()+" %";
 		inventory.text = adventure.inventorySpace.ToString ();
 		for (int i = 0; i < enemySlots.Count; i++) {
@@ -117,25 +117,24 @@ public class AdventureScreen : MonoBehaviour
 				choices.Add ("Return");
 			} else {
 				if (phase == "Choose Action") {
-					if (character.HasConsumables()) {
-						choices.Add ("Ability");
-						choices.Add ("Item");
-					} else {
-						phase = "Choose Ability";
-					}
+					choices.Add ("Ability");
+					choices.Add ("Item");
+					choices.Add ("Flee");
 					adventure.actionList.Add (character.name + "'s turn");
 				}
 				if (phase == "Choose Ability") {
 					if (turn == "Enemy Turn") {
-						
 						abilityChoices = character.GetUsableAbilities (false, attack.range);
 					} else {
 						abilityChoices = character.GetUsableAbilities (true,0,true);
 					}
 					if (abilityChoices.Count > 0) {
+						character.canAttack = true;
 						for (int i = 0; i < abilityChoices.Count; i++) {
 							choices.Add (abilityChoices [i].name);
 						}
+					} else {
+						character.canAttack = false;
 					}
 					if (turn == "Player Turn") {
 						choices.Add ("Back");
@@ -150,35 +149,38 @@ public class AdventureScreen : MonoBehaviour
 						choices.Add ("Back");
 					}
 				} else {
-					if (phase == "Choose Ally") {
+					/*if (phase == "Choose Ally") {
 						for (int i = 0; i < adventure.livingCharacters.Count; i++) {
 							choices.Add (adventure.livingCharacters [i].name);
 						}
-						choices.Add ("Back");
 					}
 					else if (phase == "Choose Enemy") {
 						Debug.Log (adventure.livingMonsters.Count);
 						for (int i = 0; i < adventure.livingMonsters.Count; i++) {
 							choices.Add (adventure.livingMonsters [i].name);
 						}
-						choices.Add ("Back");
-					}
+					}*/
+					//choices.Add ("Back");
 				}
 			}
 		}
-		if (adventure.action == "Wipeout") {
+		if (adventure.action == "Wipeout"||adventure.action=="Return") {
 			choices.Add ("Return");
 		}
-		Database.game.choiceScreen.PresentChoice (choices, "Adventure");
+		if (choices.Count > 0) {
+			Database.game.choiceScreen.PresentChoice (choices, "Adventure");
+		}
 	}
 
 	public void Continue (int id)
 	{
-		choice = choices [id];
+		if (choices.Count > 0) {
+			choice = choices [id];
+		}
 
-		Debug.Log (choice+ " "+turn+" "+phase);
+		//Debug.Log (choice+ " "+turn+" "+phase);
 
-		if (adventure.action == "Idle" || adventure.action == "Gathering") {
+		if (adventure.action == "Idle" || adventure.action == "Gathering"||adventure.action=="Return") {
 			if (phase == "Choose Item") {
 				UseItem (id);
 				phase = "";
@@ -193,6 +195,7 @@ public class AdventureScreen : MonoBehaviour
 					adventure.Rest ();
 				}
 				if (choice == "Return") {
+					task.success = true;
 					Finish ();
 				}
 				if (choice == "Items") {
@@ -223,6 +226,7 @@ public class AdventureScreen : MonoBehaviour
 				EnemyTurn ();
 				phase = "Choose Ability";
 				turnsUntilTimeIncrease = 1;
+				adventure.status = "";
 			} else if (adventure.status == "Pre-emptive") {
 				if (choice == "Ignore") {
 					adventure.action = "Idle";
@@ -235,6 +239,7 @@ public class AdventureScreen : MonoBehaviour
 					PlayerTurn ();
 					adventure.status = "";
 				} else if (action == "Return") {
+					task.success = true;
 					Finish ();
 				}
 			} else if (adventure.status == ""&&phase=="") {
@@ -242,8 +247,12 @@ public class AdventureScreen : MonoBehaviour
 				PlayerTurn ();
 			} else{
 				if (phase == "Choose Action") {
-					phase = "Choose " + choice;
-					PickChoice ();
+					if (choice == "Flee") {
+						adventure.Flee (characterId);
+					} else {
+						phase = "Choose " + choice;
+						PickChoice ();
+					}
 				} else if (phase == "Choose Ability") {
 					if (turn == "Player Turn") {
 						if (choice == "Back") {
@@ -253,10 +262,9 @@ public class AdventureScreen : MonoBehaviour
 							phase = "Choose Enemy";
 						}
 					} else {
-						Debug.Log ("Test");
 						counter = abilityChoices [id];
 						adventure.Fight (enemy, attack, character, counter);
-						EnemyTurn ();
+
 					}
 				} else if (phase == "Choose Item") {
 					if (choice == "Back") {
@@ -270,7 +278,7 @@ public class AdventureScreen : MonoBehaviour
 						phase = "Choose Ability";
 					} else {
 						enemyId = id;
-						enemy = adventure.livingMonsters [id];
+						enemy = adventure.battleMonster [id];
 						counter = enemy.ChooseCounterAttack (attack.range, character);
 						adventure.Fight (character, attack, enemy, counter);
 						phase = "Next Character";
@@ -286,16 +294,6 @@ public class AdventureScreen : MonoBehaviour
 						}
 					}
 				}
-				if (phase == "Next Character") {
-					characterId++;
-					phase = "Choose Action";
-					if (adventure.livingCharacters.Count <= characterId) {
-						NextTurn ();
-					} else {
-						character = adventure.livingCharacters [characterId];
-						adventure.actionList.Add (character.name + "'s turn.");
-					}
-				}
 				if (adventure.livingMonsters.Alive ().Count == 0) {
 					adventure.actionList.Add ("The battle is won!");
 					phase = "";
@@ -303,8 +301,21 @@ public class AdventureScreen : MonoBehaviour
 					time++;
 				} else if (adventure.livingCharacters.Alive ().Count == 0) {
 					adventure.actionList.Add ("Party is wiped out.");
-					phase="Wipeout";
-					adventure.action="Wipeout";
+					phase = "Wipeout";
+					adventure.action = "Wipeout";
+				} else if (turn == "Enemy Turn") {
+					EnemyTurn ();
+				} else {
+					if (phase == "Next Character") {
+						characterId++;
+						phase = "Choose Action";
+						if (adventure.livingCharacters.Count <= characterId) {
+							NextTurn ();
+						} else {
+							character = adventure.livingCharacters [characterId];
+							adventure.actionList.Add (character.name + "'s turn.");
+						}
+					}
 				}
 			}
 
@@ -320,8 +331,16 @@ public class AdventureScreen : MonoBehaviour
 				adventure.actionList.Add ("Who will you use it on?");
 			}
 		}
+		if (time == 36) {
+			adventure.actionList.Add ("It's getting late, we should return");
+		} else if (time == 48) {
+			adventure.actionList.Add ("It's too dark to explore.");
+			adventure.action = "Return";
+		}
+
 		Database.game.dialogueScreen.ShowAdventureText (adventure.actionList);
 		adventure.actionList.Clear ();
+		task.CheckProgressEvent ();
 	}
 
 	public bool TeamHasItems(){
@@ -332,6 +351,7 @@ public class AdventureScreen : MonoBehaviour
 		}
 		return true;
 	}
+
 	public void UseItem(int id){
 		int count = 0;
 		for (int i = 0; i < adventure.livingCharacters.Count; i++) {
@@ -344,6 +364,7 @@ public class AdventureScreen : MonoBehaviour
 			}
 		}
 	}
+		
 	public void EnemyTurn ()
 	{
 		if (adventure.livingMonsters.Count > enemyId) {
@@ -376,6 +397,7 @@ public class AdventureScreen : MonoBehaviour
 			}
 		}
 	}
+
 	public void PlayerTurn(){
 		adventure.actionList.Add ("Player Turn");
 		turn = "Player Turn";
@@ -386,7 +408,16 @@ public class AdventureScreen : MonoBehaviour
 
 	public void Finish ()
 	{
+		task.finished = true;
 		Database.game.FinishManualTask (task);
 		Database.game.dialogueScreen.adventure = false;
+	}
+
+	public void SelectCharacter(CharacterStatusDisplay character){
+		if (characterSlots.Contains (character)) {
+			Continue (characterSlots.IndexOf (character));
+		} else if (enemySlots.Contains (character)) {
+			Continue (enemySlots.IndexOf (character));
+		}
 	}
 }

@@ -57,7 +57,10 @@ public class Task
 		this.questnumber = questnumber;
 	}
 
-	public Task (string type, float duration, List<Character> characters, Dictionary<int,int>items, int money)//buying or selling items
+	///<summary>
+	///Task for buying or selling items.
+	/// </summary>
+	public Task (string type, float duration, List<Character> characters, Dictionary<int,int>items, int money)
 	{
 
 		SetMainData (type, characters);
@@ -76,8 +79,10 @@ public class Task
 		}
 		shoppingMoney = money;
 	}
-
-	public Task (string type, float duration, List<Character> characters, Skill skill, Ability ability, int money)//training
+	///<summary>
+	///Task for training hall.
+	/// </summary>
+	public Task (string type, float duration, List<Character> characters, Skill skill, Ability ability, int money)
 	{ 
 		SetMainData (type, characters);
 		this.duration = duration;
@@ -86,6 +91,7 @@ public class Task
 		shoppingMoney = money;
 	}
 
+
 	public Task (string type, float duration, List<Character> characters, string typesearch)//searching at tavern
 	{
 		SetMainData (type, characters);
@@ -93,7 +99,10 @@ public class Task
 		this.typeSearch = typesearch;
 	}
 
-	public Task (string type, Area area, List<Character> characters, string typesearch)//adventuring
+	///<summary>
+	///Task for adventures.
+	/// </summary>
+	public Task (string type, Area area, List<Character> characters, string typesearch)
 	{
 		SetMainData (type, characters);
 		this.area = area;
@@ -109,6 +118,9 @@ public class Task
 		}
 	}
 
+	///<summary>
+	///Task for socializing.
+	/// </summary>
 	public Task (string type, float duration, List<Character> characters)//Tavern
 	{
 		SetMainData (type, characters);
@@ -230,7 +242,7 @@ public class Task
 					}
 				}
 				if (type == "Adventure") {
-				
+					Debug.Log ("test");
 					if (success && itemList.Count > 0) {
 						Database.myGuild.GetItems (itemList);
 					} 
@@ -240,6 +252,7 @@ public class Task
 							casualties.Add (characters [i].name);
 						}
 					}
+					Database.myGuild.foundGatheringPoints [area.id] += adventure.newGatheringpointsFound;
 				}
 				for (int i = 0; i < characters.Count; i++) {
 					characters [i].status = "Idle";
@@ -431,7 +444,7 @@ public class Task
 		} else {
 			characterExpGain [character] [skillId] += exp;
 		}
-		if (skillId == 99) {
+		if (skillId == 99 && adventure!=null) {
 			adventure.actionList.Add(character.name +" gained "+ exp+" exp.");
 		}
 	}
@@ -478,6 +491,37 @@ public class Task
 		return list;
 	}
 
+	public void CheckEvent(){
+		if (duration == 1) {
+			if (type == "Adventure") {
+				if (area.visitEvent.Count > 0) {
+					int visit = 0;
+					if (Database.myGuild.successfulVisits.ContainsKey (area.id)) {
+						visit = Database.myGuild.successfulVisits [area.id];
+					}
+					if (area.visitEvent.ContainsKey (visit)) {
+						Database.events.AddToQueue (area.visitEvent [visit]);
+					}
+				}
+			}
+		}
+	}
+
+	public void CheckProgressEvent(){
+		if (duration == 1) {
+			if (type == "Adventure") {
+				if (area.progressEvent.Count > 0) {
+					foreach (KeyValuePair<int,int> progressevent in area.progressEvent) {
+						int progress = Mathf.RoundToInt (100 * newStepsCount / area.size);
+						if (progressevent.Key <= progress && !Database.events.GetEvent (progressevent.Value).finished) {
+							Database.events.AddToQueue (progressevent.Value);
+							return;
+						}
+					}
+				}
+			}
+		}
+	}
 	private string ItemsSold ()
 	{
 		string list = "";

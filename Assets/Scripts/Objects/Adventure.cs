@@ -17,7 +17,7 @@ public class Adventure
 	int fieldSkillLevel = 0;
 	int combatLevel = 0;
 	public int gatheringCount = 0;
-	int newGatheringpointsFound = 0;
+	public int newGatheringpointsFound = 0;
 	public int weaponSkillId = 0;
 	public int magicSkillId = 1;
 	public int combatSkillId = 2;
@@ -63,13 +63,12 @@ public class Adventure
 	{
 		status = "";
 		actionList.Add ("We walk");
-		if (Random.Range (0, 100) < 100 - Mathf.RoundToInt (100 * task.newStepsCount / area.size)||livingCharacters.Contains(Database.characters.GetCharacter(0))) {
+		if ((Random.Range (0, 100) < 100 - Mathf.RoundToInt (100 * task.newStepsCount / area.size)||livingCharacters.Contains(Database.characters.GetCharacter(0)))&&task.newStepsCount<area.size) {
 			task.newStepsCount++;
 			tookANewStep = true;
 		}
 
-		//if (Random.Range (0, 100) < 10) { //monster(s) encounter
-		if (true){
+		if (Random.Range (0, 100) < 10) { //monster(s) encounter
 			action = "Battle";
 			status = "";
 			bool generateMonster = true;
@@ -147,7 +146,11 @@ public class Adventure
 				task.GiveExp (livingCharacters [i], fieldSkillId, 1);
 			}
 		}
+		if (tookANewStep && task.newStepsCount == area.size) {
+			actionList.Add ("We've finished exploring this area.");
+		}
 		tookANewStep = false;
+		actionList.Add (action);
 	}
 
 	public void CheckBattleIsFinished ()
@@ -198,7 +201,17 @@ public class Adventure
 			}
 		}
 	}
-
+	public void Flee(int id){
+		int RNG = Random.Range (0, 100);
+		actionList.Add (livingCharacters [id].name + " tries to flee.");
+		if (RNG > 15) {
+			actionList.Add ("Successfully fled");
+			action = "idle";
+			KillAllMonsters ();
+		} else {
+			actionList.Add ("Failed to flee.");
+		}
+	}
 	public void RefreshBattleCharacterList(){
 		livingCharacters = task.characters.Alive ();
 		livingMonsters = battleMonster.Alive ();
@@ -223,7 +236,9 @@ public class Adventure
 	}
 	public void Fight(Character attacker,Ability attack, Character defender, Ability counter){
 		attacker.totalStats ["CurrentMana"] -= attack.manaCost;
-		defender.totalStats ["CurrentMana"] -= counter.manaCost;
+		if (counter != null) {
+			defender.totalStats ["CurrentMana"] -= counter.manaCost;
+		}
 		attacker.Attack (defender,attack,this);
 		AttackSkillExpGain(attacker,attack.element,3);
 		if (defender.canAttack&&defender.totalStats ["CurrentHealth"] > 0) {

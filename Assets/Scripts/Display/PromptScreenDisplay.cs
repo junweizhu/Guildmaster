@@ -25,7 +25,7 @@ public class PromptScreenDisplay : MonoBehaviour
 
 		this.action = action;
 		if (action=="Recruit"||action=="Dialogue"){
-			description.text = string.Format (Database.strings.GetString ("Recruit"),GameObject.FindObjectOfType<GameManager> ().textInputScreen.textInput.text);
+			description.text = string.Format (Database.strings.GetString ("Recruit"),Database.game.textInputScreen.textInput.text);
 		} else{
 			description.text = Database.strings.GetString ("Prompt");
 		}
@@ -39,7 +39,11 @@ public class PromptScreenDisplay : MonoBehaviour
 		textInput.text="";
 		if (type=="Character"){
 			character=Database.characters.GetCharacter(id);
-			textInput.text=character.name;
+			if (character.nickname == "" || character.nickname == null) {
+				textInput.text = character.name;
+			} else {
+				textInput.text = character.nickname;
+			}
 		} else if (type=="Guild"){
 			guild=Database.guilds.FindGuild(id);
 			textInput.text=guild.name;
@@ -57,27 +61,27 @@ public class PromptScreenDisplay : MonoBehaviour
 	{
 		Close ();
 		if (action == "StartQuest") {
-			GameObject.FindObjectOfType<GameManager> ().StartQuest ();
+			Database.game.StartQuest ();
 		} else if (action == "Adventure") {
-			GameObject.FindObjectOfType<GameManager> ().GoOnAdventure ();
+			Database.game.GoOnAdventure ();
 		} else if (action == "Shop") {
-			GameObject.FindObjectOfType<GameManager> ().BuyOrSell ();
+			Database.game.BuyOrSell ();
 		} else if (action == "Socialize") {
-			GameObject.FindObjectOfType<GameManager> ().GoToTavern ();
+			Database.game.GoToTavern ();
 		} else if (action=="Recruit"||action=="Dialogue"){
 			if (textInput!=null){
-				GameObject.FindObjectOfType<GameManager> ().promptScreen.Prompt(action);
+				Database.game.promptScreen.Prompt(action);
 				show=true;
 			} else{
-				GameObject.FindObjectOfType<GameManager> ().textInputScreen.Close();
+				Database.game.textInputScreen.Close();
 				if (action=="Recruit"){
-					GameObject.FindObjectOfType<GameManager> ().RecruitCharacter();
+					Database.game.RecruitCharacter();
 				} else{
-					GameObject.FindObjectOfType<GameManager> ().dialogueScreen.Press();
+					Database.game.dialogueScreen.Press();
 				}
 			}
 		} else if(action=="DeleteItem"){
-			GameObject.FindObjectOfType<WarehouseScreenDisplay>().DeleteItem();
+			Database.game.warehouseScreen.DeleteItem();
 		}
 	}
 	public void Close(){
